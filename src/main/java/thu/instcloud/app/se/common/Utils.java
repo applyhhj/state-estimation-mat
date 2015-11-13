@@ -2,6 +2,7 @@ package thu.instcloud.app.se.common;
 
 import MatOperation.MatOperation;
 import com.mathworks.toolbox.javabuilder.MWException;
+import com.mathworks.toolbox.javabuilder.MWNumericArray;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -107,6 +108,19 @@ public class Utils {
             }
 
             return matOperation;
+
+        }
+
+        public static MWNumericArray toMeasurementVector(MWNumericArray sf_, MWNumericArray st_, MWNumericArray sbus_,
+                                                         MWNumericArray Va_, MWNumericArray Vm_) {
+
+            OperationChain s = new OperationChain(sf_).mergeColumn(st_, sbus_);
+
+            OperationChain sr = s.clone().getReal();
+
+            OperationChain si = s.getImag();
+
+            return sr.mergeColumn(Va_).mergeColumn(si.getArray()).mergeColumn(Vm_).getArray();
 
         }
 

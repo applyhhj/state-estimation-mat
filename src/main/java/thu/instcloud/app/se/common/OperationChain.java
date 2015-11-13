@@ -11,11 +11,16 @@ import static thu.instcloud.app.se.common.Utils.Mat.getMatOperation;
  */
 public class OperationChain {
 
-    private MWNumericArray array;
-
 //    currently we use a static operation in all operation chain instances, in such way we can reduce the time for
 //    initializing the operation instance. However, synchronization can be a problem.
     private static MatOperation operation;
+    private MWNumericArray array;
+
+    public OperationChain() {
+
+        this(null);
+
+    }
 
     public OperationChain(MWNumericArray array){
 
@@ -23,7 +28,7 @@ public class OperationChain {
 
         if (operation==null){
 
-            this.operation=getMatOperation();
+            operation = getMatOperation();
 
         }
 
@@ -53,7 +58,7 @@ public class OperationChain {
 
     }
 
-    public OperationChain subtract(MWNumericArray array1){
+    public OperationChain subtract(Object array1) {
 
         try {
             array=(MWNumericArray)operation.substract(1,array,array1)[0];
@@ -65,7 +70,7 @@ public class OperationChain {
 
     }
 
-    public OperationChain add(MWNumericArray array1){
+    public OperationChain add(Object array1) {
 
         try {
             array=(MWNumericArray)operation.add(1,array,array1)[0];
@@ -77,10 +82,10 @@ public class OperationChain {
 
     }
 
-    public OperationChain multiply(MWNumericArray array1){
+    public OperationChain multiply(Object array1) {
 
         try {
-            array=(MWNumericArray)operation.multiply(1,array,array1)[0];
+            array = (MWNumericArray) operation.multiply(1, array, array1)[0];
         } catch (MWException e) {
             e.printStackTrace();
         }
@@ -123,6 +128,121 @@ public class OperationChain {
 
         return this;
 
+    }
+
+    public OperationChain getReal() {
+
+        try {
+            array = (MWNumericArray) operation.getReal(1, array)[0];
+        } catch (MWException e) {
+            e.printStackTrace();
+        }
+
+        return this;
+
+    }
+
+    public OperationChain getImag() {
+
+        try {
+            array = (MWNumericArray) operation.getImag(1, array)[0];
+        } catch (MWException e) {
+            e.printStackTrace();
+        }
+
+        return this;
+
+    }
+
+    public OperationChain mergeRow(MWNumericArray... arrays) {
+
+        try {
+
+            for (int i = 0; i < arrays.length; i++) {
+
+                array = (MWNumericArray) operation.mergeRow(1, array, arrays[i])[0];
+
+            }
+
+        } catch (MWException e) {
+            e.printStackTrace();
+        }
+
+        return this;
+
+    }
+
+    public OperationChain mergeColumn(MWNumericArray... arrays) {
+
+        try {
+            for (int i = 0; i < arrays.length; i++) {
+
+                array = (MWNumericArray) operation.mergeColumn(1, array, arrays[i])[0];
+
+            }
+        } catch (MWException e) {
+            e.printStackTrace();
+        }
+
+        return this;
+
+    }
+
+    public OperationChain abs() {
+
+        try {
+            array = (MWNumericArray) operation.absJ(1, array)[0];
+        } catch (MWException e) {
+            e.printStackTrace();
+        }
+
+        return this;
+
+    }
+
+    public OperationChain clone() {
+
+        OperationChain operationChain = null;
+        try {
+            operationChain = new OperationChain((MWNumericArray) this.array.clone());
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+
+        return operationChain;
+
+    }
+
+    public OperationChain ones(int r, int c) {
+
+        try {
+            array = (MWNumericArray) operation.onesJ(1, r, c)[0];
+        } catch (MWException e) {
+            e.printStackTrace();
+        }
+
+        return this;
+
+    }
+
+    public OperationChain zeros(int r, int c) {
+        try {
+            array = (MWNumericArray) operation.zerosJ(1, r, c)[0];
+        } catch (MWException e) {
+            e.printStackTrace();
+        }
+
+        return this;
+    }
+
+    public OperationChain eye(int r, int c) {
+        try {
+            array = (MWNumericArray) operation.eyeJ(1, r, c)[0];
+        } catch (MWException e) {
+            e.printStackTrace();
+        }
+
+        return this;
     }
 
     public MWNumericArray getArray() {
