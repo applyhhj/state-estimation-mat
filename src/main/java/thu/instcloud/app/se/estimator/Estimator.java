@@ -82,7 +82,7 @@ public class Estimator {
 
         badDataThreshold = 6.25;
 
-//        print();
+        print();
 
     }
 
@@ -112,7 +112,7 @@ public class Estimator {
 
             System.out.printf("\n----  --------------  --------------");
 
-            System.out.printf("\n%3d    %10.3f      %10.3f", 0, normFReal.get(0), 0.0);
+            System.out.printf("\n%3d    %10.3f      %10.3f", 0, normFReal.get(1), 0.0);
 
         }
 
@@ -160,11 +160,11 @@ public class Estimator {
 
                 if (powerSystem.getOption().isVerbose()) {
 
-                    System.out.printf("\n%3d    %10.3f      %10.3e", i, normFReal.getDouble(0), dx2.getDouble(0));
+                    System.out.printf("\n%3d    %10.3f      %10.3e", i, normFReal.getDouble(1), dx2.getDouble(1));
 
                 }
 
-                if (dx2.getDouble(0) < Constants.ESTIMATOR.TOL) {
+                if (dx2.getDouble(1) < Constants.ESTIMATOR.TOL) {
 
                     converged = true;
 
@@ -255,7 +255,7 @@ public class Estimator {
 
         MWNumericArray rn2 = op.setArray(ddeltz).multiplyByElement(ddeltz).multiplyByElement(WRInvDiagVec).getArray();
 
-        double maxBad = op.setArray(rn2).maxIn2D().getArray().getDouble(0);
+        double maxBad = op.setArray(rn2).maxIn2D().getArray().getDouble(1);
 
         List<Integer> ret = new ArrayList<Integer>();
 
@@ -337,7 +337,7 @@ public class Estimator {
 
         }
 
-        return new OperationChain(dx).selectColumns(getContinuousIds(1, dx.getDimensions()[0] / 2)).getArray();
+        return new OperationChain(dx).selectRows(getContinuousIds(1, dx.getDimensions()[0] / 2).toArray()).getArray();
 
     }
 
@@ -352,37 +352,37 @@ public class Estimator {
         }
 
         return new OperationChain(dx).
-                selectColumns(getContinuousIds(dx.getDimensions()[0] / 2 + 1, dx.getDimensions()[0])).getArray();
+                selectRows(getContinuousIds(dx.getDimensions()[0] / 2 + 1, dx.getDimensions()[0]).toArray()).getArray();
 
     }
 
     private MWNumericArray getHH(MWNumericArray HF) {
 
         return new OperationChain(HF).selectSubMatrix(
-                powerSystem.getMeasureSystem().getzIds(),
-                powerSystem.getMeasureSystem().getStateIds()).getArray();
+                powerSystem.getMeasureSystem().getzIds().toArray(),
+                powerSystem.getMeasureSystem().getStateIds().toArray()).getArray();
 
     }
 
     private MWNumericArray getWWInv(MWNumericArray WInv) {
 
         return new OperationChain(WInv).selectSubMatrix(
-                powerSystem.getMeasureSystem().getzIds(),
-                powerSystem.getMeasureSystem().getzIds()).getArray();
+                powerSystem.getMeasureSystem().getzIds().toArray(),
+                powerSystem.getMeasureSystem().getzIds().toArray()).getArray();
 
     }
 
     private MWNumericArray getDdeltz(MWNumericArray deltz) {
 
         return new OperationChain(deltz).selectRows(
-                powerSystem.getMeasureSystem().getzIds()).getArray();
+                powerSystem.getMeasureSystem().getzIds().toArray()).getArray();
 
     }
 
     private MWNumericArray getVVs(MWNumericArray Vs) {
 
         return new OperationChain(Vs).selectRows(
-                powerSystem.getMeasureSystem().getVbusIds()).getArray();
+                powerSystem.getMeasureSystem().getVbusIds().toArray()).getArray();
 
     }
 
@@ -564,21 +564,21 @@ public class Estimator {
 
         int NBus = powerSystem.getMpData().getnBus();
 
-        int[] idxBranch = new int[NBranch];
+        double[] idxBranch = new double[NBranch];
 
-        int[] idxBusFInter = new int[NBranch];
+        double[] idxBusFInter = new double[NBranch];
 
-        int[] idxBusTInter = new int[NBranch];
+        double[] idxBusTInter = new double[NBranch];
 
         for (int i = 0; i < NBranch; i++) {
 
-            idxBranch[i] = i;
+            idxBranch[i] = i + 1;
 
             idxBusFInter[i] = powerSystem.getMpData().getBusData().getTOI().get(
-                    powerSystem.getMpData().getBranchData().getI()[i]) - 1;
+                    powerSystem.getMpData().getBranchData().getI()[i]);
 
             idxBusTInter[i] = powerSystem.getMpData().getBusData().getTOI().get(
-                    powerSystem.getMpData().getBranchData().getJ()[i]) - 1;
+                    powerSystem.getMpData().getBranchData().getJ()[i]);
 
         }
 
@@ -640,7 +640,7 @@ public class Estimator {
 
     private MWNumericArray computeVnorm(MWNumericArray v) {
 
-        return new OperationChain(v).divideByElement(new OperationChain(v).norm().getArray()).getArray();
+        return new OperationChain(v).divideByElement(new OperationChain(v).abs().getArray()).getArray();
 
     }
 

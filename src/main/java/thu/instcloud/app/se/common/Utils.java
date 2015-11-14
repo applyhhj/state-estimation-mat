@@ -20,6 +20,8 @@ public class Utils {
 
     public static class Common {
 
+        public static IntComparator comparator = new IntComparator();
+
         public static List<Integer> getContinuousIds(int start, int end) {
 
             List<Integer> ret = new ArrayList<Integer>();

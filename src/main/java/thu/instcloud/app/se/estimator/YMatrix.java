@@ -75,7 +75,7 @@ public class YMatrix {
 
         releaseMem();
 
-        print();
+//        print();
 
     }
 
@@ -187,25 +187,11 @@ public class YMatrix {
 
     private void print() {
 
-        System.out.print("cf\n" + cf.toString() + "\n");
-
-        System.out.print("ct\n" + ct.toString() + "\n");
-
-        System.out.print("YSh\n" + YSh.toString() + "\n");
-
-//        System.out.print("YShB\n" + YShB.toString() + "\n");
-
         System.out.print("Yf\n" + Yf.toString() + "\n");
-
-//        System.out.print("YfB\n" + YfB.toString() + "\n");
 
         System.out.print("Yt\n" + Yt.toString() + "\n");
 
-//        System.out.print("YtB\n" + YtB.toString() + "\n");
-
         System.out.print("Ybus\n" + Ybus.toString() + "\n");
-
-//        System.out.print("YB\n" + YB.toString() + "\n");
 
     }
 

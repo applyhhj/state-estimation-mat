@@ -15,6 +15,7 @@ public class OperationChain {
 //    currently we use a static operation in all operation chain instances, in such way we can reduce the time for
 //    initializing the operation instance. However, synchronization can be a problem.
     private static MatOperation operation;
+
     private MWNumericArray array;
 
     public OperationChain() {
@@ -406,10 +407,10 @@ public class OperationChain {
 
     }
 
-    public OperationChain sparseMatrix(Object is, Object js, Object vals, int rows, int cols) {
+    public OperationChain sparseMatrix(double[] idouble, double[] jdouble, Object valdouble, double rows, double cols) {
 
         try {
-            array = (MWNumericArray) operation.sparseMatrix(1, is, js, vals, rows, cols)[0];
+            array = (MWNumericArray) operation.sparseMatrix(1, idouble, jdouble, valdouble, rows, cols)[0];
         } catch (MWException e) {
             e.printStackTrace();
         }
@@ -446,7 +447,7 @@ public class OperationChain {
 
         try {
             array = (MWNumericArray) operation.selectRows(1, array, rowIds)[0];
-            array = (MWNumericArray) operation.selectRows(1, array, colIds)[0];
+            array = (MWNumericArray) operation.selectColumns(1, array, colIds)[0];
         } catch (MWException e) {
             e.printStackTrace();
         }

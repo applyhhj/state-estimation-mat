@@ -4,7 +4,13 @@ import com.mathworks.toolbox.javabuilder.MWClassID;
 import com.mathworks.toolbox.javabuilder.MWComplexity;
 import com.mathworks.toolbox.javabuilder.MWNumericArray;
 import thu.instcloud.app.se.common.EstimationOption;
+import thu.instcloud.app.se.common.OperationChain;
+import thu.instcloud.app.se.common.Utils;
 import thu.instcloud.app.se.mpdata.MPData;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Created on 2015/11/7.
@@ -122,55 +128,41 @@ public class PowerSystem {
         return option;
     }
 
-    //    use a complex matrix to store state in polar axis, real part is the magnitude and imaginary part is the phase angle
-//    public BasicMatrix printStateInExternalInPolarDegree() {
-//
-//        System.out.print("\nBusNum       Vm(p.u.)        Va(degree)\n");
-//
-//        basicComplexMatrixBuilder = basicComplexMatrixFactory.getBuilder((int) state.countRows());
-//
-//        PhysicalStore<ComplexNumber> cplxState = state.toComplexStore();
-//
-//        for (int i = 0; i < state.countRows(); i++) {
-//
-//            for (int j = 0; j < state.countColumns(); j++) {
-//
-//                basicComplexMatrixBuilder.set(i, j, new ComplexNumber(
-//                        cplxState.get(i, j).getModulus(),
-//                        cplxState.get(i, j).phase()));
-//
-//            }
-//
-//        }
-//
-//        List<Integer> sortExternalBusNum = new ArrayList<Integer>();
-//
-//        for (Integer i : mpData.getBusData().getTOI().keySet()) {
-//
-//            sortExternalBusNum.add(i);
-//
-//        }
-//
-//        sortExternalBusNum.sort(Utils.Common.comparator);
-//
-//        BasicMatrix ret = basicComplexMatrixBuilder.build();
-//
-//        PhysicalStore<ComplexNumber> retCplx = ret.toComplexStore();
-//
-//        int internalNum;
-//
-//        for (int i = 0; i < sortExternalBusNum.size(); i++) {
-//
-//            internalNum = mpData.getBusData().getTOI().get(sortExternalBusNum.get(i));
-//
-//            System.out.printf("%5d %8.4f   %8.4f\n", sortExternalBusNum.get(i),
-//                    retCplx.get(internalNum - 1, 0).getReal(),
-//                    retCplx.get(internalNum - 1, 0).getImaginary() * 180 / Math.PI);
-//
-//        }
-//
-//        return ret;
-//
-//    }
+    public void printStateInExternalInPolarDegree() {
+
+        System.out.print("\nBusNum       Vm(p.u.)        Va(degree)\n");
+
+        MWNumericArray angles = new OperationChain(state).angleR().multiply(180 / Math.PI).getArray();
+
+        MWNumericArray vms = new OperationChain(state).abs().getArray();
+
+        List<Integer> sortExternalBusNum = new ArrayList<Integer>();
+
+        for (Integer i : mpData.getBusData().getTOI().keySet()) {
+
+            sortExternalBusNum.add(i);
+
+        }
+
+        Collections.sort(sortExternalBusNum, Utils.Common.comparator);
+
+
+        int internalNum;
+
+        int[] idx = {1, 1};
+
+        for (int i = 0; i < sortExternalBusNum.size(); i++) {
+
+            internalNum = mpData.getBusData().getTOI().get(sortExternalBusNum.get(i));
+
+            idx[0] = internalNum;
+
+            System.out.printf("%5d %8.4f   %8.4f\n", sortExternalBusNum.get(i),
+                    vms.getDouble(idx),
+                    angles.getDouble(idx));
+
+        }
+
+    }
 
 }

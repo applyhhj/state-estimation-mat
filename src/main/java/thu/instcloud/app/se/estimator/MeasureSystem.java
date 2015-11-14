@@ -128,17 +128,7 @@ public class MeasureSystem {
                 new OperationChain(sfCplx).abs().multiply(0.02).add(0.0052 * fullscale).getArray(),
                 new OperationChain(stCplx).abs().multiply(0.02).add(0.0052 * fullscale).getArray(),
                 new OperationChain(sbusCplx).abs().multiply(0.02).add(0.0052 * fullscale).getArray(),
-                new OperationChain(VpfmReal).multiply(0.02).add(0.0052 * 1.1).getArray()).multiply(1 / 3).getArray();
-//
-//        sigmaReal = cplxMatrixPart(sfCplx.modify(ComplexFunction.ABS), true).multiply(0.02).add(0.0052 * fullscale)
-//                .mergeColumns(cplxMatrixPart(stCplx.modify(ComplexFunction.ABS), true).multiply(0.02).add(0.0052 * fullscale))
-//                .mergeColumns(cplxMatrixPart(sbusCplx.modify(ComplexFunction.ABS), true).multiply(0.02).add(0.0052 * fullscale))
-//                .mergeColumns(newOneRealBasicMatrix(powerSystem.getMpData().getnBus(), 1).multiply(0.2 * Math.PI / 180 * 3))
-//                .mergeColumns(cplxMatrixPart(sfCplx.modify(ComplexFunction.ABS), true).multiply(0.02).add(0.0052 * fullscale))
-//                .mergeColumns(cplxMatrixPart(stCplx.modify(ComplexFunction.ABS), true).multiply(0.02).add(0.0052 * fullscale))
-//                .mergeColumns(cplxMatrixPart(sbusCplx.modify(ComplexFunction.ABS), true).multiply(0.02).add(0.0052 * fullscale))
-//                .mergeColumns(VpfmReal.multiply(0.02).add(0.0052 * 1.1))
-//                .divide(3);
+                new OperationChain(VpfmReal).multiply(0.02).add(0.0052 * 1.1).getArray()).multiply(1 / 3.0).getArray();
 
     }
 
@@ -344,7 +334,8 @@ public class MeasureSystem {
 
             idx = fullIds.get(i);
 
-            if (!excIds.contains(idx)) {
+//            excluded indices start from 0, full indices start from 1 so need to minus 1
+            if (!excIds.contains(idx - 1)) {
 
                 ret.add(idx);
 
