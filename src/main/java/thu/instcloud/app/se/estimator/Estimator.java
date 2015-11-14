@@ -1,24 +1,19 @@
 package thu.instcloud.app.se.estimator;
 
+import com.mathworks.toolbox.javabuilder.MWClassID;
+import com.mathworks.toolbox.javabuilder.MWComplexity;
 import com.mathworks.toolbox.javabuilder.MWNumericArray;
-import org.ojalgo.access.Access2D;
-import org.ojalgo.function.ComplexFunction;
-import org.ojalgo.function.PrimitiveFunction;
-import org.ojalgo.matrix.BasicMatrix;
-import org.ojalgo.matrix.ComplexMatrix;
-import org.ojalgo.scalar.ComplexNumber;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thu.instcloud.app.se.common.Constants;
-import thu.instcloud.app.se.common.OjMatrixManipulator;
+import thu.instcloud.app.se.common.OperationChain;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static thu.instcloud.app.se.common.Utils.MatrixExtension.*;
-import static thu.instcloud.app.se.common.Utils.OJ.*;
-import static thu.instcloud.app.se.common.Utils.hasDuplicateElement;
+import static thu.instcloud.app.se.common.Utils.Common.getContinuousIds;
+import static thu.instcloud.app.se.common.Utils.Mat.toMeasurementVector;
 
 /**
  * Created on 2015/11/7.
@@ -27,33 +22,33 @@ public class Estimator {
 
     private static Logger logger = LoggerFactory.getLogger(Estimator.class);
 
-    private BasicMatrix dSbDvmCplx;
+    private MWNumericArray dSbDvmCplx;
 
-    private BasicMatrix dSbDvaCplx;
+    private MWNumericArray dSbDvaCplx;
 
-    private BasicMatrix dSfDvmCplx;
+    private MWNumericArray dSfDvmCplx;
 
-    private BasicMatrix dSfDvaCplx;
+    private MWNumericArray dSfDvaCplx;
 
-    private BasicMatrix dStDvmCplx;
+    private MWNumericArray dStDvmCplx;
 
-    private BasicMatrix dStDvaCplx;
+    private MWNumericArray dStDvaCplx;
 
-    private BasicMatrix SfCplx;
+    private MWNumericArray SfCplx;
 
-    private BasicMatrix StCplx;
+    private MWNumericArray StCplx;
 
-    private BasicMatrix HFReal;
+    private MWNumericArray HFReal;
 
-    private BasicMatrix WInvReal;
+    private MWNumericArray WInvReal;
 
-    private BasicMatrix VpfNormCplx;
+    private MWNumericArray VpfNormCplx;
 
-    private BasicMatrix VpfNormMatrixCplx;
+    private MWNumericArray VpfNormMatrixCplx;
 
     private MWNumericArray VpfCplx;
 
-    private BasicMatrix VpfMatrixCplx;
+    private MWNumericArray VpfMatrixCplx;
 
     private PowerSystem powerSystem;
 
@@ -93,6 +88,8 @@ public class Estimator {
 
     public void estimate() {
 
+        OperationChain singleOp = new OperationChain();
+
         converged = false;
 
         WInvReal = powerSystem.getMeasureSystem().getWInvReal();
@@ -101,11 +98,13 @@ public class Estimator {
 
         boolean hasBadData;
 
-        BasicMatrix zestReal = computeEstimatedMeasurement(powerSystem);
+        MWNumericArray zestReal = computeEstimatedMeasurement(powerSystem);
 
-        BasicMatrix deltzReal = powerSystem.getMeasureSystem().getZmReal().subtract(zestReal);
+        MWNumericArray deltzReal = new OperationChain(powerSystem.getMeasureSystem().getZmReal())
+                .subtract(zestReal).getArray();
 
-        BasicMatrix normFReal = deltzReal.transpose().multiply(WInvReal).multiply(deltzReal);
+        MWNumericArray normFReal = new OperationChain(deltzReal).transpose()
+                .multiply(WInvReal).multiply(deltzReal).getArray();
 
         if (powerSystem.getOption().isVerbose()) {
 
@@ -113,7 +112,7 @@ public class Estimator {
 
             System.out.printf("\n----  --------------  --------------");
 
-            System.out.printf("\n%3d    %10.3f      %10.3f", 0, normFReal.get(0, 0), 0.0);
+            System.out.printf("\n%3d    %10.3f      %10.3f", 0, normFReal.get(0), 0.0);
 
         }
 
@@ -121,51 +120,51 @@ public class Estimator {
 
             hasBadData = false;
 
-            BasicMatrix HH = getHH(HFReal);
+            MWNumericArray HH = getHH(HFReal);
 
-            BasicMatrix WWInv = getWWInv(WInvReal);
+            MWNumericArray WWInv = getWWInv(WInvReal);
 
-            BasicMatrix ddeltz = getDdeltz(deltzReal);
+            MWNumericArray ddeltz = getDdeltz(deltzReal);
 
-            BasicMatrix VVs = getVVs(powerSystem.getState());
+            MWNumericArray VVs = getVVs(powerSystem.getState());
 
-            BasicMatrix VVsa = phaseOfComplexMatrix(VVs);
+            MWNumericArray VVsa = new OperationChain(VVs).angleR().getArray();
 
-            BasicMatrix VVsm = absOfComplexMatrix(VVs);
+            MWNumericArray VVsm = new OperationChain(VVs).abs().getArray();
 
             int i = 0;
 
             while (!converged && i++ < maxIt) {
 
-                BasicMatrix b = HH.transpose().multiply(WWInv).multiply(ddeltz);
+                MWNumericArray b = singleOp.setArray(HH).transpose().multiply(WWInv).multiply(ddeltz).getArray();
 
-                BasicMatrix A = HH.transpose().multiply(WWInv).multiply(HH);
+                MWNumericArray A = singleOp.setArray(HH).transpose().multiply(WWInv).multiply(HH).getArray();
 
-                BasicMatrix dx = solveLinear(A, b);
+                MWNumericArray dx = singleOp.setArray(A).solveLinear(b).getArray();
 
-                VVsa = VVsa.add(getDdxa(dx));
+                VVsa = singleOp.setArray(VVsa).add(getDdxa(dx)).getArray();
 
-                VVsm = VVsm.add(getDdxm(dx));
+                VVsm = singleOp.setArray(VVsm).add(getDdxm(dx)).getArray();
 
-                refreshState(powerSystem, VVsa, VVsm, powerSystem.getMeasureSystem().getVbusExcludeIds());
+                refreshState(powerSystem, VVsa, VVsm, powerSystem.getMeasureSystem().getVbusIds());
 
                 zestReal = computeEstimatedMeasurement(powerSystem);
 
-                deltzReal = powerSystem.getMeasureSystem().getZmReal().subtract(zestReal);
+                deltzReal = singleOp.setArray(powerSystem.getMeasureSystem().getZmReal()).subtract(zestReal).getArray();
 
                 ddeltz = getDdeltz(deltzReal);
 
-                normFReal = ddeltz.transpose().multiply(WWInv).multiply(ddeltz);
+                normFReal = singleOp.setArray(ddeltz).transpose().multiply(WWInv).multiply(ddeltz).getArray();
 
-                BasicMatrix dx2 = dx.transpose().multiply(dx);
+                MWNumericArray dx2 = singleOp.setArray(dx).transpose().multiply(dx).getArray();
 
                 if (powerSystem.getOption().isVerbose()) {
 
-                    System.out.printf("\n%3d    %10.3f      %10.3e", i, normFReal.get(0, 0), dx2.get(0, 0));
+                    System.out.printf("\n%3d    %10.3f      %10.3e", i, normFReal.getDouble(0), dx2.getDouble(0));
 
                 }
 
-                if (dx2.get(0, 0).doubleValue() < Constants.ESTIMATOR.TOL) {
+                if (dx2.getDouble(0) < Constants.ESTIMATOR.TOL) {
 
                     converged = true;
 
@@ -194,7 +193,7 @@ public class Estimator {
 
                 converged = false;
 
-                updateZExclude(baddata, powerSystem.getMeasureSystem().getzExcludeIds());
+                updateZIds(baddata, powerSystem.getMeasureSystem().getzIds());
 
             }
 
@@ -216,117 +215,47 @@ public class Estimator {
 
     }
 
-    private BasicMatrix computeWW(BasicMatrix WWInv) {
-
-        basicRealMatrixBuilder = basicRealMatrixFactory.getBuilder((int) WWInv.countRows(), (int) WWInv.countColumns());
-
-        if (WWInv.countColumns() != WWInv.countRows()) {
-
-            logger.error("Not a square matrix can not inverse!");
-
-            return null;
-
-        }
-
-        double a;
-
-        for (int i = 0; i < WWInv.countColumns(); i++) {
-
-            a = WWInv.get(i, i).doubleValue();
-
-            if (a == 0) {
-
-                logger.error("Not a full rank matrix, can not inverse!");
-
-                return null;
-
-            }
-
-            basicRealMatrixBuilder.set(i, i, 1 / a);
-
-        }
-
-        return basicRealMatrixBuilder.build();
-
-    }
-
     //    WARNNING: all exclude should be sorted in ascending order
-    private void updateZExclude(List<Integer> baddata, List<Integer> zExclude) {
+    private void updateZIds(List<Integer> baddata, List<Integer> zIds) {
 
-        List<Integer> badids = new ArrayList<Integer>();
+        List<Integer> ret = new ArrayList<Integer>();
 
-        int originalIdx;
+        for (int i = 0; i < zIds.size(); i++) {
 
-        for (int i = 0; i < baddata.size(); i++) {
+            if (baddata.contains(i)) {
 
-            originalIdx = baddata.get(i);
-
-            for (int j = 0; j < zExclude.size(); j++) {
-
-                if (originalIdx >= zExclude.get(j)) {
-
-                    originalIdx++;
-
-                }
+                continue;
 
             }
 
-            badids.add(originalIdx);
+            ret.add(zIds.get(i));
 
         }
 
-        for (Integer badidx : badids) {
+        zIds.clear();
 
-            int i = 0;
-
-            while (i < zExclude.size()) {
-
-                if (badidx == zExclude.get(i)) {
-
-                    break;
-
-                } else {
-
-                    if (badidx < zExclude.get(i)) {
-
-                        zExclude.add(i, badidx);
-
-                        break;
-
-                    }
-
-                }
-
-                i++;
-
-            }
-
-            if (i == zExclude.size()) {
-
-                zExclude.add(badidx);
-
-            }
-
-        }
-
-        hasDuplicateElement(zExclude, "update " + ibad);
+        zIds.addAll(ret);
 
     }
 
     //    just return the index
-    private List<Integer> badDataRecognition(BasicMatrix WWInv, BasicMatrix HH, BasicMatrix ddeltz, boolean oneBadAtATime) {
+    private List<Integer> badDataRecognition(MWNumericArray WWInv, MWNumericArray HH, MWNumericArray ddeltz,
+                                             boolean oneBadAtATime) {
 
-        BasicMatrix WW = computeWW(WWInv);
+        OperationChain op = new OperationChain();
 
-        BasicMatrix HTWHInv = HH.transpose().multiply(WWInv).multiply(HH).invert();
+        MWNumericArray WW = op.setArray(WWInv).invert().getArray();
 
-        BasicMatrix WR = WW.subtract(HH.multiply(HTWHInv).multiply(HH.transpose()).multiply(0.95));
+        MWNumericArray HTWHInv = op.setArray(HH).transpose().multiply(WWInv).multiply(HH).invert().getArray();
 
-        BasicMatrix WRInvDiagVec = getDiagonalInvVector(WR);
+        MWNumericArray WR = op.setArray(WW).subtract(new OperationChain(HH).multiply(HTWHInv).multiply(
+                new OperationChain(HH).transpose()).multiply(0.95)).getArray();
 
-        BasicMatrix rn2 = ddeltz.multiplyElements(ddeltz).multiplyElements(WRInvDiagVec);
+        MWNumericArray WRInvDiagVec = op.eye(1, 1).divideByElement(new OperationChain(WR).diagonal()).getArray();
 
-        double maxBad = maxInMatrix(rn2);
+        MWNumericArray rn2 = op.setArray(ddeltz).multiplyByElement(ddeltz).multiplyByElement(WRInvDiagVec).getArray();
+
+        double maxBad = op.setArray(rn2).maxIn2D().getArray().getDouble(0);
 
         List<Integer> ret = new ArrayList<Integer>();
 
@@ -334,7 +263,7 @@ public class Estimator {
 
         if (oneBadAtATime) {
 
-            threshold = maxInMatrix(rn2);
+            threshold = maxBad;
 
         } else {
 
@@ -342,12 +271,17 @@ public class Estimator {
 
         }
 
-        for (int i = 0; i < rn2.countRows(); i++) {
+        int[] idx = {1, 1};
 
-            tmp = rn2.get(i, 0).doubleValue();
+        for (int i = 0; i < rn2.getDimensions()[0]; i++) {
+
+            idx[0] = i + 1;
+
+            tmp = rn2.getDouble(idx);
 
             if (tmp >= threshold) {
 
+//                this is the index of the z list that should be excluded
                 ret.add(i);
 
                 if (oneBadAtATime) {
@@ -364,67 +298,38 @@ public class Estimator {
 
     }
 
-    private BasicMatrix getDiagonalInvVector(BasicMatrix in) {
+    //    ids should be in ascending order
+    private void refreshState(PowerSystem powerSystem, MWNumericArray vvsa, MWNumericArray vvsm, List<Integer> Vids) {
 
-        int r = Math.min((int) in.countRows(), (int) in.countColumns());
+        MWNumericArray vs = powerSystem.getState();
 
-        basicRealMatrixBuilder = basicRealMatrixFactory.getBuilder(r, 1);
+        int[] idx = {1, 1};
 
-        for (int i = 0; i < r; i++) {
-
-            basicRealMatrixBuilder.set(i, 0, 1 / in.get(i, i).doubleValue());
-
-        }
-
-        return basicRealMatrixBuilder.build();
-
-    }
-
-    private void refreshState(PowerSystem powerSystem, BasicMatrix vvsa, BasicMatrix vvsm, List<Integer> excludeV) {
-
-        BasicMatrix vs = powerSystem.getState();
-
-        Access2D.Builder<ComplexMatrix> newState = basicComplexMatrixFactory.copy(vs).copyToBuilder();
-
-        int vi = 0;
-
-        int vvi = 0;
-
-        int exci = 0;
+        int[] idxVnew = {1, 1};
 
         double ph, mag;
 
-        while (vi < vs.countRows()) {
+        for (int i = 0; i < Vids.size(); i++) {
 
-            if (vi != excludeV.get(exci)) {
+            idx[0] = Vids.get(i);
 
-                ph = vvsa.get(vvi, 0).doubleValue();
+            idxVnew[0] = i + 1;
 
-                mag = vvsm.get(vvi, 0).doubleValue();
+            ph = vvsa.getDouble(idxVnew);
 
-                newState.set(vi, 0, new ComplexNumber(mag * Math.cos(ph), mag * Math.sin(ph)));
+            mag = vvsm.getDouble(idxVnew);
 
-                vi++;
+            vs.set(idx, mag * Math.cos(ph));
 
-                vvi++;
-
-            } else {
-
-                vi++;
-
-                exci++;
-
-            }
+            vs.setImag(idx, mag * Math.sin(ph));
 
         }
 
-        powerSystem.setState(newState.build());
-
     }
 
-    private BasicMatrix getDdxa(BasicMatrix dx) {
+    private MWNumericArray getDdxa(MWNumericArray dx) {
 
-        if (dx.countRows() % 2 != 0 || dx.countColumns() != 1) {
+        if (dx.getDimensions()[0] % 2 != 0 || dx.getDimensions()[1] != 1) {
 
             logger.error("Number of state variable should be even and dx should be single column!");
 
@@ -432,13 +337,13 @@ public class Estimator {
 
         }
 
-        return dx.getRowsRange(0, (int) dx.countRows() / 2);
+        return new OperationChain(dx).selectColumns(getContinuousIds(1, dx.getDimensions()[0] / 2)).getArray();
 
     }
 
-    private BasicMatrix getDdxm(BasicMatrix dx) {
+    private MWNumericArray getDdxm(MWNumericArray dx) {
 
-        if (dx.countRows() % 2 != 0 || dx.countColumns() != 1) {
+        if (dx.getDimensions()[0] % 2 != 0 || dx.getDimensions()[1] != 1) {
 
             logger.error("Number of state variable should be even and dx should be single column!");
 
@@ -446,73 +351,71 @@ public class Estimator {
 
         }
 
-        return dx.getRowsRange((int) dx.countRows() / 2, (int) dx.countRows());
+        return new OperationChain(dx).
+                selectColumns(getContinuousIds(dx.getDimensions()[0] / 2 + 1, dx.getDimensions()[0])).getArray();
 
     }
 
-    private BasicMatrix getHH(BasicMatrix HF) {
+    private MWNumericArray getHH(MWNumericArray HF) {
 
-        return excludeRowsColumns(
-                HF,
-                powerSystem.getMeasureSystem().getzExcludeIds(),
-                powerSystem.getMeasureSystem().getStateExcludeIds()
-        );
+        return new OperationChain(HF).selectSubMatrix(
+                powerSystem.getMeasureSystem().getzIds(),
+                powerSystem.getMeasureSystem().getStateIds()).getArray();
 
     }
 
-    private BasicMatrix getWWInv(BasicMatrix WInv) {
+    private MWNumericArray getWWInv(MWNumericArray WInv) {
 
-        return excludeRowsColumns(
-                WInv,
-                powerSystem.getMeasureSystem().getzExcludeIds(),
-                powerSystem.getMeasureSystem().getzExcludeIds()
-        );
+        return new OperationChain(WInv).selectSubMatrix(
+                powerSystem.getMeasureSystem().getzIds(),
+                powerSystem.getMeasureSystem().getzIds()).getArray();
 
     }
 
-    private BasicMatrix getDdeltz(BasicMatrix deltz) {
+    private MWNumericArray getDdeltz(MWNumericArray deltz) {
 
-        return excludeRowsColumns(
-                deltz,
-                powerSystem.getMeasureSystem().getzExcludeIds(),
-                null
-        );
+        return new OperationChain(deltz).selectRows(
+                powerSystem.getMeasureSystem().getzIds()).getArray();
 
     }
 
-    private BasicMatrix getVVs(BasicMatrix Vs) {
+    private MWNumericArray getVVs(MWNumericArray Vs) {
 
-        return excludeRowsColumns(Vs, powerSystem.getMeasureSystem().getVbusExcludeIds(), null);
+        return new OperationChain(Vs).selectRows(
+                powerSystem.getMeasureSystem().getVbusIds()).getArray();
 
     }
 
-    public BasicMatrix computeEstimatedMeasurement(PowerSystem powerSystem) {
+    public MWNumericArray computeEstimatedMeasurement(PowerSystem powerSystem) {
 
-        BasicMatrix Vsf = getVft(
+        MWNumericArray Vsf = getVft(
                 powerSystem.getMpData().getBranchData().getI(),
                 powerSystem.getState(),
                 powerSystem.getMpData().getBusData().getTOI());
 
-        BasicMatrix Vst = getVft(
+        MWNumericArray Vst = getVft(
                 powerSystem.getMpData().getBranchData().getJ(),
                 powerSystem.getState(),
                 powerSystem.getMpData().getBusData().getTOI());
 
-        BasicMatrix Vs = powerSystem.getState();
+        MWNumericArray Vs = powerSystem.getState();
 
-        BasicMatrix sfe, ste, sbuse;
+        MWNumericArray sfe, ste, sbuse;
 
-        BasicMatrix Vsa, Vsm;
+        MWNumericArray Vsa, Vsm;
 
-        sfe = Vsf.multiplyElements(powerSystem.getyMatrix().getYf().multiply(Vs).modify(ComplexFunction.CONJUGATE));
+        sfe = new OperationChain(Vsf).multiplyByElement(new OperationChain(powerSystem.getyMatrix().getYf())
+                .multiply(Vs).conj()).getArray();
 
-        ste = Vst.multiplyElements(powerSystem.getyMatrix().getYt().multiply(Vs).modify(ComplexFunction.CONJUGATE));
+        ste = new OperationChain(Vst).multiplyByElement(new OperationChain(powerSystem.getyMatrix().getYt())
+                .multiply(Vs).conj()).getArray();
 
-        sbuse = Vs.multiplyElements(powerSystem.getyMatrix().getYbus().multiply(Vs).modify(ComplexFunction.CONJUGATE));
+        sbuse = new OperationChain(Vs).multiplyByElement(new OperationChain(powerSystem.getyMatrix().getYbus())
+                .multiply(Vs).conj()).getArray();
 
-        Vsa = phaseOfComplexMatrix(Vs);
+        Vsa = new OperationChain(Vs).angleR().getArray();
 
-        Vsm = absOfComplexMatrix(Vs);
+        Vsm = new OperationChain(Vs).abs().getArray();
 
         return toMeasurementVector(
                 sfe,
@@ -551,7 +454,7 @@ public class Estimator {
 
     }
 
-    public void printWithTitle(String title, BasicMatrix matrix) {
+    public void printWithTitle(String title, MWNumericArray matrix) {
 
         System.out.print("\n" + title + "\n");
         System.out.print(matrix + "\n");
@@ -601,47 +504,49 @@ public class Estimator {
 
         int nb = powerSystem.getMpData().getnBus();
 
-        BasicMatrix eyenb = basicRealMatrixFactory.makeEye(nb, nb);
+        MWNumericArray eyenb = new OperationChain().eye(nb, nb).getArray();
 
-        BasicMatrix zeronb = basicRealMatrixFactory.makeZero(nb, nb);
+        MWNumericArray zeronb = new OperationChain().zeros(nb, nb).getArray();
 
-        BasicMatrix HFRealCol1 = cplxMatrixPart(dSfDvaCplx, true)
-                .mergeColumns(cplxMatrixPart(dStDvaCplx, true))
-                .mergeColumns(cplxMatrixPart(dSbDvaCplx, true))
-                .mergeColumns(eyenb)
-                .mergeColumns(cplxMatrixPart(dSfDvaCplx, false))
-                .mergeColumns(cplxMatrixPart(dStDvaCplx, false))
-                .mergeColumns(cplxMatrixPart(dSbDvaCplx, false))
-                .mergeColumns(zeronb);
+        MWNumericArray HFRealCol1 = new OperationChain(new OperationChain(dSfDvaCplx).getReal())
+                .mergeColumn(
+                        new OperationChain(dStDvaCplx).getReal(),
+                        new OperationChain(dSbDvaCplx).getReal(),
+                        eyenb,
+                        new OperationChain(dSfDvaCplx).getImag(),
+                        new OperationChain(dStDvaCplx).getImag(),
+                        new OperationChain(dSbDvaCplx).getImag(),
+                        zeronb).getArray();
 
-        BasicMatrix HFRealCol2 = cplxMatrixPart(dSfDvmCplx, true)
-                .mergeColumns(cplxMatrixPart(dStDvmCplx, true))
-                .mergeColumns(cplxMatrixPart(dSbDvmCplx, true))
-                .mergeColumns(zeronb)
-                .mergeColumns(cplxMatrixPart(dSfDvmCplx, false))
-                .mergeColumns(cplxMatrixPart(dStDvmCplx, false))
-                .mergeColumns(cplxMatrixPart(dSbDvmCplx, false))
-                .mergeColumns(eyenb);
+        MWNumericArray HFRealCol2 = new OperationChain(new OperationChain(dSfDvmCplx).getReal())
+                .mergeColumn(
+                        new OperationChain(dStDvmCplx).getReal(),
+                        new OperationChain(dSbDvmCplx).getReal(),
+                        zeronb,
+                        new OperationChain(dSfDvmCplx).getImag(),
+                        new OperationChain(dStDvmCplx).getImag(),
+                        new OperationChain(dSbDvmCplx).getImag(),
+                        eyenb).getArray();
 
-        HFReal = HFRealCol1.mergeRows(HFRealCol2);
+        HFReal = new OperationChain(HFRealCol1).mergeRow(HFRealCol2).getArray();
 
     }
 
     private void computeDSbrDv() {
 
-        BasicMatrix Yf, Yt, If, It, IfMatrix, ItMatrix, Vf, Vt, VfNorm, VtNorm, VfMatrix, VtMatrix;
+        MWNumericArray Yf, Yt, If, It, IfMatrix, ItMatrix, Vf, Vt, VfNorm, VtNorm, VfMatrix, VtMatrix;
 
         Yf = powerSystem.getyMatrix().getYf();
 
         Yt = powerSystem.getyMatrix().getYt();
 
-        If = Yf.multiply(VpfCplx);
+        If = new OperationChain(Yf).multiply(VpfCplx).getArray();
 
-        It = Yt.multiply(VpfCplx);
+        It = new OperationChain(Yt).multiply(VpfCplx).getArray();
 
-        IfMatrix = expandVectorToDiagonalMatrix(If, true);
+        IfMatrix = new OperationChain(If).diagonal().getArray();
 
-        ItMatrix = expandVectorToDiagonalMatrix(It, true);
+        ItMatrix = new OperationChain(It).diagonal().getArray();
 
         Vf = getVft(powerSystem.getMpData().getBranchData().getI(), VpfCplx, powerSystem.getMpData().getBusData().getTOI());
 
@@ -651,9 +556,9 @@ public class Estimator {
 
         VtNorm = getVft(powerSystem.getMpData().getBranchData().getJ(), VpfNormCplx, powerSystem.getMpData().getBusData().getTOI());
 
-        VfMatrix = expandVectorToDiagonalMatrix(Vf, true);
+        VfMatrix = new OperationChain(Vf).diagonal().getArray();
 
-        VtMatrix = expandVectorToDiagonalMatrix(Vt, true);
+        VtMatrix = new OperationChain(Vt).diagonal().getArray();
 
         int NBranch = powerSystem.getMpData().getnBranch();
 
@@ -677,134 +582,72 @@ public class Estimator {
 
         }
 
-        BasicMatrix VNbrNbF, VNbrNbT, VNbrNbNormF, VNbrNbNormT;
+        MWNumericArray VNbrNbF, VNbrNbT, VNbrNbNormF, VNbrNbNormT;
 
-        VNbrNbF = toSpareMatrix(idxBranch, idxBusFInter, Vf, NBranch, NBus);
+        VNbrNbF = new OperationChain().sparseMatrix(idxBranch, idxBusFInter, Vf, NBranch, NBus).getArray();
 
-        VNbrNbT = toSpareMatrix(idxBranch, idxBusTInter, Vt, NBranch, NBus);
+        VNbrNbT = new OperationChain().sparseMatrix(idxBranch, idxBusTInter, Vt, NBranch, NBus).getArray();
 
-        VNbrNbNormF = toSpareMatrix(idxBranch, idxBusFInter, VfNorm, NBranch, NBus);
+        VNbrNbNormF = new OperationChain().sparseMatrix(idxBranch, idxBusFInter, VfNorm, NBranch, NBus).getArray();
 
-        VNbrNbNormT = toSpareMatrix(idxBranch, idxBusTInter, VtNorm, NBranch, NBus);
+        VNbrNbNormT = new OperationChain().sparseMatrix(idxBranch, idxBusTInter, VtNorm, NBranch, NBus).getArray();
 
-        dSfDvaCplx = IfMatrix.modify(ComplexFunction.CONJUGATE).multiply(VNbrNbF)
-                .subtract(VfMatrix.multiply(Yf.multiply(VpfMatrixCplx).modify(ComplexFunction.CONJUGATE)))
-                .multiply((Number) new ComplexNumber(0, 1));
+        dSfDvaCplx = new OperationChain(IfMatrix).conj().multiply(VNbrNbF).subtract(
+                new OperationChain(VfMatrix).multiply(new OperationChain(Yf).multiply(VpfMatrixCplx).conj().getArray()).getArray())
+                .multiplyI().getArray();
 
-        dSfDvmCplx = VfMatrix.multiply(Yf.multiply(VpfNormMatrixCplx).modify(ComplexFunction.CONJUGATE))
-                .add(IfMatrix.modify(ComplexFunction.CONJUGATE).multiply(VNbrNbNormF));
+        dSfDvmCplx = new OperationChain(VfMatrix).multiply(new OperationChain(Yf).multiply(VpfNormMatrixCplx).conj())
+                .add(new OperationChain(IfMatrix).conj().multiply(VNbrNbNormF)).getArray();
 
-        dStDvaCplx = ItMatrix.modify(ComplexFunction.CONJUGATE).multiply(VNbrNbT)
-                .subtract(VtMatrix.multiply(Yt.multiply(VpfMatrixCplx).modify(ComplexFunction.CONJUGATE)))
-                .multiply((Number) new ComplexNumber(0, 1));
+        dStDvaCplx = new OperationChain(ItMatrix).conj().multiply(VNbrNbT).subtract(
+                new OperationChain(VtMatrix).multiply(new OperationChain(Yt).multiply(VpfMatrixCplx).conj()))
+                .multiplyI().getArray();
 
-        dStDvmCplx = VtMatrix.multiply(Yt.multiply(VpfNormMatrixCplx).modify(ComplexFunction.CONJUGATE))
-                .add(ItMatrix.modify(ComplexFunction.CONJUGATE).multiply(VNbrNbNormT));
+        dStDvmCplx = new OperationChain(VtMatrix).multiply(new OperationChain(Yt).multiply(VpfNormMatrixCplx).conj())
+                .add(new OperationChain(ItMatrix).conj().multiply(VNbrNbNormT)).getArray();
 
-        SfCplx = Vf.multiplyElements(If.modify(ComplexFunction.CONJUGATE));
+        SfCplx = new OperationChain(Vf).multiplyByElement(new OperationChain(If).conj()).getArray();
 
-        StCplx = Vt.multiplyElements(It.modify(ComplexFunction.CONJUGATE));
+        StCplx = new OperationChain(Vt).multiplyByElement(new OperationChain(It).conj()).getArray();
 
     }
 
     private void computeDSbusDv() {
 
-        BasicMatrix IbusMatrix;
+        MWNumericArray IbusMatrix;
 
         VpfCplx = powerSystem.getPowerFlow().getV();
 
         VpfNormCplx = computeVnorm(VpfCplx);
 
-        VpfMatrixCplx = expandVectorToDiagonalMatrix(VpfCplx, true);
+        VpfMatrixCplx = new OperationChain(VpfCplx).diagonal().getArray();
 
-        IbusMatrix = expandVectorToDiagonalMatrix(powerSystem.getyMatrix().getYbus().multiply(VpfCplx), true);
+        IbusMatrix = new OperationChain(
+                new OperationChain(powerSystem.getyMatrix().getYbus()).multiply(VpfCplx).getArray())
+                .diagonal().getArray();
 
-        VpfNormMatrixCplx = expandVectorToDiagonalMatrix(VpfNormCplx, true);
+        VpfNormMatrixCplx = new OperationChain(VpfNormCplx).diagonal().getArray();
 
-        dSbDvmCplx = VpfMatrixCplx.multiply(powerSystem.getyMatrix().getYbus().multiply(VpfNormMatrixCplx)
-                .modify(ComplexFunction.CONJUGATE))
-                .add(IbusMatrix.modify(ComplexFunction.CONJUGATE).multiply(VpfNormMatrixCplx));
+        dSbDvmCplx = new OperationChain(VpfMatrixCplx).multiply(
+                new OperationChain(powerSystem.getyMatrix().getYbus()).multiply(VpfNormMatrixCplx).conj().getArray())
+                .add(new OperationChain(IbusMatrix).conj().multiply(VpfNormMatrixCplx)).getArray();
 
-        dSbDvaCplx = VpfMatrixCplx.multiply((Number) new ComplexNumber(0, 1)).multiply(
-                IbusMatrix.subtract(powerSystem.getyMatrix().getYbus().multiply(VpfMatrixCplx))
-                        .modify(ComplexFunction.CONJUGATE)
-        );
-
-    }
-
-    //    index should start from 0
-    private BasicMatrix toSpareMatrix(int[] i, int[] j, BasicMatrix matrix, int rows, int cols) {
-
-        if (i.length != j.length || matrix.countColumns() > 1) {
-
-            logger.error("Invalid input!");
-
-            return null;
-
-        }
-
-        basicComplexMatrixBuilder = basicComplexMatrixFactory.getBuilder(rows, cols);
-
-        for (int k = 0; k < i.length; k++) {
-
-            basicComplexMatrixBuilder.set(i[k], j[k], matrix.get(k, 0));
-
-        }
-
-        return basicComplexMatrixBuilder.build();
+        dSbDvaCplx = new OperationChain(VpfMatrixCplx).multiplyI().multiply(new OperationChain(IbusMatrix).subtract(
+                new OperationChain(powerSystem.getyMatrix().getYbus()).multiply(VpfMatrixCplx).getArray()
+        ).conj().getArray()).getArray();
 
     }
 
-    private BasicMatrix expandVectorToDiagonalMatrix(BasicMatrix vec, boolean complex) {
+    private MWNumericArray computeVnorm(MWNumericArray v) {
 
-        if (vec.countColumns() != 1) {
-
-            logger.error("Not a vector!");
-
-            return null;
-
-        }
-
-        int rows = (int) vec.countRows();
-
-        if (!complex) {
-
-            basicRealMatrixBuilder = basicRealMatrixFactory.getBuilder(rows, rows);
-
-            for (int i = 0; i < rows; i++) {
-
-                basicRealMatrixBuilder.set(i, i, vec.get(i, 0));
-
-            }
-
-            return basicRealMatrixBuilder.build();
-
-        } else {
-
-            basicComplexMatrixBuilder = basicComplexMatrixFactory.getBuilder(rows, rows);
-
-            for (int i = 0; i < rows; i++) {
-
-                basicComplexMatrixBuilder.set(i, i, vec.get(i, 0));
-
-            }
-
-            return basicComplexMatrixBuilder.build();
-
-        }
-
-    }
-
-    private BasicMatrix computeVnorm(BasicMatrix v) {
-
-        return v.multiplyElements(absOfComplexMatrix(v).modify(PrimitiveFunction.INVERT));
+        return new OperationChain(v).divideByElement(new OperationChain(v).norm().getArray()).getArray();
 
     }
 
     //    input are external numbers, will convert to internal numbering
-    private BasicMatrix getVft(int[] ijExternal, BasicMatrix VvecCplx, Map<Integer, Integer> TOI) {
+    private MWNumericArray getVft(int[] ijExternal, MWNumericArray VvecCplx, Map<Integer, Integer> TOI) {
 
-        if (VvecCplx.countColumns() != 1) {
+        if (VvecCplx.getDimensions()[1] != 1) {
 
             logger.error("Not a vector!");
 
@@ -814,27 +657,39 @@ public class Estimator {
 
         int n = ijExternal.length;
 
-        basicComplexMatrixBuilder = basicComplexMatrixFactory.getBuilder(n, 1);
+        int[] dims = {n, 1};
+
+        int[] ids = {1, 1};
+
+        int[] valueIds = {1, 1};
+
+        MWNumericArray res = MWNumericArray.newInstance(dims, MWClassID.DOUBLE, MWComplexity.COMPLEX);
 
         int internalIdx;
 
         for (int i = 0; i < n; i++) {
 
-            internalIdx = TOI.get(ijExternal[i]) - 1;
+            internalIdx = TOI.get(ijExternal[i]);
 
-            basicComplexMatrixBuilder.set(i, 0, VvecCplx.get(internalIdx, 0));
+            ids[0] = i + 1;
+
+            valueIds[0] = internalIdx;
+
+            res.set(ids, VvecCplx.get(valueIds));
+
+            res.setImag(ids, VvecCplx.getImag(valueIds));
 
         }
 
-        return basicComplexMatrixBuilder.build();
+        return res;
 
     }
 
-    public BasicMatrix getdSbDvaCplx() {
+    public MWNumericArray getdSbDvaCplx() {
         return dSbDvaCplx;
     }
 
-    public BasicMatrix getdSbDvmCplx() {
+    public MWNumericArray getdSbDvmCplx() {
         return dSbDvmCplx;
     }
 

@@ -1,3 +1,3 @@
 function y=diagonal(x)
 
-y=diag(x);
+y=sparse(diag(x));

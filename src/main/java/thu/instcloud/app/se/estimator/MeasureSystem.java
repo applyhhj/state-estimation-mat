@@ -313,21 +313,21 @@ public class MeasureSystem {
         stateFullIds.clear();
 
 //        matlab index start from 1
-        for (int i = 0; i < nz; i++) {
+        for (int i = 1; i <= nz; i++) {
 
-            zFullIds.add(i + 1);
-
-        }
-
-        for (int i = 0; i < nb; i++) {
-
-            VbusFullIds.add(i + 1);
+            zFullIds.add(i);
 
         }
 
-        for (int i = 0; i < 2 * nb; i++) {
+        for (int i = 1; i <= nb; i++) {
 
-            stateFullIds.add(i + 1);
+            VbusFullIds.add(i);
+
+        }
+
+        for (int i = 1; i <= 2 * nb; i++) {
+
+            stateFullIds.add(i);
 
         }
 
@@ -337,7 +337,12 @@ public class MeasureSystem {
 
         List<Integer> ret = new ArrayList<Integer>();
 
-        for (Integer idx : fullIds) {
+        int idx;
+
+//        make sure all ids are in ascending order
+        for (int i = 0; i < fullIds.size(); i++) {
+
+            idx = fullIds.get(i);
 
             if (!excIds.contains(idx)) {
 

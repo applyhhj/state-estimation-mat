@@ -66,13 +66,17 @@ public class PowerSystem {
 //        flat start, include reference bus
         int[] dims = {mpData.getnBus(), 1};
 
+        int[] idx = {1, 1};
+
         state = MWNumericArray.newInstance(dims, MWClassID.DOUBLE, MWComplexity.COMPLEX);
 
         for (int i = 0; i < mpData.getnBus(); i++) {
 
-            state.set(i + 1, 1);
+            idx[0] = i + 1;
 
-            state.setImag(i + 1, 0);
+            state.set(idx, 1);
+
+            state.setImag(idx, 0);
 
         }
 

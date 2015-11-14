@@ -3,6 +3,7 @@ package thu.instcloud.app.se.common;
 import MatOperation.MatOperation;
 import com.mathworks.toolbox.javabuilder.MWException;
 import com.mathworks.toolbox.javabuilder.MWNumericArray;
+import org.omg.CORBA.OBJ_ADAPTER;
 
 import static thu.instcloud.app.se.common.Utils.Mat.getMatOperation;
 
@@ -22,9 +23,21 @@ public class OperationChain {
 
     }
 
-    public OperationChain(MWNumericArray array){
+    public OperationChain(Object array) {
 
-        this.array=array;
+        MWNumericArray arg;
+
+        if (array instanceof OperationChain) {
+
+            arg = ((OperationChain) array).getArray();
+
+        } else {
+
+            arg = (MWNumericArray) array;
+
+        }
+
+        this.array = arg;
 
         if (operation==null){
 
@@ -60,8 +73,20 @@ public class OperationChain {
 
     public OperationChain subtract(Object array1) {
 
+        Object arg;
+
+        if (array1 instanceof OperationChain) {
+
+            arg = ((OperationChain) array1).getArray();
+
+        } else {
+
+            arg = array1;
+
+        }
+
         try {
-            array=(MWNumericArray)operation.substract(1,array,array1)[0];
+            array = (MWNumericArray) operation.substract(1, array, arg)[0];
         } catch (MWException e) {
             e.printStackTrace();
         }
@@ -71,9 +96,19 @@ public class OperationChain {
     }
 
     public OperationChain add(Object array1) {
+        Object arg;
 
+        if (array1 instanceof OperationChain) {
+
+            arg = ((OperationChain) array1).getArray();
+
+        } else {
+
+            arg = array1;
+
+        }
         try {
-            array=(MWNumericArray)operation.add(1,array,array1)[0];
+            array = (MWNumericArray) operation.add(1, array, arg)[0];
         } catch (MWException e) {
             e.printStackTrace();
         }
@@ -83,9 +118,19 @@ public class OperationChain {
     }
 
     public OperationChain multiply(Object array1) {
+        Object arg;
 
+        if (array1 instanceof OperationChain) {
+
+            arg = ((OperationChain) array1).getArray();
+
+        } else {
+
+            arg = array1;
+
+        }
         try {
-            array = (MWNumericArray) operation.multiply(1, array, array1)[0];
+            array = (MWNumericArray) operation.multiply(1, array, arg)[0];
         } catch (MWException e) {
             e.printStackTrace();
         }
@@ -118,10 +163,22 @@ public class OperationChain {
 
     }
 
-    public OperationChain multiplyByElement(MWNumericArray array1){
+    public OperationChain multiplyByElement(Object array1) {
+
+        Object arg;
+
+        if (array1 instanceof OperationChain) {
+
+            arg = ((OperationChain) array1).getArray();
+
+        } else {
+
+            arg = array1;
+
+        }
 
         try {
-            array=(MWNumericArray)operation.multiplyByElement(1,array,array1)[0];
+            array = (MWNumericArray) operation.multiplyByElement(1, array, arg)[0];
         } catch (MWException e) {
             e.printStackTrace();
         }
@@ -154,13 +211,25 @@ public class OperationChain {
 
     }
 
-    public OperationChain mergeRow(MWNumericArray... arrays) {
+    public OperationChain mergeRow(Object... arrays) {
+
+        Object arg;
 
         try {
 
             for (int i = 0; i < arrays.length; i++) {
 
-                array = (MWNumericArray) operation.mergeRow(1, array, arrays[i])[0];
+                if (arrays[i] instanceof OperationChain) {
+
+                    arg = ((OperationChain) arrays[i]).getArray();
+
+                } else {
+
+                    arg = arrays[i];
+
+                }
+
+                array = (MWNumericArray) operation.mergeRow(1, array, arg)[0];
 
             }
 
@@ -172,12 +241,22 @@ public class OperationChain {
 
     }
 
-    public OperationChain mergeColumn(MWNumericArray... arrays) {
+    public OperationChain mergeColumn(Object... arrays) {
+
+        Object arg;
 
         try {
             for (int i = 0; i < arrays.length; i++) {
+                if (arrays[i] instanceof OperationChain) {
 
-                array = (MWNumericArray) operation.mergeColumn(1, array, arrays[i])[0];
+                    arg = ((OperationChain) arrays[i]).getArray();
+
+                } else {
+
+                    arg = arrays[i];
+
+                }
+                array = (MWNumericArray) operation.mergeColumn(1, array, arg)[0];
 
             }
         } catch (MWException e) {
@@ -200,11 +279,23 @@ public class OperationChain {
 
     }
 
+    public OperationChain angleR() {
+
+        try {
+            array = (MWNumericArray) operation.angleJ(1, array)[0];
+        } catch (MWException e) {
+            e.printStackTrace();
+        }
+
+        return this;
+
+    }
+
     public OperationChain clone() {
 
         OperationChain operationChain = null;
         try {
-            operationChain = new OperationChain((MWNumericArray) this.array.clone());
+            operationChain = new OperationChain(this.array.clone());
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
         }
@@ -245,7 +336,145 @@ public class OperationChain {
         return this;
     }
 
+    public OperationChain diagonal() {
+
+        try {
+            array = (MWNumericArray) operation.diagonal(1, array)[0];
+        } catch (MWException e) {
+            e.printStackTrace();
+        }
+
+        return this;
+
+    }
+
+    public OperationChain invert() {
+
+        try {
+            array = (MWNumericArray) operation.invert(1, array)[0];
+        } catch (MWException e) {
+            e.printStackTrace();
+        }
+
+        return this;
+
+    }
+
+    public OperationChain divideByElement(Object array1) {
+        Object arg;
+
+        if (array1 instanceof OperationChain) {
+
+            arg = ((OperationChain) array1).getArray();
+
+        } else {
+
+            arg = array1;
+
+        }
+        try {
+            array = (MWNumericArray) operation.divideByElement(1, array, arg)[0];
+        } catch (MWException e) {
+            e.printStackTrace();
+        }
+
+        return this;
+
+    }
+
+    public OperationChain norm() {
+
+        try {
+            array = (MWNumericArray) operation.normJ(1, array)[0];
+        } catch (MWException e) {
+            e.printStackTrace();
+        }
+
+        return this;
+
+    }
+
+    public OperationChain multiplyI() {
+
+        try {
+            array = (MWNumericArray) operation.multiplyI(1, array)[0];
+        } catch (MWException e) {
+            e.printStackTrace();
+        }
+
+        return this;
+
+    }
+
+    public OperationChain sparseMatrix(Object is, Object js, Object vals, int rows, int cols) {
+
+        try {
+            array = (MWNumericArray) operation.sparseMatrix(1, is, js, vals, rows, cols)[0];
+        } catch (MWException e) {
+            e.printStackTrace();
+        }
+
+        return this;
+
+    }
+
+    public OperationChain selectRows(Object list) {
+
+        try {
+            array = (MWNumericArray) operation.selectRows(1, array, list)[0];
+        } catch (MWException e) {
+            e.printStackTrace();
+        }
+
+        return this;
+
+    }
+
+    public OperationChain selectColumns(Object list) {
+
+        try {
+            array = (MWNumericArray) operation.selectColumns(1, array, list)[0];
+        } catch (MWException e) {
+            e.printStackTrace();
+        }
+
+        return this;
+
+    }
+
+    public OperationChain selectSubMatrix(Object rowIds, Object colIds) {
+
+        try {
+            array = (MWNumericArray) operation.selectRows(1, array, rowIds)[0];
+            array = (MWNumericArray) operation.selectRows(1, array, colIds)[0];
+        } catch (MWException e) {
+            e.printStackTrace();
+        }
+
+        return this;
+
+    }
+
+    public OperationChain maxIn2D() {
+
+        try {
+            array = (MWNumericArray) operation.maxJ(1, array)[0];
+        } catch (MWException e) {
+            e.printStackTrace();
+        }
+
+        return this;
+
+    }
+
     public MWNumericArray getArray() {
         return array;
+    }
+
+    public OperationChain setArray(MWNumericArray array) {
+
+        this.array = array;
+
+        return this;
     }
 }
