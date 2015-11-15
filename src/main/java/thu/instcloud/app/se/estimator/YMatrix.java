@@ -145,8 +145,8 @@ public class YMatrix {
         getYSparseSh();
 
         Ybus=new OperationChain(cf).transpose().multiply(Yf).add(
-                new OperationChain(ct).transpose().multiply(Yt).getArray()
-        ).add(YSh).toSparse().getArray();
+                new OperationChain(ct).transpose().multiply(Yt))
+                .add(YSh).toSparse().getArray();
 
     }
 

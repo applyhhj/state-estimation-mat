@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import static thu.instcloud.app.se.common.Utils.Common.getContinuousIds;
+import static thu.instcloud.app.se.common.Utils.Mat.disposeMatrix;
 import static thu.instcloud.app.se.common.Utils.Mat.toMeasurementVector;
 
 /**
@@ -21,6 +22,12 @@ import static thu.instcloud.app.se.common.Utils.Mat.toMeasurementVector;
 public class Estimator {
 
     private static Logger logger = LoggerFactory.getLogger(Estimator.class);
+
+    private MWNumericArray Vs;
+
+    private MWNumericArray Yf;
+
+    private MWNumericArray Yt;
 
     private MWNumericArray dSbDvmCplx;
 
@@ -67,6 +74,12 @@ public class Estimator {
     public Estimator(PowerSystem powerSystem) {
 
         this.powerSystem = powerSystem;
+
+        Yf = powerSystem.getyMatrix().getYf();
+
+        Yt = powerSystem.getyMatrix().getYt();
+
+        Vs = powerSystem.getState();
 
         computeDSbusDv();
 
@@ -136,27 +149,27 @@ public class Estimator {
 
             while (!converged && i++ < maxIt) {
 
-                MWNumericArray b = singleOp.setArray(HH).transpose().multiply(WWInv).multiply(ddeltz).getArray();
+                MWNumericArray b = singleOp.setArrayClone(HH).transpose().multiply(WWInv).multiply(ddeltz).getArray();
 
-                MWNumericArray A = singleOp.setArray(HH).transpose().multiply(WWInv).multiply(HH).getArray();
+                MWNumericArray A = singleOp.setArrayClone(HH).transpose().multiply(WWInv).multiply(HH).getArray();
 
-                MWNumericArray dx = singleOp.setArray(A).solveLinear(b).getArray();
+                MWNumericArray dx = singleOp.setArrayClone(A).solveLinear(b).getArray();
 
-                VVsa = singleOp.setArray(VVsa).add(getDdxa(dx)).getArray();
+                VVsa = singleOp.setArrayClone(VVsa).add(getDdxa(dx)).getArray();
 
-                VVsm = singleOp.setArray(VVsm).add(getDdxm(dx)).getArray();
+                VVsm = singleOp.setArrayClone(VVsm).add(getDdxm(dx)).getArray();
 
                 refreshState(powerSystem, VVsa, VVsm, powerSystem.getMeasureSystem().getVbusIds());
 
                 zestReal = computeEstimatedMeasurement(powerSystem);
 
-                deltzReal = singleOp.setArray(powerSystem.getMeasureSystem().getZmReal()).subtract(zestReal).getArray();
+                deltzReal = singleOp.setArrayClone(powerSystem.getMeasureSystem().getZmReal()).subtract(zestReal).getArray();
 
                 ddeltz = getDdeltz(deltzReal);
 
-                normFReal = singleOp.setArray(ddeltz).transpose().multiply(WWInv).multiply(ddeltz).getArray();
+                normFReal = singleOp.setArrayClone(ddeltz).transpose().multiply(WWInv).multiply(ddeltz).getArray();
 
-                MWNumericArray dx2 = singleOp.setArray(dx).transpose().multiply(dx).getArray();
+                MWNumericArray dx2 = singleOp.setArrayClone(dx).transpose().multiply(dx).getArray();
 
                 if (powerSystem.getOption().isVerbose()) {
 
@@ -244,18 +257,18 @@ public class Estimator {
 
         OperationChain op = new OperationChain();
 
-        MWNumericArray WW = op.setArray(WWInv).invert().getArray();
+        MWNumericArray WW = op.setArrayClone(WWInv).invert().getArray();
 
-        MWNumericArray HTWHInv = op.setArray(HH).transpose().multiply(WWInv).multiply(HH).invert().getArray();
+        MWNumericArray HTWHInv = op.setArrayClone(HH).transpose().multiply(WWInv).multiply(HH).invert().getArray();
 
-        MWNumericArray WR = op.setArray(WW).subtract(new OperationChain(HH).multiply(HTWHInv).multiply(
+        MWNumericArray WR = op.setArrayClone(WW).subtract(new OperationChain(HH).multiply(HTWHInv).multiply(
                 new OperationChain(HH).transpose()).multiply(0.95)).getArray();
 
-        MWNumericArray WRInvDiagVec = op.eye(1, 1).divideByElement(new OperationChain(WR).diagonal()).getArray();
+        MWNumericArray WRInvDiagVec = new OperationChain().eye(1, 1).divideByElement(new OperationChain(WR).diagonal()).getArray();
 
-        MWNumericArray rn2 = op.setArray(ddeltz).multiplyByElement(ddeltz).multiplyByElement(WRInvDiagVec).getArray();
+        MWNumericArray rn2 = op.setArrayClone(ddeltz).multiplyByElement(ddeltz).multiplyByElement(WRInvDiagVec).getArray();
 
-        double maxBad = op.setArray(rn2).maxIn2D().getArray().getDouble(1);
+        double maxBad = op.setArrayClone(rn2).maxIn2D().getArray().getDouble(1);
 
         List<Integer> ret = new ArrayList<Integer>();
 
@@ -398,8 +411,6 @@ public class Estimator {
                 powerSystem.getState(),
                 powerSystem.getMpData().getBusData().getTOI());
 
-        MWNumericArray Vs = powerSystem.getState();
-
         MWNumericArray sfe, ste, sbuse;
 
         MWNumericArray Vsa, Vsm;
@@ -417,12 +428,16 @@ public class Estimator {
 
         Vsm = new OperationChain(Vs).abs().getArray();
 
-        return toMeasurementVector(
+        MWNumericArray ret = toMeasurementVector(
                 sfe,
                 ste,
                 sbuse,
                 Vsa,
                 Vsm);
+
+        disposeMatrix(Vsf, Vst, sfe, ste, sbuse, Vsa, Vsm);
+
+        return ret;
 
     }
 
@@ -504,11 +519,12 @@ public class Estimator {
 
         int nb = powerSystem.getMpData().getnBus();
 
-        MWNumericArray eyenb = new OperationChain().eye(nb, nb).getArray();
+//        use OperationChain to dispose matrix automatically
+        OperationChain eyenb = new OperationChain().eye(nb, nb);
 
-        MWNumericArray zeronb = new OperationChain().zeros(nb, nb).getArray();
+        OperationChain zeronb = new OperationChain().zeros(nb, nb);
 
-        MWNumericArray HFRealCol1 = new OperationChain(new OperationChain(dSfDvaCplx).getReal())
+        OperationChain HFRealCol1 = new OperationChain(new OperationChain(dSfDvaCplx).getReal())
                 .mergeColumn(
                         new OperationChain(dStDvaCplx).getReal(),
                         new OperationChain(dSbDvaCplx).getReal(),
@@ -516,9 +532,14 @@ public class Estimator {
                         new OperationChain(dSfDvaCplx).getImag(),
                         new OperationChain(dStDvaCplx).getImag(),
                         new OperationChain(dSbDvaCplx).getImag(),
-                        zeronb).getArray();
+                        zeronb);
 
-        MWNumericArray HFRealCol2 = new OperationChain(new OperationChain(dSfDvmCplx).getReal())
+//        former operation dispose the matrix so we need to recreate the matrix
+        eyenb = new OperationChain().eye(nb, nb);
+
+        zeronb = new OperationChain().zeros(nb, nb);
+
+        OperationChain HFRealCol2 = new OperationChain(new OperationChain(dSfDvmCplx).getReal())
                 .mergeColumn(
                         new OperationChain(dStDvmCplx).getReal(),
                         new OperationChain(dSbDvmCplx).getReal(),
@@ -526,7 +547,7 @@ public class Estimator {
                         new OperationChain(dSfDvmCplx).getImag(),
                         new OperationChain(dStDvmCplx).getImag(),
                         new OperationChain(dSbDvmCplx).getImag(),
-                        eyenb).getArray();
+                        eyenb);
 
         HFReal = new OperationChain(HFRealCol1).mergeRow(HFRealCol2).getArray();
 
@@ -534,11 +555,7 @@ public class Estimator {
 
     private void computeDSbrDv() {
 
-        MWNumericArray Yf, Yt, If, It, IfMatrix, ItMatrix, Vf, Vt, VfNorm, VtNorm, VfMatrix, VtMatrix;
-
-        Yf = powerSystem.getyMatrix().getYf();
-
-        Yt = powerSystem.getyMatrix().getYt();
+        MWNumericArray If, It, IfMatrix, ItMatrix, Vf, Vt, VfNorm, VtNorm, VfMatrix, VtMatrix;
 
         If = new OperationChain(Yf).multiply(VpfCplx).getArray();
 
@@ -593,8 +610,9 @@ public class Estimator {
         VNbrNbNormT = new OperationChain().sparseMatrix(idxBranch, idxBusTInter, VtNorm, NBranch, NBus).getArray();
 
         dSfDvaCplx = new OperationChain(IfMatrix).conj().multiply(VNbrNbF).subtract(
-                new OperationChain(VfMatrix).multiply(new OperationChain(Yf).multiply(VpfMatrixCplx).conj().getArray()).getArray())
-                .multiplyI().getArray();
+                new OperationChain(VfMatrix).multiply(
+                        new OperationChain(Yf).multiply(VpfMatrixCplx).conj())
+        ).multiplyI().getArray();
 
         dSfDvmCplx = new OperationChain(VfMatrix).multiply(new OperationChain(Yf).multiply(VpfNormMatrixCplx).conj())
                 .add(new OperationChain(IfMatrix).conj().multiply(VNbrNbNormF)).getArray();
@@ -610,6 +628,9 @@ public class Estimator {
 
         StCplx = new OperationChain(Vt).multiplyByElement(new OperationChain(It).conj()).getArray();
 
+        disposeMatrix(If, It, IfMatrix, ItMatrix, Vf, Vt, VfNorm, VtNorm, VfMatrix, VtMatrix,
+                VNbrNbF, VNbrNbT, VNbrNbNormF, VNbrNbNormT);
+
     }
 
     private void computeDSbusDv() {
@@ -623,24 +644,28 @@ public class Estimator {
         VpfMatrixCplx = new OperationChain(VpfCplx).diagonal().getArray();
 
         IbusMatrix = new OperationChain(
-                new OperationChain(powerSystem.getyMatrix().getYbus()).multiply(VpfCplx).getArray())
+                new OperationChain(powerSystem.getyMatrix().getYbus()).multiply(VpfCplx))
                 .diagonal().getArray();
 
         VpfNormMatrixCplx = new OperationChain(VpfNormCplx).diagonal().getArray();
 
         dSbDvmCplx = new OperationChain(VpfMatrixCplx).multiply(
-                new OperationChain(powerSystem.getyMatrix().getYbus()).multiply(VpfNormMatrixCplx).conj().getArray())
-                .add(new OperationChain(IbusMatrix).conj().multiply(VpfNormMatrixCplx)).getArray();
+                new OperationChain(powerSystem.getyMatrix().getYbus()).multiply(VpfNormMatrixCplx).conj()
+        ).add(new OperationChain(IbusMatrix).conj().multiply(VpfNormMatrixCplx)).getArray();
 
         dSbDvaCplx = new OperationChain(VpfMatrixCplx).multiplyI().multiply(new OperationChain(IbusMatrix).subtract(
-                new OperationChain(powerSystem.getyMatrix().getYbus()).multiply(VpfMatrixCplx).getArray()
-        ).conj().getArray()).getArray();
+                new OperationChain(powerSystem.getyMatrix().getYbus()).multiply(VpfMatrixCplx)
+                ).conj()
+        ).getArray();
+
+//        dispose local instance
+        IbusMatrix.dispose();
 
     }
 
     private MWNumericArray computeVnorm(MWNumericArray v) {
 
-        return new OperationChain(v).divideByElement(new OperationChain(v).abs().getArray()).getArray();
+        return new OperationChain(v).divideByElement(new OperationChain(v).abs()).getArray();
 
     }
 

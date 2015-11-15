@@ -122,13 +122,13 @@ public class MeasureSystem {
     private void generateSigma() {
 
         sigmaReal = new OperationChain(sfCplx).abs().multiply(0.02).add(0.0052 * fullscale).mergeColumn(
-                new OperationChain(stCplx).abs().multiply(0.02).add(0.0052 * fullscale).getArray(),
-                new OperationChain(sbusCplx).abs().multiply(0.02).add(0.0052 * fullscale).getArray(),
-                new OperationChain().ones(powerSystem.getMpData().getnBus(), 1).multiply(0.2 * Math.PI / 180 * 3).getArray(),
-                new OperationChain(sfCplx).abs().multiply(0.02).add(0.0052 * fullscale).getArray(),
-                new OperationChain(stCplx).abs().multiply(0.02).add(0.0052 * fullscale).getArray(),
-                new OperationChain(sbusCplx).abs().multiply(0.02).add(0.0052 * fullscale).getArray(),
-                new OperationChain(VpfmReal).multiply(0.02).add(0.0052 * 1.1).getArray()).multiply(1 / 3.0).getArray();
+                new OperationChain(stCplx).abs().multiply(0.02).add(0.0052 * fullscale),
+                new OperationChain(sbusCplx).abs().multiply(0.02).add(0.0052 * fullscale),
+                new OperationChain().ones(powerSystem.getMpData().getnBus(), 1).multiply(0.2 * Math.PI / 180 * 3),
+                new OperationChain(sfCplx).abs().multiply(0.02).add(0.0052 * fullscale),
+                new OperationChain(stCplx).abs().multiply(0.02).add(0.0052 * fullscale),
+                new OperationChain(sbusCplx).abs().multiply(0.02).add(0.0052 * fullscale),
+                new OperationChain(VpfmReal).multiply(0.02).add(0.0052 * 1.1)).multiply(1 / 3.0).getArray();
 
     }
 

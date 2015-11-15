@@ -67,7 +67,7 @@ public class PowerFlow {
     private void computeSbus() {
 
         Sbus=new OperationChain(V).multiplyByElement(
-                new OperationChain(yMatrix.getYbus()).multiply(V).conj().getArray()
+                new OperationChain(yMatrix.getYbus()).multiply(V).conj()
         ).getArray();
 
     }
@@ -80,6 +80,8 @@ public class PowerFlow {
         double vm, va;
 
         int[] dims={nb,1};
+
+        int[] ids = {1, 1};
 
         Vm=MWNumericArray.newInstance(dims, MWClassID.DOUBLE,MWComplexity.REAL);
 
@@ -96,13 +98,15 @@ public class PowerFlow {
             va = mpData.getBusData().getAngle()[idx];
 
 //            convert to internal bus number
-            Vm.set(i+1,vm);
+            ids[0] = i + 1;
 
-            Va.set(i+1,va);
+            Vm.set(ids, vm);
 
-            V.set(i+1,vm * Math.cos(va));
+            Va.set(ids, va);
 
-            V.setImag(i+1,vm * Math.sin(va));
+            V.set(ids, vm * Math.cos(va));
+
+            V.setImag(ids, vm * Math.sin(va));
 
         }
 

@@ -105,6 +105,20 @@ public class Utils {
 
         private static MatOperation matOperation=null;
 
+        public static void disposeMatrix(Object... vars) {
+
+            for (Object var : vars) {
+
+                if (var instanceof MWNumericArray) {
+
+                    ((MWNumericArray) var).dispose();
+
+                }
+
+            }
+
+        }
+
         public static MatOperation getMatOperation(){
 
             if (matOperation==null){
@@ -134,7 +148,21 @@ public class Utils {
 
             OperationChain si = s.getImag();
 
-            return sr.mergeColumn(Va_).mergeColumn(si.getArray()).mergeColumn(Vm_).getArray();
+            MWNumericArray ret = null;
+            try {
+                ret = (MWNumericArray) sr.mergeColumn(Va_).mergeColumn(si.getArray()).mergeColumn(Vm_)
+                        .getArray().clone();
+            } catch (CloneNotSupportedException e) {
+                e.printStackTrace();
+            }
+
+            s.dispose();
+
+            sr.dispose();
+
+            si.dispose();
+
+            return ret;
 
         }
 

@@ -3,7 +3,6 @@ package thu.instcloud.app.se.common;
 import MatOperation.MatOperation;
 import com.mathworks.toolbox.javabuilder.MWException;
 import com.mathworks.toolbox.javabuilder.MWNumericArray;
-import org.omg.CORBA.OBJ_ADAPTER;
 
 import static thu.instcloud.app.se.common.Utils.Mat.getMatOperation;
 
@@ -14,17 +13,41 @@ public class OperationChain {
 
 //    currently we use a static operation in all operation chain instances, in such way we can reduce the time for
 //    initializing the operation instance. However, synchronization can be a problem.
+
+    //    remember all operations except getArray and setArrayClone will dispose the original matrix
     private static MatOperation operation;
 
     private MWNumericArray array;
 
     public OperationChain() {
 
-        this(null);
+    }
+
+    //    By default if array is instance of OperationChain we will dispose array after it is changed
+    public OperationChain(Object array) {
+
+        this();
+
+        if (array instanceof OperationChain) {
+
+            newOperationChain(array, false);
+
+        } else {
+
+            newOperationChain(array, true);
+
+        }
 
     }
 
-    public OperationChain(Object array) {
+    public OperationChain(Object array, boolean clone) {
+
+        newOperationChain(array, clone);
+
+    }
+
+    //    if clone is false array will be disposed after operation
+    public void newOperationChain(Object array, boolean clone) {
 
         MWNumericArray arg;
 
@@ -38,7 +61,21 @@ public class OperationChain {
 
         }
 
-        this.array = arg;
+        try {
+
+            if (clone) {
+
+                this.array = (MWNumericArray) arg.clone();
+
+            } else {
+
+                this.array = arg;
+
+            }
+
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
 
         if (operation==null){
 
@@ -51,7 +88,7 @@ public class OperationChain {
     public OperationChain transpose(){
 
         try {
-            array=(MWNumericArray)operation.transposeJ(1,array)[0];
+            clearSetArray((MWNumericArray) operation.transposeJ(1, array)[0]);
         } catch (MWException e) {
             e.printStackTrace();
         }
@@ -63,7 +100,7 @@ public class OperationChain {
     public OperationChain toSparse(){
 
         try {
-            array=(MWNumericArray)operation.toSparse(1,array)[0];
+            clearSetArray((MWNumericArray) operation.toSparse(1, array)[0]);
         } catch (MWException e) {
             e.printStackTrace();
         }
@@ -72,7 +109,21 @@ public class OperationChain {
 
     }
 
+    //    default not dispose
     public OperationChain subtract(Object array1) {
+
+//        if array1 is instance of OperationChain we assume it is a intermediate operand and dispose it automatically
+        if (array1 instanceof OperationChain) {
+
+            return subtract(array1, true);
+
+        }
+
+        return subtract(array1, false);
+
+    }
+
+    public OperationChain subtract(Object array1, boolean dispose) {
 
         Object arg;
 
@@ -87,9 +138,15 @@ public class OperationChain {
         }
 
         try {
-            array = (MWNumericArray) operation.substract(1, array, arg)[0];
+            clearSetArray((MWNumericArray) operation.substract(1, array, arg)[0]);
         } catch (MWException e) {
             e.printStackTrace();
+        }
+
+        if (dispose && arg instanceof MWNumericArray) {
+
+            ((MWNumericArray) arg).dispose();
+
         }
 
         return this;
@@ -97,6 +154,18 @@ public class OperationChain {
     }
 
     public OperationChain add(Object array1) {
+
+        if (array1 instanceof OperationChain) {
+
+            return add(array1, true);
+
+        }
+
+        return add(array1, false);
+
+    }
+
+    public OperationChain add(Object array1, boolean dispose) {
         Object arg;
 
         if (array1 instanceof OperationChain) {
@@ -109,9 +178,15 @@ public class OperationChain {
 
         }
         try {
-            array = (MWNumericArray) operation.add(1, array, arg)[0];
+            clearSetArray((MWNumericArray) operation.add(1, array, arg)[0]);
         } catch (MWException e) {
             e.printStackTrace();
+        }
+
+        if (dispose && arg instanceof MWNumericArray) {
+
+            ((MWNumericArray) arg).dispose();
+
         }
 
         return this;
@@ -119,6 +194,17 @@ public class OperationChain {
     }
 
     public OperationChain multiply(Object array1) {
+
+        if (array1 instanceof OperationChain) {
+
+            return multiply(array1, true);
+
+        }
+        return multiply(array1, false);
+
+    }
+
+    public OperationChain multiply(Object array1, boolean dispose) {
         Object arg;
 
         if (array1 instanceof OperationChain) {
@@ -131,21 +217,55 @@ public class OperationChain {
 
         }
         try {
-            array = (MWNumericArray) operation.multiply(1, array, arg)[0];
+            clearSetArray((MWNumericArray) operation.multiply(1, array, arg)[0]);
         } catch (MWException e) {
             e.printStackTrace();
+        }
+
+        if (dispose && arg instanceof MWNumericArray) {
+
+            ((MWNumericArray) arg).dispose();
+
         }
 
         return this;
 
     }
 
-    public OperationChain solveLinear(MWNumericArray b){
+    public OperationChain solveLinear(Object array1) {
+        if (array1 instanceof OperationChain) {
+
+            return solveLinear(array1, true);
+
+        }
+        return solveLinear(array1, false);
+
+    }
+
+    public OperationChain solveLinear(Object b, boolean dispose) {
+
+        Object arg;
+
+        if (b instanceof OperationChain) {
+
+            arg = ((OperationChain) b).getArray();
+
+        } else {
+
+            arg = b;
+
+        }
 
         try {
-            array=(MWNumericArray)operation.solveLinear(1,array,b)[0];
+            clearSetArray((MWNumericArray) operation.solveLinear(1, array, arg)[0]);
         } catch (MWException e) {
             e.printStackTrace();
+        }
+
+        if (dispose && arg instanceof MWNumericArray) {
+
+            ((MWNumericArray) arg).dispose();
+
         }
 
         return this;
@@ -155,7 +275,7 @@ public class OperationChain {
     public OperationChain conj(){
 
         try {
-            array=(MWNumericArray)operation.conjugate(1,array)[0];
+            clearSetArray((MWNumericArray) operation.conjugate(1, array)[0]);
         } catch (MWException e) {
             e.printStackTrace();
         }
@@ -165,6 +285,16 @@ public class OperationChain {
     }
 
     public OperationChain multiplyByElement(Object array1) {
+        if (array1 instanceof OperationChain) {
+
+            return multiplyByElement(array1, true);
+
+        }
+        return multiplyByElement(array1, false);
+
+    }
+
+    public OperationChain multiplyByElement(Object array1, boolean dispose) {
 
         Object arg;
 
@@ -179,9 +309,15 @@ public class OperationChain {
         }
 
         try {
-            array = (MWNumericArray) operation.multiplyByElement(1, array, arg)[0];
+            clearSetArray((MWNumericArray) operation.multiplyByElement(1, array, arg)[0]);
         } catch (MWException e) {
             e.printStackTrace();
+        }
+
+        if (dispose && arg instanceof MWNumericArray) {
+
+            ((MWNumericArray) arg).dispose();
+
         }
 
         return this;
@@ -191,7 +327,7 @@ public class OperationChain {
     public OperationChain getReal() {
 
         try {
-            array = (MWNumericArray) operation.getReal(1, array)[0];
+            clearSetArray((MWNumericArray) operation.getReal(1, array)[0]);
         } catch (MWException e) {
             e.printStackTrace();
         }
@@ -203,7 +339,7 @@ public class OperationChain {
     public OperationChain getImag() {
 
         try {
-            array = (MWNumericArray) operation.getImag(1, array)[0];
+            clearSetArray((MWNumericArray) operation.getImag(1, array)[0]);
         } catch (MWException e) {
             e.printStackTrace();
         }
@@ -212,7 +348,23 @@ public class OperationChain {
 
     }
 
+    //    only when all arrays are OperationChain we dispose automatically
     public OperationChain mergeRow(Object... arrays) {
+
+        for (Object array : arrays) {
+
+            if (!(array instanceof OperationChain)) {
+
+                return mergeRow(false, arrays);
+
+            }
+
+        }
+
+        return mergeRow(true, arrays);
+    }
+
+    public OperationChain mergeRow(boolean dispose, Object... arrays) {
 
         Object arg;
 
@@ -230,7 +382,13 @@ public class OperationChain {
 
                 }
 
-                array = (MWNumericArray) operation.mergeRow(1, array, arg)[0];
+                clearSetArray((MWNumericArray) operation.mergeRow(1, array, arg)[0]);
+
+                if (dispose && arg instanceof MWNumericArray) {
+
+                    ((MWNumericArray) arg).dispose();
+
+                }
 
             }
 
@@ -242,7 +400,24 @@ public class OperationChain {
 
     }
 
+    //    only when all arrays are OperationChain we dispose automatically
     public OperationChain mergeColumn(Object... arrays) {
+
+        for (Object array : arrays) {
+
+            if (!(array instanceof OperationChain)) {
+
+                return mergeColumn(false, arrays);
+
+            }
+
+        }
+
+        return mergeColumn(true, arrays);
+
+    }
+
+    public OperationChain mergeColumn(boolean dispose, Object... arrays) {
 
         Object arg;
 
@@ -257,7 +432,14 @@ public class OperationChain {
                     arg = arrays[i];
 
                 }
-                array = (MWNumericArray) operation.mergeColumn(1, array, arg)[0];
+
+                clearSetArray((MWNumericArray) operation.mergeColumn(1, array, arg)[0]);
+
+                if (dispose && arg instanceof MWNumericArray) {
+
+                    ((MWNumericArray) arg).dispose();
+
+                }
 
             }
         } catch (MWException e) {
@@ -271,7 +453,7 @@ public class OperationChain {
     public OperationChain abs() {
 
         try {
-            array = (MWNumericArray) operation.absJ(1, array)[0];
+            clearSetArray((MWNumericArray) operation.absJ(1, array)[0]);
         } catch (MWException e) {
             e.printStackTrace();
         }
@@ -283,7 +465,7 @@ public class OperationChain {
     public OperationChain angleR() {
 
         try {
-            array = (MWNumericArray) operation.angleJ(1, array)[0];
+            clearSetArray((MWNumericArray) operation.angleJ(1, array)[0]);
         } catch (MWException e) {
             e.printStackTrace();
         }
@@ -294,12 +476,9 @@ public class OperationChain {
 
     public OperationChain clone() {
 
-        OperationChain operationChain = null;
-        try {
-            operationChain = new OperationChain(this.array.clone());
-        } catch (CloneNotSupportedException e) {
-            e.printStackTrace();
-        }
+        OperationChain operationChain;
+
+        operationChain = new OperationChain(this.array);
 
         return operationChain;
 
@@ -308,7 +487,7 @@ public class OperationChain {
     public OperationChain ones(int r, int c) {
 
         try {
-            array = (MWNumericArray) operation.onesJ(1, r, c)[0];
+            clearSetArray((MWNumericArray) operation.onesJ(1, r, c)[0]);
         } catch (MWException e) {
             e.printStackTrace();
         }
@@ -319,7 +498,7 @@ public class OperationChain {
 
     public OperationChain zeros(int r, int c) {
         try {
-            array = (MWNumericArray) operation.zerosJ(1, r, c)[0];
+            clearSetArray((MWNumericArray) operation.zerosJ(1, r, c)[0]);
         } catch (MWException e) {
             e.printStackTrace();
         }
@@ -329,7 +508,7 @@ public class OperationChain {
 
     public OperationChain eye(int r, int c) {
         try {
-            array = (MWNumericArray) operation.eyeJ(1, r, c)[0];
+            clearSetArray((MWNumericArray) operation.eyeJ(1, r, c)[0]);
         } catch (MWException e) {
             e.printStackTrace();
         }
@@ -340,7 +519,7 @@ public class OperationChain {
     public OperationChain diagonal() {
 
         try {
-            array = (MWNumericArray) operation.diagonal(1, array)[0];
+            clearSetArray((MWNumericArray) operation.diagonal(1, array)[0]);
         } catch (MWException e) {
             e.printStackTrace();
         }
@@ -352,7 +531,7 @@ public class OperationChain {
     public OperationChain invert() {
 
         try {
-            array = (MWNumericArray) operation.invert(1, array)[0];
+            clearSetArray((MWNumericArray) operation.invert(1, array)[0]);
         } catch (MWException e) {
             e.printStackTrace();
         }
@@ -362,6 +541,17 @@ public class OperationChain {
     }
 
     public OperationChain divideByElement(Object array1) {
+        if (array1 instanceof OperationChain) {
+
+            return divideByElement(array1, true);
+
+        }
+        return divideByElement(array1, false);
+
+    }
+
+    public OperationChain divideByElement(Object array1, boolean dispose) {
+
         Object arg;
 
         if (array1 instanceof OperationChain) {
@@ -374,9 +564,15 @@ public class OperationChain {
 
         }
         try {
-            array = (MWNumericArray) operation.divideByElement(1, array, arg)[0];
+            clearSetArray((MWNumericArray) operation.divideByElement(1, array, arg)[0]);
         } catch (MWException e) {
             e.printStackTrace();
+        }
+
+        if (dispose && arg instanceof MWNumericArray) {
+
+            ((MWNumericArray) arg).dispose();
+
         }
 
         return this;
@@ -386,7 +582,7 @@ public class OperationChain {
     public OperationChain norm() {
 
         try {
-            array = (MWNumericArray) operation.normJ(1, array)[0];
+            clearSetArray((MWNumericArray) operation.normJ(1, array)[0]);
         } catch (MWException e) {
             e.printStackTrace();
         }
@@ -398,7 +594,7 @@ public class OperationChain {
     public OperationChain multiplyI() {
 
         try {
-            array = (MWNumericArray) operation.multiplyI(1, array)[0];
+            clearSetArray((MWNumericArray) operation.multiplyI(1, array)[0]);
         } catch (MWException e) {
             e.printStackTrace();
         }
@@ -410,7 +606,7 @@ public class OperationChain {
     public OperationChain sparseMatrix(double[] idouble, double[] jdouble, Object valdouble, double rows, double cols) {
 
         try {
-            array = (MWNumericArray) operation.sparseMatrix(1, idouble, jdouble, valdouble, rows, cols)[0];
+            clearSetArray((MWNumericArray) operation.sparseMatrix(1, idouble, jdouble, valdouble, rows, cols)[0]);
         } catch (MWException e) {
             e.printStackTrace();
         }
@@ -419,10 +615,11 @@ public class OperationChain {
 
     }
 
+    //    input should be array
     public OperationChain selectRows(Object list) {
 
         try {
-            array = (MWNumericArray) operation.selectRows(1, array, list)[0];
+            clearSetArray((MWNumericArray) operation.selectRows(1, array, list)[0]);
         } catch (MWException e) {
             e.printStackTrace();
         }
@@ -434,7 +631,7 @@ public class OperationChain {
     public OperationChain selectColumns(Object list) {
 
         try {
-            array = (MWNumericArray) operation.selectColumns(1, array, list)[0];
+            clearSetArray((MWNumericArray) operation.selectColumns(1, array, list)[0]);
         } catch (MWException e) {
             e.printStackTrace();
         }
@@ -446,8 +643,8 @@ public class OperationChain {
     public OperationChain selectSubMatrix(Object rowIds, Object colIds) {
 
         try {
-            array = (MWNumericArray) operation.selectRows(1, array, rowIds)[0];
-            array = (MWNumericArray) operation.selectColumns(1, array, colIds)[0];
+            clearSetArray((MWNumericArray) operation.selectRows(1, array, rowIds)[0]);
+            clearSetArray((MWNumericArray) operation.selectColumns(1, array, colIds)[0]);
         } catch (MWException e) {
             e.printStackTrace();
         }
@@ -459,7 +656,7 @@ public class OperationChain {
     public OperationChain maxIn2D() {
 
         try {
-            array = (MWNumericArray) operation.maxJ(1, array)[0];
+            clearSetArray((MWNumericArray) operation.maxJ(1, array)[0]);
         } catch (MWException e) {
             e.printStackTrace();
         }
@@ -472,10 +669,34 @@ public class OperationChain {
         return array;
     }
 
-    public OperationChain setArray(MWNumericArray array) {
+    private void clearSetArray(MWNumericArray array) {
+
+        if (this.array != null) {
+
+//            MWNumericArray can not be collected by garbage collector, we need to dispose it manually
+            this.array.dispose();
+
+        }
 
         this.array = array;
 
+    }
+
+    public OperationChain setArrayClone(MWNumericArray array) {
+//      to avoid further operation to dispose the matrix
+        try {
+            this.array = (MWNumericArray) array.clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+
         return this;
+
+    }
+
+    public void dispose() {
+
+        array.dispose();
+
     }
 }
