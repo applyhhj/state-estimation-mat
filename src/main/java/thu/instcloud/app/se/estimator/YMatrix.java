@@ -1,9 +1,6 @@
 package thu.instcloud.app.se.estimator;
 
-import MatOperation.MatOperation;
 import com.mathworks.toolbox.javabuilder.MWClassID;
-import com.mathworks.toolbox.javabuilder.MWComplexity;
-import com.mathworks.toolbox.javabuilder.MWException;
 import com.mathworks.toolbox.javabuilder.MWNumericArray;
 import thu.instcloud.app.se.common.ComplexNumber;
 import thu.instcloud.app.se.common.OperationChain;
@@ -11,8 +8,6 @@ import thu.instcloud.app.se.mpdata.MPData;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static thu.instcloud.app.se.common.Utils.Mat.getMatOperation;
 
 /**
  * Created on 2015/11/6.
