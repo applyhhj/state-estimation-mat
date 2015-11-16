@@ -59,9 +59,13 @@ public class Estimator {
 
     private PowerSystem powerSystem;
 
+    private List<Integer> zIds;
+
     private boolean converged;
 
     private boolean oneBadAtATime;
+
+    private boolean hasBadData;
 
     private int ibad;
 
@@ -74,6 +78,8 @@ public class Estimator {
     public Estimator(PowerSystem powerSystem) {
 
         this.powerSystem = powerSystem;
+
+        zIds = new ArrayList<Integer>();
 
         Yf = powerSystem.getyMatrix().getYf();
 
@@ -95,31 +101,29 @@ public class Estimator {
 
         badDataThreshold = 6.25;
 
+        converged = false;
+
         print();
 
     }
 
     public void estimate() {
 
+        initEstimator();
+
+        MWNumericArray zestReal, deltzReal, normFReal;
+
         OperationChain singleOp = new OperationChain();
 
-        converged = false;
+        zestReal = computeEstimatedMeasurement(powerSystem, null);
 
-        WInvReal = powerSystem.getMeasureSystem().getWInvReal();
-
-        ibad = 1;
-
-        boolean hasBadData;
-
-        MWNumericArray zestReal = computeEstimatedMeasurement(powerSystem);
-
-        MWNumericArray deltzReal = new OperationChain(powerSystem.getMeasureSystem().getZmReal())
+        deltzReal = new OperationChain(powerSystem.getMeasureSystem().getZmReal())
                 .subtract(zestReal).getArray();
 
-        MWNumericArray normFReal = new OperationChain(deltzReal).transpose()
+        normFReal = new OperationChain(deltzReal).transpose()
                 .multiply(WInvReal).multiply(deltzReal).getArray();
 
-        if (powerSystem.getOption().isVerbose()) {
+        if (powerSystem.getOption().getVerbose() > 0) {
 
             System.out.printf("\n it     norm( F )       step size");
 
@@ -129,6 +133,8 @@ public class Estimator {
 
         }
 
+        disposeMatrix(normFReal);
+
         while (!converged && ibad < maxItBadData) {
 
             hasBadData = false;
@@ -137,7 +143,7 @@ public class Estimator {
 
             MWNumericArray WWInv = getWWInv(WInvReal);
 
-            MWNumericArray ddeltz = getDdeltz(deltzReal);
+            MWNumericArray ddeltz = getDdeltz(deltzReal, null);
 
             MWNumericArray VVs = getVVs(powerSystem.getState());
 
@@ -153,25 +159,27 @@ public class Estimator {
 
                 MWNumericArray A = singleOp.setArrayClone(HH).transpose().multiply(WWInv).multiply(HH).getArray();
 
-                MWNumericArray dx = singleOp.setArrayClone(A).solveLinear(b).getArray();
+                MWNumericArray dx = new OperationChain(A, false).solveLinear(b, true).getArray();
 
-                VVsa = singleOp.setArrayClone(VVsa).add(getDdxa(dx)).getArray();
+                VVsa = new OperationChain(VVsa, false).add(getDdxa(dx)).getArray();
 
-                VVsm = singleOp.setArrayClone(VVsm).add(getDdxm(dx)).getArray();
+                VVsm = new OperationChain(VVsm, false).add(getDdxm(dx)).getArray();
 
                 refreshState(powerSystem, VVsa, VVsm, powerSystem.getMeasureSystem().getVbusIds());
 
-                zestReal = computeEstimatedMeasurement(powerSystem);
+                zestReal = computeEstimatedMeasurement(powerSystem, zestReal);
+
+                deltzReal.dispose();
 
                 deltzReal = singleOp.setArrayClone(powerSystem.getMeasureSystem().getZmReal()).subtract(zestReal).getArray();
 
-                ddeltz = getDdeltz(deltzReal);
-
-                normFReal = singleOp.setArrayClone(ddeltz).transpose().multiply(WWInv).multiply(ddeltz).getArray();
+                ddeltz = getDdeltz(deltzReal, ddeltz);
 
                 MWNumericArray dx2 = singleOp.setArrayClone(dx).transpose().multiply(dx).getArray();
 
-                if (powerSystem.getOption().isVerbose()) {
+                normFReal = singleOp.setArrayClone(ddeltz).transpose().multiply(WWInv).multiply(ddeltz).getArray();
+
+                if (powerSystem.getOption().getVerbose() > 0) {
 
                     System.out.printf("\n%3d    %10.3f      %10.3e", i, normFReal.getDouble(1), dx2.getDouble(1));
 
@@ -181,17 +189,19 @@ public class Estimator {
 
                     converged = true;
 
-                    if (powerSystem.getOption().isVerbose()) {
+                    if (powerSystem.getOption().getVerbose() > 0) {
 
-                        System.out.printf("\nState estimator converged in %d iterations.\n", i);
+                        System.out.printf("\nState estimator converged in %d iterations.", i);
 
                     }
 
                 }
 
+                disposeMatrix(normFReal, dx, dx2);
+
             }
 
-            if (!converged && powerSystem.getOption().isVerbose()) {
+            if (!converged && powerSystem.getOption().getVerbose() >= 0) {
 
                 System.out.printf("\nState estimator did not converged in %d iterations.\n", i);
 
@@ -206,7 +216,7 @@ public class Estimator {
 
                 converged = false;
 
-                updateZIds(baddata, powerSystem.getMeasureSystem().getzIds());
+                updateZIds(baddata);
 
             }
 
@@ -214,7 +224,7 @@ public class Estimator {
 
                 converged = true;
 
-                if (powerSystem.getOption().isVerbose()) {
+                if (powerSystem.getOption().getVerbose() > 0) {
 
                     logger.info("No remaining bad data, after discarding data {} time(s).", ibad - 1);
 
@@ -224,12 +234,28 @@ public class Estimator {
 
             ibad++;
 
+            disposeMatrix(zestReal, HH, WWInv, ddeltz, VVs, VVsa, VVsm);
+
         }
+
+        disposeMatrix(deltzReal);
+
+    }
+
+    private void initEstimator() {
+
+        converged = false;
+
+        ibad = 1;
+
+        zIds.clear();
+
+        zIds.addAll(powerSystem.getMeasureSystem().getzIds());
 
     }
 
     //    WARNNING: all exclude should be sorted in ascending order
-    private void updateZIds(List<Integer> baddata, List<Integer> zIds) {
+    private void updateZIds(List<Integer> baddata) {
 
         List<Integer> ret = new ArrayList<Integer>();
 
@@ -245,9 +271,7 @@ public class Estimator {
 
         }
 
-        zIds.clear();
-
-        zIds.addAll(ret);
+        zIds = ret;
 
     }
 
@@ -255,20 +279,24 @@ public class Estimator {
     private List<Integer> badDataRecognition(MWNumericArray WWInv, MWNumericArray HH, MWNumericArray ddeltz,
                                              boolean oneBadAtATime) {
 
+        MWNumericArray WW, HTWHInv, WR, WRInvDiagVec, rn2, maxBadMat;
+
         OperationChain op = new OperationChain();
 
-        MWNumericArray WW = op.setArrayClone(WWInv).invert().getArray();
+        WW = op.setArrayClone(WWInv).invert().getArray();
 
-        MWNumericArray HTWHInv = op.setArrayClone(HH).transpose().multiply(WWInv).multiply(HH).invert().getArray();
+        HTWHInv = op.setArrayClone(HH).transpose().multiply(WWInv).multiply(HH).invert().getArray();
 
-        MWNumericArray WR = op.setArrayClone(WW).subtract(new OperationChain(HH).multiply(HTWHInv).multiply(
+        WR = op.setArrayClone(WW).subtract(new OperationChain(HH).multiply(HTWHInv).multiply(
                 new OperationChain(HH).transpose()).multiply(0.95)).getArray();
 
-        MWNumericArray WRInvDiagVec = new OperationChain().eye(1, 1).divideByElement(new OperationChain(WR).diagonal()).getArray();
+        WRInvDiagVec = new OperationChain().eye(1, 1).divideByElement(new OperationChain(WR).diagonal()).getArray();
 
-        MWNumericArray rn2 = op.setArrayClone(ddeltz).multiplyByElement(ddeltz).multiplyByElement(WRInvDiagVec).getArray();
+        rn2 = op.setArrayClone(ddeltz).multiplyByElement(ddeltz).multiplyByElement(WRInvDiagVec).getArray();
 
-        double maxBad = op.setArrayClone(rn2).maxIn2D().getArray().getDouble(1);
+        maxBadMat = op.setArrayClone(rn2).maxIn2D().getArray();
+
+        double maxBad = maxBadMat.getDouble(1);
 
         List<Integer> ret = new ArrayList<Integer>();
 
@@ -306,6 +334,8 @@ public class Estimator {
             }
 
         }
+
+        disposeMatrix(op, WW, HTWHInv, WR, WRInvDiagVec, rn2, maxBadMat);
 
         return ret;
 
@@ -372,7 +402,7 @@ public class Estimator {
     private MWNumericArray getHH(MWNumericArray HF) {
 
         return new OperationChain(HF).selectSubMatrix(
-                powerSystem.getMeasureSystem().getzIds().toArray(),
+                zIds.toArray(),
                 powerSystem.getMeasureSystem().getStateIds().toArray()).getArray();
 
     }
@@ -380,15 +410,21 @@ public class Estimator {
     private MWNumericArray getWWInv(MWNumericArray WInv) {
 
         return new OperationChain(WInv).selectSubMatrix(
-                powerSystem.getMeasureSystem().getzIds().toArray(),
-                powerSystem.getMeasureSystem().getzIds().toArray()).getArray();
+                zIds.toArray(),
+                zIds.toArray()).getArray();
 
     }
 
-    private MWNumericArray getDdeltz(MWNumericArray deltz) {
+    private MWNumericArray getDdeltz(MWNumericArray deltz, MWNumericArray ddeltz) {
+//        release mem
+        if (ddeltz != null) {
+
+            ddeltz.dispose();
+
+        }
 
         return new OperationChain(deltz).selectRows(
-                powerSystem.getMeasureSystem().getzIds().toArray()).getArray();
+                zIds.toArray()).getArray();
 
     }
 
@@ -399,7 +435,7 @@ public class Estimator {
 
     }
 
-    public MWNumericArray computeEstimatedMeasurement(PowerSystem powerSystem) {
+    public MWNumericArray computeEstimatedMeasurement(PowerSystem powerSystem, MWNumericArray zestReal) {
 
         MWNumericArray Vsf = getVft(
                 powerSystem.getMpData().getBranchData().getI(),
@@ -428,6 +464,12 @@ public class Estimator {
 
         Vsm = new OperationChain(Vs).abs().getArray();
 
+        if (zestReal != null) {
+
+            zestReal.dispose();
+
+        }
+
         MWNumericArray ret = toMeasurementVector(
                 sfe,
                 ste,
@@ -443,7 +485,7 @@ public class Estimator {
 
     public void print() {
 
-        if (!powerSystem.getOption().isVerbose()) {
+        if (powerSystem.getOption().getVerbose() < 2) {
 
             return;
 
@@ -726,4 +768,11 @@ public class Estimator {
         return StCplx;
     }
 
+    public void setWInvReal(MWNumericArray WInvReal) {
+        this.WInvReal = WInvReal;
+    }
+
+    public boolean isConverged() {
+        return converged;
+    }
 }

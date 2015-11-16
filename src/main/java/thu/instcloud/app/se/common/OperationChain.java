@@ -665,6 +665,18 @@ public class OperationChain {
 
     }
 
+    public OperationChain rcond() {
+
+        try {
+            clearSetArray((MWNumericArray) operation.rcondJ(1, array)[0]);
+        } catch (MWException e) {
+            e.printStackTrace();
+        }
+
+        return this;
+
+    }
+
     public MWNumericArray getArray() {
         return array;
     }
@@ -696,7 +708,9 @@ public class OperationChain {
 
     public void dispose() {
 
-        array.dispose();
+        if (array != null) {
+            array.dispose();
+        }
 
     }
 }

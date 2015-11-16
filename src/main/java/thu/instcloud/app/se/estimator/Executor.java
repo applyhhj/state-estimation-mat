@@ -25,9 +25,9 @@ public class Executor {
 
         EstimationOption option = new EstimationOption();
 
-        option.setVerbose(false);
+        option.setVerbose(0);
 
-        option.setDebug(true);
+        option.setDebug(false);
 
         PowerSystem powerSystem = new PowerSystem(fpath, option);
 
@@ -35,19 +35,20 @@ public class Executor {
 
         long start;
 
-        while (i++ < 5) {
+        while (i++ < Integer.MAX_VALUE) {
 
             start = System.currentTimeMillis();
 
             powerSystem.run();
 
+            powerSystem.resetState();
+
             System.out.printf("\nEstimate %d duration: %d ms", i, System.currentTimeMillis() - start);
 
-            powerSystem.printStateInExternalInPolarDegree();
-
-            Thread.sleep(500);
+            Thread.sleep(50);
 
         }
+
 
         System.out.print("\nDone!\n");
 

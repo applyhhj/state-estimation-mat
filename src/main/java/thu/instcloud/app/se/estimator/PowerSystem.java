@@ -72,9 +72,43 @@ public class PowerSystem {
 //        flat start, include reference bus
         int[] dims = {mpData.getnBus(), 1};
 
-        int[] idx = {1, 1};
-
         state = MWNumericArray.newInstance(dims, MWClassID.DOUBLE, MWComplexity.COMPLEX);
+
+        resetState();
+
+    }
+
+    public void run() {
+
+        measureSystem.measure();
+
+        estimator.estimate();
+
+        if (estimator.isConverged()) {
+
+            updateAllSystemState();
+
+        }
+
+    }
+
+    private void updateAllSystemState() {
+
+//        TODO:update pq to match the state
+//        just for test
+//        resetState();
+
+    }
+
+    public void resetState() {
+
+        if (state == null) {
+
+            return;
+
+        }
+
+        int[] idx = {1, 1};
 
         for (int i = 0; i < mpData.getnBus(); i++) {
 
@@ -85,14 +119,6 @@ public class PowerSystem {
             state.setImag(idx, 0);
 
         }
-
-    }
-
-    public void run() {
-
-        measureSystem.measure();
-
-        estimator.estimate();
 
     }
 

@@ -5,23 +5,23 @@ package thu.instcloud.app.se.common;
  */
 public class EstimationOption {
 
-    private boolean verbose;
+    private int verbose;
 
     private boolean debug;
 
     public EstimationOption() {
 
-        verbose = true;
+        verbose = 0;
 
         debug = false;
 
     }
 
-    public boolean isVerbose() {
+    public int getVerbose() {
         return verbose;
     }
 
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(int verbose) {
         this.verbose = verbose;
     }
 

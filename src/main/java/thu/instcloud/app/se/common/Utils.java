@@ -11,7 +11,6 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.jar.Pack200;
 
 /**
  * Created on 2015/11/12.
@@ -109,9 +108,19 @@ public class Utils {
 
             for (Object var : vars) {
 
-                if (var instanceof MWNumericArray) {
+                if (var != null) {
 
-                    ((MWNumericArray) var).dispose();
+                    if (var instanceof MWNumericArray) {
+
+                        ((MWNumericArray) var).dispose();
+
+                    }
+
+                    if (var instanceof OperationChain) {
+
+                        ((OperationChain) var).dispose();
+
+                    }
 
                 }
 

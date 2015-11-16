@@ -99,13 +99,15 @@ public class MeasureSystem {
 
         computeIndices();
 
-//        print();
+        powerSystem.getEstimator().setWInvReal(WInvReal);
+
+        print();
 
     }
 
     public void print() {
 
-        if (powerSystem.getOption().isVerbose()) {
+        if (powerSystem.getOption().getVerbose() > 1) {
 
             System.out.print("\nReal measurement:\n" + zTrueReal.toString());
 
