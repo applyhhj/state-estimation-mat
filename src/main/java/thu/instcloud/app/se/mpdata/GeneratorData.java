@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static thu.instcloud.app.se.common.Utils.Common.toDoubleArray;
 import static thu.instcloud.app.se.common.Utils.Mat.disposeMatrix;
 
 /**
@@ -260,11 +261,13 @@ public class GeneratorData {
 
         offGenIds.clear();
 
-        int busNumIn;
+        int busNumIn, busIdx;
 
         for (int i = 0; i < status.length; i++) {
 
             busNumIn = busData.getTOI().get(number[i]);
+
+            busIdx = busData.getTOA().get(number[i]);
 
             if (status[i] > 0) {
 
@@ -272,7 +275,7 @@ public class GeneratorData {
 
                 runGenBusNumIn.add(busNumIn);
 
-                if (busData.getType()[i] != Constants.MPC.BusTypes.PQ) {
+                if (busData.getType()[busIdx] != Constants.MPC.BusTypes.PQ) {
 
                     runNonePQGenIds.add(i);
 
@@ -354,9 +357,11 @@ public class GeneratorData {
 
         }
 
+        double[] runNonePQGenBusNumInArr = toDoubleArray(runNonePQGenBusNumIn);
+
         connGValues = new OperationChain().ones(ngon, 1).getArray();
 
-        connG = new OperationChain().sparseMatrix(rowIds, runNonePQGenBusNumIn.toArray(), connGValues, ngon, nb).getArray();
+        connG = new OperationChain().sparseMatrix(rowIds, runNonePQGenBusNumInArr, connGValues, ngon, nb).getArray();
 
         ngg = new OperationChain(connG).multiply(new OperationChain().sum(connG).transpose()).getArray();
 
@@ -368,10 +373,10 @@ public class GeneratorData {
 
         genOnQ = selArrayToMat(runNonePQGenIds, Qg);
 
-        cmax = new OperationChain().sparseMatrix(rowIds, runNonePQGenBusNumIn.toArray(),
+        cmax = new OperationChain().sparseMatrix(rowIds, runNonePQGenBusNumInArr,
                 genOnQmax, ngon, nb).getArray();
 
-        cmin = new OperationChain().sparseMatrix(rowIds, runNonePQGenBusNumIn.toArray(),
+        cmin = new OperationChain().sparseMatrix(rowIds, runNonePQGenBusNumInArr,
                 genOnQmin, ngon, nb).getArray();
 
         QgTot = new OperationChain(connG).transpose().multiply(genOnQ).getArray();
@@ -417,7 +422,7 @@ public class GeneratorData {
         sbusNew = new OperationChain(sbus).selectRows(runGenBusNumIn.toArray()).getReal().getArray();
 
 //        internal bus numbers use natural order
-        Pg[refGenIds.get(0)] = sbusNew.getDouble(refGenIds.get(0)) * sbase + busData.getPD()[busData.getNrefI() - 1];
+        Pg[refGenIds.get(0)] = sbusNew.getDouble(refGenIds.get(0) + 1) * sbase + busData.getPD()[busData.getNrefI() - 1];
 
         for (int i = 1; i < refGenIds.size(); i++) {
 
@@ -453,7 +458,7 @@ public class GeneratorData {
 
         }
 
-        return new MWNumericArray(selVals, MWClassID.DOUBLE);
+        return new OperationChain(new MWNumericArray(selVals, MWClassID.DOUBLE)).transpose().getArray();
 
     }
 

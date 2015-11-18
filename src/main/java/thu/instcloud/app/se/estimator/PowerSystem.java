@@ -96,7 +96,7 @@ public class PowerSystem {
 
     private void updateAllSystemState() {
 
-        MWNumericArray SbusNew, pdNew, qdNew, pGenNew, qGenNew;
+        MWNumericArray SbusNew, pdNew, qdNew, pGenNew, qGenNew, pd, qd;
 
         SbusNew = new OperationChain(state).multiplyByElement(
                 new OperationChain(yMatrix.getYbus()
@@ -113,18 +113,20 @@ public class PowerSystem {
 
         mpData.getBusData().updateQD(qdNew.getDoubleData());
 
+        pd = new MWNumericArray(mpData.getBusData().getPD(), MWClassID.DOUBLE);
+
+        qd = new MWNumericArray(mpData.getBusData().getQD(), MWClassID.DOUBLE);
+
 //        update pv bus injections, for generators PG
         pGenNew = new OperationChain(SbusNew).selectRows(mpData.getGenData().getRunGenBusNumIn().toArray())
-                .getReal().multiply(mpData.getSbase()).add(new OperationChain(
-                        new MWNumericArray(mpData.getBusData().getPD(), MWClassID.DOUBLE))
+                .getReal().multiply(mpData.getSbase()).add(new OperationChain(pd).transpose()
                         .selectRows(mpData.getGenData().getRunGenBusNumIn().toArray())).getArray();
 
         mpData.getGenData().updatePg(pGenNew.getDoubleData());
 
 //        update none pq bus injections, QG
         qGenNew = new OperationChain(SbusNew).selectRows(mpData.getGenData().getRunNonePQGenBusNumIn().toArray())
-                .getImag().multiply(mpData.getSbase()).add(new OperationChain(
-                        new MWNumericArray(mpData.getBusData().getQD(), MWClassID.DOUBLE))
+                .getImag().multiply(mpData.getSbase()).add(new OperationChain(qd).transpose()
                         .selectRows(mpData.getGenData().getRunNonePQGenBusNumIn().toArray())).getArray();
 
         mpData.getGenData().updateQg(qGenNew.getDoubleData());
@@ -133,7 +135,9 @@ public class PowerSystem {
 
         mpData.getGenData().updateRefBusGenP(SbusNew, mpData.getSbase());
 
-        disposeMatrix(SbusNew, pdNew, qdNew, pGenNew, qGenNew);
+        mpData.getBranchData().updatePQe(state, yMatrix, mpData);
+
+        disposeMatrix(SbusNew, pdNew, qdNew, pGenNew, qGenNew, pd, qd);
 
     }
 
@@ -193,7 +197,7 @@ public class PowerSystem {
 
     public void printStateInExternalInPolarDegree() {
 
-        System.out.print("\nBusNum       Vm(p.u.)        Va(degree)\n");
+        System.out.print("\nBusNum       Vm(p.u.)        Va(degree)        PGen(MW)      QGen(MVAr)       PLoad(MW)      QLoad(MVAr)\n");
 
         MWNumericArray angles = new OperationChain(state).angleR().multiply(180 / Math.PI).getArray();
 
@@ -209,10 +213,11 @@ public class PowerSystem {
 
         Collections.sort(sortExternalBusNum, Utils.Common.comparator);
 
-
         int internalNum;
 
         int[] idx = {1, 1};
+
+        String out;
 
         for (int i = 0; i < sortExternalBusNum.size(); i++) {
 
@@ -220,9 +225,28 @@ public class PowerSystem {
 
             idx[0] = internalNum;
 
-            System.out.printf("%5d %8.4f   %8.4f\n", sortExternalBusNum.get(i),
+            out = String.format("%5d %8.4f %8.4f", sortExternalBusNum.get(i),
                     vms.getDouble(idx),
                     angles.getDouble(idx));
+
+            System.out.printf(out + "\n");
+
+        }
+
+        System.out.print("Branch    From    To    From Bus Injection(MW/MVAr)      To Bus Injection(MW/MVAr)\n");
+
+        for (int i = 0; i < mpData.getnBranch(); i++) {
+
+            out = String.format("%5d %5d %5d    %8.4f %8.4f %8.4f %8.4f",
+                    i + 1,
+                    mpData.getBranchData().getI()[i],
+                    mpData.getBranchData().getJ()[i],
+                    mpData.getBranchData().getPFe()[i],
+                    mpData.getBranchData().getQFe()[i],
+                    mpData.getBranchData().getPTe()[i],
+                    mpData.getBranchData().getQTe()[i]);
+
+            System.out.print(out + "\n");
 
         }
 

@@ -27,7 +27,7 @@ public class Executor {
 
         option.setVerbose(0);
 
-        option.setDebug(false);
+        option.setDebug(true);
 
         PowerSystem powerSystem = new PowerSystem(fpath, option);
 
@@ -41,11 +41,11 @@ public class Executor {
 
             powerSystem.run();
 
-            powerSystem.resetState();
+            powerSystem.printStateInExternalInPolarDegree();
 
             System.out.printf("\nEstimate %d duration: %d ms", i, System.currentTimeMillis() - start);
 
-            Thread.sleep(50);
+            Thread.sleep(1500);
 
         }
 

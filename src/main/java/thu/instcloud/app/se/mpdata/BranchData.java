@@ -3,10 +3,14 @@ package thu.instcloud.app.se.mpdata;
 import com.mathworks.toolbox.javabuilder.MWNumericArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thu.instcloud.app.se.common.OperationChain;
 import thu.instcloud.app.se.estimator.YMatrix;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
+import static thu.instcloud.app.se.common.Utils.Common.toDoubleArray;
 
 public class BranchData {
 
@@ -54,7 +58,13 @@ public class BranchData {
 
     private double[] QTe;
 
-    private List<Integer> runBranchIds;
+    private List<Integer> runBranchMatIds;
+
+    private List<Integer> offBranchIds;
+
+    private List<Integer> runBranchFBusNumIn;
+
+    private List<Integer> runBranchTBusNumIn;
 
     private int paraNum;
 
@@ -62,9 +72,13 @@ public class BranchData {
 
     public BranchData() {
 
-        runBranchIds = new ArrayList<Integer>();
+        runBranchMatIds = new ArrayList<Integer>();
 
-        selRunBranches();
+        runBranchFBusNumIn = new ArrayList<Integer>();
+
+        runBranchTBusNumIn = new ArrayList<Integer>();
+
+        offBranchIds = new ArrayList<Integer>();
 
         paraNum = 17;
 
@@ -210,20 +224,122 @@ public class BranchData {
 
     }
 
-    public void updatePQe(MWNumericArray v, YMatrix yMatrix) {
+    public double[] getPFe() {
+        return PFe;
+    }
 
+    public double[] getQFe() {
+        return QFe;
+    }
+
+    public double[] getPTe() {
+        return PTe;
+    }
+
+    public double[] getQTe() {
+        return QTe;
+    }
+
+    public void updatePQe(MWNumericArray v, YMatrix yMatrix, MPData mpData) {
+
+        selRunBranches(mpData.getBusData().getTOI());
+
+        double[] runBranchFBusNumInDoubleArr = toDoubleArray(runBranchFBusNumIn);
+
+        double[] runBranchMatIdsDoubleArr = toDoubleArray(runBranchMatIds);
+
+        double[] runBranchTBusNumInDoubleArr = toDoubleArray(runBranchTBusNumIn);
+
+        OperationChain sf = new OperationChain(v).selectRows(runBranchFBusNumInDoubleArr).multiplyByElement(
+                new OperationChain(yMatrix.getYf()).selectRows(runBranchMatIdsDoubleArr).multiply(v).conj()
+        ).multiply(mpData.getSbase());
+
+        OperationChain st = new OperationChain(v).selectRows(runBranchTBusNumInDoubleArr).multiplyByElement(
+                new OperationChain(yMatrix.getYt()).selectRows(runBranchMatIdsDoubleArr).multiply(v).conj()
+        ).multiply(mpData.getSbase());
+
+        assignPQ(sf, st);
+
+        sf.dispose();
+
+        st.dispose();
 
     }
 
-    public void selRunBranches() {
+    private void assignPQ(OperationChain sf, OperationChain st) {
 
-        runBranchIds.clear();
+        double[] PFeRun = sf.clone().getReal().getArray().getDoubleData();
+
+        double[] PTeRun = st.clone().getReal().getArray().getDoubleData();
+
+        double[] QFeRun = sf.getImag().getArray().getDoubleData();
+
+        double[] QTeRun = st.getImag().getArray().getDoubleData();
+
+        PFe = new double[i.length];
+
+        PTe = new double[i.length];
+
+        QFe = new double[i.length];
+
+        QTe = new double[i.length];
+
+        int idx;
+
+        for (int k = 0; k < runBranchMatIds.size(); k++) {
+
+            idx = runBranchMatIds.get(k) - 1;
+
+            PFe[idx] = PFeRun[k];
+
+            PTe[idx] = PTeRun[k];
+
+            QFe[idx] = QFeRun[k];
+
+            QTe[idx] = QTeRun[k];
+
+        }
+
+        for (int k = 0; k < offBranchIds.size(); k++) {
+
+            idx = offBranchIds.get(k);
+
+            PFe[idx] = 0;
+
+            QFe[idx] = 0;
+
+            PTe[idx] = 0;
+
+            QTe[idx] = 0;
+
+        }
+
+    }
+
+    private void selRunBranches(Map<Integer, Integer> TOI) {
+
+        runBranchMatIds.clear();
+
+        offBranchIds.clear();
+
+        runBranchFBusNumIn.clear();
+
+        runBranchTBusNumIn.clear();
 
         for (int k = 0; k < status.length; k++) {
 
             if (status[k] > 0) {
 
-                runBranchIds.add(k);
+//                matlab index should add one
+                runBranchMatIds.add(k + 1);
+
+                runBranchFBusNumIn.add(TOI.get(i[k]));
+
+                runBranchTBusNumIn.add(TOI.get(j[k]));
+
+            } else {
+
+                offBranchIds.add(k);
 
             }
 

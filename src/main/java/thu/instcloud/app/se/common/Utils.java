@@ -21,6 +21,20 @@ public class Utils {
 
         public static IntComparator comparator = new IntComparator();
 
+        public static double[] toDoubleArray(List<Integer> intList) {
+
+            double[] ret = new double[intList.size()];
+
+            for (int i = 0; i < intList.size(); i++) {
+
+                ret[i] = intList.get(i);
+
+            }
+
+            return ret;
+
+        }
+
         public static List<Integer> getContinuousIds(int start, int end) {
 
             List<Integer> ret = new ArrayList<Integer>();
