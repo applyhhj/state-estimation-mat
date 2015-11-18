@@ -14,22 +14,14 @@ public class PowerFlow {
     private MPData mpData;
 
     private YMatrix yMatrix;
+
+//    private MWNumericArray PF;
 //
-//    private BasicMatrix Vr;
+//    private MWNumericArray QF;
 //
-//    private BasicMatrix Vi;
-
-    private MWNumericArray PF;
-
-    private MWNumericArray QF;
-
-    private MWNumericArray PT;
-
-    private MWNumericArray QT;
-
-//    private BasicMatrix SbusP;
+//    private MWNumericArray PT;
 //
-//    private BasicMatrix SbusQ;
+//    private MWNumericArray QT;
 
     private MWNumericArray V;
 
@@ -55,11 +47,11 @@ public class PowerFlow {
 
         importV();
 
-        importPQ();
+//        importPQ();
 
         computeSbus();
 
-// //       print();
+//        print();
 
     }
 
@@ -111,74 +103,69 @@ public class PowerFlow {
         }
 
     }
-
-    //    for comparison
-    private void importPQ() {
-
-        int[] dims={nbr,1};
-
-        for (int j = 0; j < 4; j++) {
-
-            MWNumericArray tmp=MWNumericArray.newInstance(dims, MWClassID.DOUBLE,MWComplexity.REAL);
-
-            for (int i = 0; i < mpData.getnBranch(); i++) {
-
-                switch (j) {
-
-                    case 0:
-                        tmp.set(i+1,mpData.getBranchData().getPF()[i]);
-                        break;
-
-                    case 1:
-                        tmp.set(i+1,mpData.getBranchData().getQF()[i]);
-                        break;
-
-                    case 2:
-                        tmp.set(i+1,mpData.getBranchData().getPT()[i]);
-                        break;
-
-                    case 3:
-                        tmp.set(i+1,mpData.getBranchData().getQT()[i]);
-                        break;
-
-                }
-
-            }
-
-            switch (j) {
-
-                case 0:
-                    PF = tmp;
-                    break;
-
-                case 1:
-                    QF = tmp;
-                    break;
-
-                case 2:
-                    PT = tmp;
-                    break;
-
-                case 3:
-                    QT = tmp;
-                    break;
-
-            }
-
-        }
-
-
-    }
+//
+//    //    for comparison
+//    private void importPQ() {
+//
+//        int[] dims={nbr,1};
+//
+//        for (int j = 0; j < 4; j++) {
+//
+//            MWNumericArray tmp=MWNumericArray.newInstance(dims, MWClassID.DOUBLE,MWComplexity.REAL);
+//
+//            for (int i = 0; i < mpData.getnBranch(); i++) {
+//
+//                switch (j) {
+//
+//                    case 0:
+//                        tmp.set(i+1,mpData.getBranchData().getPF()[i]);
+//                        break;
+//
+//                    case 1:
+//                        tmp.set(i+1,mpData.getBranchData().getQF()[i]);
+//                        break;
+//
+//                    case 2:
+//                        tmp.set(i+1,mpData.getBranchData().getPT()[i]);
+//                        break;
+//
+//                    case 3:
+//                        tmp.set(i+1,mpData.getBranchData().getQT()[i]);
+//                        break;
+//
+//                }
+//
+//            }
+//
+//            switch (j) {
+//
+//                case 0:
+//                    PF = tmp;
+//                    break;
+//
+//                case 1:
+//                    QF = tmp;
+//                    break;
+//
+//                case 2:
+//                    PT = tmp;
+//                    break;
+//
+//                case 3:
+//                    QT = tmp;
+//                    break;
+//
+//            }
+//
+//        }
+//
+//    }
 
     private void print() {
 
         System.out.print("V\n" + V.toString() + "\n");
 
-//        System.out.print("Vi\n" + Vi.toString() + "\n");
-
         System.out.print("Sbus\n" + Sbus.toString() + "\n");
-
-//        System.out.print("SbusQ\n" + SbusQ.toString() + "\n");
 
     }
 

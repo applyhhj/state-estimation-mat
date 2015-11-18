@@ -1,9 +1,18 @@
 package thu.instcloud.app.se.mpdata;
 
+import com.mathworks.toolbox.javabuilder.MWClassID;
+import com.mathworks.toolbox.javabuilder.MWNumericArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thu.instcloud.app.se.common.Constants;
+import thu.instcloud.app.se.common.OperationChain;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static thu.instcloud.app.se.common.Utils.Mat.disposeMatrix;
 
 /**
  * Created on 2015/11/6.
@@ -58,7 +67,31 @@ public class GeneratorData {
 
     private int paraNum;
 
-    public GeneratorData() {
+    private List<Integer> runGenIds;
+
+    private List<Integer> runNonePQGenIds;
+
+    private List<Integer> runGenBusNumIn;
+
+    private List<Integer> runNonePQGenBusNumIn;
+
+    private List<Integer> offGenIds;
+
+    private BusData busData;
+
+    public GeneratorData(BusData busData) {
+
+        runGenIds = new ArrayList<Integer>();
+
+        runGenBusNumIn = new ArrayList<Integer>();
+
+        runNonePQGenIds = new ArrayList<Integer>();
+
+        runNonePQGenBusNumIn = new ArrayList<Integer>();
+
+        offGenIds = new ArrayList<Integer>();
+
+        this.busData = busData;
 
         paraNum = 21;
 
@@ -215,6 +248,266 @@ public class GeneratorData {
         setApf(apftmp);
 
         return true;
+
+    }
+
+    //    WARNING: In this program we assume all generators are in service
+    public void ClassifyGenBusNumberIn() {
+
+        runGenIds.clear();
+
+        runNonePQGenIds.clear();
+
+        offGenIds.clear();
+
+        int busNumIn;
+
+        for (int i = 0; i < status.length; i++) {
+
+            busNumIn = busData.getTOI().get(number[i]);
+
+            if (status[i] > 0) {
+
+                runGenIds.add(i);
+
+                runGenBusNumIn.add(busNumIn);
+
+                if (busData.getType()[i] != Constants.MPC.BusTypes.PQ) {
+
+                    runNonePQGenIds.add(i);
+
+                    runNonePQGenBusNumIn.add(busNumIn);
+
+                }
+
+            } else {
+
+                offGenIds.add(i);
+
+            }
+
+        }
+
+    }
+
+    public List<Integer> getRunGenBusNumIn() {
+        return runGenBusNumIn;
+    }
+
+    public List<Integer> getRunNonePQGenBusNumIn() {
+        return runNonePQGenBusNumIn;
+    }
+
+    public void updatePg(double[] pgNew) {
+
+        for (int i = 0; i < runGenIds.size(); i++) {
+
+            Pg[runGenIds.get(i)] = pgNew[i];
+
+        }
+
+        for (int i = 0; i < offGenIds.size(); i++) {
+
+            Pg[offGenIds.get(i)] = 0;
+
+        }
+
+    }
+
+    public void updateQg(double[] qgNew) {
+
+        for (int i = 0; i < runNonePQGenIds.size(); i++) {
+
+            Qg[runNonePQGenIds.get(i)] = qgNew[i];
+
+        }
+
+        for (int i = 0; i < offGenIds.size(); i++) {
+
+            Qg[offGenIds.get(i)] = 0;
+
+        }
+
+    }
+
+    public void distributeQ() {
+
+        if (runNonePQGenIds.size() <= 1) {
+
+            return;
+
+        }
+
+        MWNumericArray connGValues, connG, ngg, cmin, cmax, QgTot, QgMin, QgMax, genOnQ, genOnQmin, genOnQmax;
+
+        Map<Integer, Double> qgenFixed = new HashMap<Integer, Double>();
+
+        int nb = busData.getN();
+
+        int ngon = runNonePQGenIds.size();
+
+        double[] rowIds = new double[ngon];
+
+        for (int i = 0; i < ngon; i++) {
+
+            rowIds[i] = i + 1;
+
+        }
+
+        connGValues = new OperationChain().ones(ngon, 1).getArray();
+
+        connG = new OperationChain().sparseMatrix(rowIds, runNonePQGenBusNumIn.toArray(), connGValues, ngon, nb).getArray();
+
+        ngg = new OperationChain(connG).multiply(new OperationChain().sum(connG).transpose()).getArray();
+
+        avgQg(ngg.getDoubleData());
+
+        genOnQmax = selArrayToMat(runNonePQGenIds, Qmax);
+
+        genOnQmin = selArrayToMat(runNonePQGenIds, Qmin);
+
+        genOnQ = selArrayToMat(runNonePQGenIds, Qg);
+
+        cmax = new OperationChain().sparseMatrix(rowIds, runNonePQGenBusNumIn.toArray(),
+                genOnQmax, ngon, nb).getArray();
+
+        cmin = new OperationChain().sparseMatrix(rowIds, runNonePQGenBusNumIn.toArray(),
+                genOnQmin, ngon, nb).getArray();
+
+        QgTot = new OperationChain(connG).transpose().multiply(genOnQ).getArray();
+
+        QgMax = new OperationChain().sum(cmax).transpose().getArray();
+
+        QgMin = new OperationChain().sum(cmin).transpose().getArray();
+
+        findFixedGenIds(qgenFixed, connG, QgMin, QgMax);
+
+//        release mem
+        genOnQ.dispose();
+
+        genOnQ = new OperationChain(genOnQmin).add(new OperationChain(connG).multiply(
+                new OperationChain(QgTot).subtract(QgMin)
+                        .divideByElement(new OperationChain(QgMax).subtract(QgMin).add(Constants.ESTIMATOR.eps))
+        ).multiplyByElement(new OperationChain(genOnQmax).subtract(genOnQmin))).getArray();
+
+        restoreQGen(qgenFixed, genOnQ);
+
+        disposeMatrix(connGValues, connG, ngg, cmin, cmax, QgTot, QgMin, QgMax, genOnQ, genOnQmin, genOnQmax);
+
+    }
+
+    //        update pg for slack gens, currently we assume there is only one reference(slack) bus
+//        only the first generator is responsible for adjust the power
+    public void updateRefBusGenP(MWNumericArray sbus, double sbase) {
+
+        MWNumericArray sbusNew;
+
+        List<Integer> refGenIds = new ArrayList<Integer>();
+
+        for (int i = 0; i < runNonePQGenBusNumIn.size(); i++) {
+
+            if (runNonePQGenBusNumIn.get(i) == busData.getNrefI()) {
+
+                refGenIds.add(runNonePQGenIds.get(i));
+
+            }
+
+        }
+
+        sbusNew = new OperationChain(sbus).selectRows(runGenBusNumIn.toArray()).getReal().getArray();
+
+//        internal bus numbers use natural order
+        Pg[refGenIds.get(0)] = sbusNew.getDouble(refGenIds.get(0)) * sbase + busData.getPD()[busData.getNrefI() - 1];
+
+        for (int i = 1; i < refGenIds.size(); i++) {
+
+            Pg[refGenIds.get(0)] = Pg[refGenIds.get(0)] - Pg[refGenIds.get(i)];
+
+        }
+
+        disposeMatrix(sbusNew);
+
+    }
+
+    private void avgQg(double[] ngg) {
+
+        int idx;
+
+        for (int i = 0; i < runNonePQGenIds.size(); i++) {
+
+            idx = runNonePQGenIds.get(i);
+
+            Qg[idx] = Qg[idx] / ngg[idx];
+
+        }
+
+    }
+
+    private MWNumericArray selArrayToMat(List<Integer> ids, double[] values) {
+
+        double[] selVals = new double[ids.size()];
+
+        for (int i = 0; i < ids.size(); i++) {
+
+            selVals[i] = values[ids.get(i)];
+
+        }
+
+        return new MWNumericArray(selVals, MWClassID.DOUBLE);
+
+    }
+
+    private void findFixedGenIds(Map<Integer, Double> data, MWNumericArray cg, MWNumericArray Qgmin, MWNumericArray Qgmax) {
+
+        MWNumericArray qgenmin, qgenmax;
+
+        qgenmin = new OperationChain(cg).multiply(Qgmin).getArray();
+
+        qgenmax = new OperationChain(cg).multiply(Qgmax).getArray();
+
+        data.clear();
+
+        int[] dims = qgenmin.getDimensions();
+
+        int[] ids = {1, 1};
+
+        int idx;
+
+        for (int i = 0; i < dims[0]; i++) {
+
+            ids[0] = i + 1;
+
+            if (qgenmin.get(ids) == qgenmax.get(ids)) {
+
+                idx = runNonePQGenIds.get(i);
+
+                data.put(idx, Qg[idx]);
+
+            }
+
+        }
+
+        disposeMatrix(qgenmin, qgenmax);
+
+    }
+
+    private void restoreQGen(Map<Integer, Double> data, MWNumericArray QgenOn) {
+
+        int[] idx = {1, 1};
+
+        for (int i = 0; i < runNonePQGenIds.size(); i++) {
+
+            idx[0] = i + 1;
+
+            Qg[runNonePQGenIds.get(i)] = QgenOn.getDouble(idx);
+
+        }
+
+        for (Map.Entry<Integer, Double> e : data.entrySet()) {
+
+            Qg[e.getKey()] = e.getValue();
+
+        }
 
     }
 

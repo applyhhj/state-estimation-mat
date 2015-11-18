@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static thu.instcloud.app.se.common.Utils.Mat.disposeMatrix;
+
 /**
  * Created on 2015/11/7.
  */
@@ -94,9 +96,44 @@ public class PowerSystem {
 
     private void updateAllSystemState() {
 
-//        TODO:update pq to match the state
-//        just for test
-//        resetState();
+        MWNumericArray SbusNew, pdNew, qdNew, pGenNew, qGenNew;
+
+        SbusNew = new OperationChain(state).multiplyByElement(
+                new OperationChain(yMatrix.getYbus()
+                ).multiply(state).conj()).getArray();
+
+        pdNew = new OperationChain(SbusNew).selectRows(mpData.getBusData().getNpqIn().toArray())
+                .getReal().multiply(-1 * mpData.getSbase()).getArray();
+
+        qdNew = new OperationChain(SbusNew).selectRows(mpData.getBusData().getNpqIn().toArray())
+                .getImag().multiply(-1 * mpData.getSbase()).getArray();
+
+//        update pq bus injections
+        mpData.getBusData().updatePD(pdNew.getDoubleData());
+
+        mpData.getBusData().updateQD(qdNew.getDoubleData());
+
+//        update pv bus injections, for generators PG
+        pGenNew = new OperationChain(SbusNew).selectRows(mpData.getGenData().getRunGenBusNumIn().toArray())
+                .getReal().multiply(mpData.getSbase()).add(new OperationChain(
+                        new MWNumericArray(mpData.getBusData().getPD(), MWClassID.DOUBLE))
+                        .selectRows(mpData.getGenData().getRunGenBusNumIn().toArray())).getArray();
+
+        mpData.getGenData().updatePg(pGenNew.getDoubleData());
+
+//        update none pq bus injections, QG
+        qGenNew = new OperationChain(SbusNew).selectRows(mpData.getGenData().getRunNonePQGenBusNumIn().toArray())
+                .getImag().multiply(mpData.getSbase()).add(new OperationChain(
+                        new MWNumericArray(mpData.getBusData().getQD(), MWClassID.DOUBLE))
+                        .selectRows(mpData.getGenData().getRunNonePQGenBusNumIn().toArray())).getArray();
+
+        mpData.getGenData().updateQg(qGenNew.getDoubleData());
+
+        mpData.getGenData().distributeQ();
+
+        mpData.getGenData().updateRefBusGenP(SbusNew, mpData.getSbase());
+
+        disposeMatrix(SbusNew, pdNew, qdNew, pGenNew, qGenNew);
 
     }
 

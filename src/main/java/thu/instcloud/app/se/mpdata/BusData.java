@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thu.instcloud.app.se.common.Constants;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +22,7 @@ public class BusData {
 
     private Map<Integer, Integer> TOA;
 
-    private int[] number;
+    private int[] numberOut;
 
     private int[] type;
 
@@ -52,6 +53,8 @@ public class BusData {
     private int n;
 
     private int nrefI;
+
+    private List<Integer> NpqIn;
 
     public BusData() {
 
@@ -140,7 +143,7 @@ public class BusData {
 
         }
 
-        setNumber(numbertmp);
+        setNumberOut(numbertmp);
 
         setType(typetmp);
 
@@ -172,6 +175,24 @@ public class BusData {
 
     }
 
+    private List<Integer> getPQBusInNumber(int[] numbers, int[] types, Map<Integer, Integer> toi) {
+
+        List<Integer> ret = new ArrayList<Integer>();
+
+        for (int i = 0; i < types.length; i++) {
+
+            if (types[i] == Constants.MPC.BusTypes.PQ) {
+
+                ret.add(toi.get(numbers[i]));
+
+            }
+
+        }
+
+        return ret;
+
+    }
+
     //    number starts from 1
     public void reorderBusNumbers(BranchData branchData) {
 
@@ -181,7 +202,7 @@ public class BusData {
 
         int[] type = getType();
 
-        int[] buses = getNumber();
+        int[] buses = getNumberOut();
 
         Map<Integer, Integer> busBranchNumberMap = new HashMap<Integer, Integer>();
 
@@ -281,6 +302,9 @@ public class BusData {
 
         }
 
+
+        NpqIn = getPQBusInNumber(numberOut, type, TOI);
+
     }
 
     private int addBuses(int currentIdx, Map<Integer, Integer> busBranchNoMap) {
@@ -316,6 +340,25 @@ public class BusData {
 
     }
 
+    public void updatePD(double[] pdNew) {
+
+        for (int i = 0; i < NpqIn.size(); i++) {
+
+            PD[TOA.get(TIO.get(NpqIn.get(i)))] = pdNew[i];
+
+        }
+
+    }
+
+    public void updateQD(double[] qdNew) {
+
+        for (int i = 0; i < NpqIn.size(); i++) {
+
+            QD[TOA.get(TIO.get(NpqIn.get(i)))] = qdNew[i];
+
+        }
+
+    }
 
     public Map<Integer, Integer> getTIO() {
         return TIO;
@@ -341,12 +384,12 @@ public class BusData {
         this.TOA = TOA;
     }
 
-    public int[] getNumber() {
-        return number;
+    public int[] getNumberOut() {
+        return numberOut;
     }
 
-    public void setNumber(int[] number) {
-        this.number = number;
+    public void setNumberOut(int[] numberOut) {
+        this.numberOut = numberOut;
     }
 
     public int[] getType() {
@@ -465,4 +508,7 @@ public class BusData {
         return nrefI;
     }
 
+    public List<Integer> getNpqIn() {
+        return NpqIn;
+    }
 }

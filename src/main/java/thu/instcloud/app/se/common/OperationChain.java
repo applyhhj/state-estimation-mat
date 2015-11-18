@@ -603,7 +603,8 @@ public class OperationChain {
 
     }
 
-    public OperationChain sparseMatrix(double[] idouble, double[] jdouble, Object valdouble, double rows, double cols) {
+    //    normally indices should be double
+    public OperationChain sparseMatrix(Object idouble, Object jdouble, Object valdouble, double rows, double cols) {
 
         try {
             clearSetArray((MWNumericArray) operation.sparseMatrix(1, idouble, jdouble, valdouble, rows, cols)[0]);
@@ -665,10 +666,10 @@ public class OperationChain {
 
     }
 
-    public OperationChain rcond() {
+    public OperationChain sum() {
 
         try {
-            clearSetArray((MWNumericArray) operation.rcondJ(1, array)[0]);
+            clearSetArray((MWNumericArray) operation.sumJ(1, array)[0]);
         } catch (MWException e) {
             e.printStackTrace();
         }
@@ -676,6 +677,48 @@ public class OperationChain {
         return this;
 
     }
+
+    public OperationChain sum(Object array1) {
+
+        if (array1 instanceof OperationChain) {
+
+            return sum(array1, true);
+
+        }
+
+        return sum(array1, false);
+
+    }
+
+    public OperationChain sum(Object array1, boolean dispose) {
+
+        Object arg;
+
+        if (array1 instanceof OperationChain) {
+
+            arg = ((OperationChain) array1).getArray();
+
+        } else {
+
+            arg = array1;
+
+        }
+        try {
+            clearSetArray((MWNumericArray) operation.sumJ(1, arg)[0]);
+        } catch (MWException e) {
+            e.printStackTrace();
+        }
+
+        if (dispose && arg instanceof MWNumericArray) {
+
+            ((MWNumericArray) arg).dispose();
+
+        }
+
+        return this;
+
+    }
+
 
     public MWNumericArray getArray() {
         return array;
@@ -713,4 +756,5 @@ public class OperationChain {
         }
 
     }
+
 }

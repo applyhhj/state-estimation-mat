@@ -1,8 +1,11 @@
 package thu.instcloud.app.se.mpdata;
 
+import com.mathworks.toolbox.javabuilder.MWNumericArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thu.instcloud.app.se.estimator.YMatrix;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class BranchData {
@@ -43,11 +46,25 @@ public class BranchData {
 
     private double[] QT;
 
+    private double[] PFe;
+
+    private double[] QFe;
+
+    private double[] PTe;
+
+    private double[] QTe;
+
+    private List<Integer> runBranchIds;
+
     private int paraNum;
 
     private int n;
 
     public BranchData() {
+
+        runBranchIds = new ArrayList<Integer>();
+
+        selRunBranches();
 
         paraNum = 17;
 
@@ -181,7 +198,37 @@ public class BranchData {
 
         setQT(QTtmp);
 
+        PFe = PFtmp.clone();
+
+        PTe = PTtmp.clone();
+
+        QFe = QFtmp.clone();
+
+        QTe = QTtmp.clone();
+
         return true;
+
+    }
+
+    public void updatePQe(MWNumericArray v, YMatrix yMatrix) {
+
+
+    }
+
+    public void selRunBranches() {
+
+        runBranchIds.clear();
+
+        for (int k = 0; k < status.length; k++) {
+
+            if (status[k] > 0) {
+
+                runBranchIds.add(k);
+
+            }
+
+        }
+
 
     }
 

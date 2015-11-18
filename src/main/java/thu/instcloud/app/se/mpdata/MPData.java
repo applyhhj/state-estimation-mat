@@ -34,11 +34,13 @@ public class MPData {
 
         busData = new BusData();
 
-        genData = new GeneratorData();
+        genData = new GeneratorData(busData);
 
         importData(filepath);
 
         busData.reorderBusNumbers(branchData);
+
+        genData.ClassifyGenBusNumberIn();
 
         nBranch = branchData.getN();
 
@@ -224,6 +226,10 @@ public class MPData {
 
     public int getnBus() {
         return nBus;
+    }
+
+    public GeneratorData getGenData() {
+        return genData;
     }
 }
 
