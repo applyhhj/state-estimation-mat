@@ -1,16 +1,20 @@
-import thu.instcloud.app.se.estimator.YMatrix;
-import thu.instcloud.app.se.mpdata.MPData;
+import java.util.ArrayList;
+import java.util.List;
 
 import static thu.instcloud.app.se.common.Utils.Common.isLinux;
+import static thu.instcloud.app.se.debug.Test.*;
 
 /**
  * Created on 2015/11/13.
  */
 public class test {
+    public static void main(String[] args) throws InterruptedException {
 
-    public static void main(String[] args) {
+        String fpath, fdestpath;
 
-        String fpath;
+        fdestpath = "F:\\projects\\data\\testdata\\";
+
+        List<String> fnames = new ArrayList<String>();
 
         if (isLinux()) {
 
@@ -18,14 +22,53 @@ public class test {
 
         } else {
 
-            fpath = "F:\\projects\\data\\matpower-data-process\\data\\case14.txt";
+            fpath = "F:\\projects\\data\\matpower-data-process\\data\\";
 
         }
 
-        MPData mpData=new MPData(fpath);
+        fnames = getFileList(fpath);
 
-        YMatrix yMatrix=new YMatrix(mpData);
+        int i = 0;
+
+        boolean valid;
+
+        while (i < fnames.size()) {
+
+            valid = true;
+
+            for (Long e : getDigitStr(fnames.get(i))) {
+
+                if (e == 118 || e > 300) {
+
+                    valid = false;
+
+                    System.out.printf("ignore file %s\n", fnames.get(i));
+
+                    break;
+
+                }
+
+            }
+
+            if (!valid) {
+
+                i++;
+
+                continue;
+
+            }
+
+            String fdestfilepath = fdestpath + fnames.get(i) + ".result";
+
+            writeToFile(fdestfilepath, "test");
+
+            i++;
+
+        }
+
+        System.out.print("\nDone!\n");
 
     }
+
 
 }

@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
 /**
  * Created on 2015/11/6.
  */
@@ -301,7 +302,6 @@ public class BusData {
             TOI.put(e.getValue(), e.getKey());
 
         }
-
 
         NpqIn = getPQBusInNumber(numberOut, type, TOI);
 

@@ -51,7 +51,7 @@ public class MeasureSystem {
 
     private List<Integer> VbusFullIds;
 
-    private List<Integer> stateFullIds;
+    private List<Integer> VmVaFullIds;
 
     private Random random;
 
@@ -69,7 +69,7 @@ public class MeasureSystem {
 
         VbusFullIds = new ArrayList<Integer>();
 
-        stateFullIds = new ArrayList<Integer>();
+        VmVaFullIds = new ArrayList<Integer>();
 
         fullscale = 30;
 
@@ -199,7 +199,7 @@ public class MeasureSystem {
 
         List<Integer> zExcludeIds = new ArrayList<Integer>();
 
-        List<Integer> stateExcludeIds = new ArrayList<Integer>();
+        List<Integer> VmVaExcludeIds = new ArrayList<Integer>();
 
         int nbr = powerSystem.getMpData().getnBranch();
 
@@ -234,7 +234,7 @@ public class MeasureSystem {
         zExcludeIds.clear();
 
 //        include magnitude and angle
-        stateExcludeIds.clear();
+        VmVaExcludeIds.clear();
 
         int exIdx;
 
@@ -278,9 +278,9 @@ public class MeasureSystem {
 //            Vm
             zExcludeIds.add(exIdx + 4 * nbr + 3 * nb);
 
-            stateExcludeIds.add(exIdx);
+            VmVaExcludeIds.add(exIdx);
 
-            stateExcludeIds.add(nb + exIdx);
+            VmVaExcludeIds.add(nb + exIdx);
 
         }
 
@@ -288,7 +288,7 @@ public class MeasureSystem {
 
         zIds = getValidIds(zFullIds, zExcludeIds);
 
-        stateIds = getValidIds(stateFullIds, stateExcludeIds);
+        stateIds = getValidIds(VmVaFullIds, VmVaExcludeIds);
 
         VbusIds = getValidIds(VbusFullIds, VbusExcludeIds);
 
@@ -302,7 +302,7 @@ public class MeasureSystem {
 
         VbusFullIds.clear();
 
-        stateFullIds.clear();
+        VmVaFullIds.clear();
 
 //        matlab index start from 1
         for (int i = 1; i <= nz; i++) {
@@ -319,7 +319,7 @@ public class MeasureSystem {
 
         for (int i = 1; i <= 2 * nb; i++) {
 
-            stateFullIds.add(i);
+            VmVaFullIds.add(i);
 
         }
 

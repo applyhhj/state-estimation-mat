@@ -28,21 +28,11 @@ public class YMatrix {
 
     private MWNumericArray YSh;
 
-//    private BasicMatrix YShB;
-
     private MWNumericArray Yf;
-
-//    private BasicMatrix YfB;
 
     private MWNumericArray Yt;
 
-//    private BasicMatrix YtB;
-
     private MWNumericArray Ybus;
-
-//    private Matrix YB;
-
-//    private ComplexMatrix Ybus;
 
     private MPData mpData;
 

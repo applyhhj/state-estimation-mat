@@ -11,6 +11,8 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created on 2015/11/12.
@@ -20,6 +22,70 @@ public class Utils {
     public static class Common {
 
         public static IntComparator comparator = new IntComparator();
+
+        public static List<Long> getDigitStr(String text) {
+
+            List<Long> digitList = new ArrayList<Long>();
+
+            Pattern p = Pattern.compile("(\\d+)");
+
+            Matcher m = p.matcher(text);
+
+            while (m.find()) {
+
+                String find = m.group(1).toString();
+
+                digitList.add(Long.valueOf(find));
+
+            }
+
+            return digitList;
+
+        }
+
+        public static List<String> getValidFileNameList(String fpath) {
+
+            List<String> ret = new ArrayList<String>();
+
+            File file = new File(fpath);
+
+            File[] fileList = file.listFiles();
+
+            boolean valid;
+
+            for (int i = 0; i < fileList.length; i++) {
+
+                valid = true;
+
+                if (fileList[i].isFile()) {
+
+                    String fname = fileList[i].getName();
+
+                    for (Long e : getDigitStr(fname)) {
+
+                        if (e == 118 || e > 300) {
+
+                            valid = false;
+
+                            break;
+
+                        }
+
+                    }
+
+                    if (valid) {
+
+                        ret.add(fname);
+
+                    }
+
+                }
+
+            }
+
+            return ret;
+
+        }
 
         public static double[] toDoubleArray(List<Integer> intList) {
 

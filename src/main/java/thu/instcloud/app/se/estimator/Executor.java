@@ -6,6 +6,10 @@ import static thu.instcloud.app.se.common.Utils.Common.isLinux;
 
 /**
  * Created on 2015/11/7.
+ *
+ * ATTENTION: In Matpower excluded indices are specific to 30-bus system, so there there will be difference between result
+ * from this program and the result from Matpower estimator.
+ *
  */
 public class Executor {
 
@@ -15,11 +19,11 @@ public class Executor {
 
         if (isLinux()) {
 
-            fpath = "/home/hjh/doc/powersystem/4bus/ieee4cdftest.txt";
+            fpath = "/home/hjh/doc/powersystem/4bus/";
 
         } else {
 
-            fpath = "F:\\projects\\data\\matpower-data-process\\data\\case300.txt";
+            fpath = "F:\\projects\\data\\matpower-data-process\\data\\";
 
         }
 
@@ -27,7 +31,7 @@ public class Executor {
 
         option.setVerbose(0);
 
-        option.setDebug(true);
+        option.setDebug(false);
 
         PowerSystem powerSystem = new PowerSystem(fpath, option);
 
@@ -35,7 +39,7 @@ public class Executor {
 
         long start;
 
-        while (i++ < Integer.MAX_VALUE) {
+        while (i++ < 1) {
 
             start = System.currentTimeMillis();
 
@@ -48,7 +52,6 @@ public class Executor {
             Thread.sleep(1500);
 
         }
-
 
         System.out.print("\nDone!\n");
 
