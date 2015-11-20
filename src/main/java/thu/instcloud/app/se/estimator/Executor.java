@@ -2,6 +2,10 @@ package thu.instcloud.app.se.estimator;
 
 import thu.instcloud.app.se.common.EstimationOption;
 
+import java.util.List;
+import java.util.Random;
+
+import static thu.instcloud.app.se.common.Utils.Common.getValidFileNameList;
 import static thu.instcloud.app.se.common.Utils.Common.isLinux;
 
 /**
@@ -16,6 +20,8 @@ public class Executor {
     public static void main(String[] args) throws InterruptedException {
 
         String fpath;
+
+        Random random = new Random();
 
         if (isLinux()) {
 
@@ -33,23 +39,31 @@ public class Executor {
 
         option.setDebug(false);
 
-        PowerSystem powerSystem = new PowerSystem(fpath, option);
+        List<String> fnames = getValidFileNameList(fpath);
+
+        String fname = fnames.get(random.nextInt(fnames.size()) - 1);
+//        for test
+        fname = "case300.txt";
+
+        PowerSystem powerSystem = new PowerSystem(fpath + fname, option);
 
         int i = 0;
 
         long start;
 
-        while (i++ < 1) {
+        while (i++ < Integer.MAX_VALUE) {
+
+            System.out.printf("Current case: %s\n", fname);
 
             start = System.currentTimeMillis();
 
             powerSystem.run();
 
+            System.out.printf("Estimation %d, duration: %d ms", i, System.currentTimeMillis() - start);
+
             powerSystem.printStateInExternalInPolarDegree();
 
-            System.out.printf("\nEstimate %d duration: %d ms", i, System.currentTimeMillis() - start);
-
-            Thread.sleep(1500);
+            Thread.sleep(500);
 
         }
 

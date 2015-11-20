@@ -75,9 +75,9 @@ public class MeasureSystem {
 
         random = new Random();
 
-        sfCplx = powerSystem.getEstimator().getSfCplx();
+        sfCplx = powerSystem.getEstimator().getSfCplxTrue();
 
-        stCplx = powerSystem.getEstimator().getStCplx();
+        stCplx = powerSystem.getEstimator().getStCplxTrue();
 
         sbusCplx = powerSystem.getPowerFlow().getSbus();
 

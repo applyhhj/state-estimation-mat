@@ -41,9 +41,9 @@ public class Estimator {
 
     private MWNumericArray dStDvaCplx;
 
-    private MWNumericArray SfCplx;
+    private MWNumericArray SfCplxTrue;
 
-    private MWNumericArray StCplx;
+    private MWNumericArray StCplxTrue;
 
     private MWNumericArray HFReal;
 
@@ -87,10 +87,11 @@ public class Estimator {
 
         Vs = powerSystem.getState();
 
-        computeDSbusDv();
+        SfCplxTrue = null;
 
-        computeDSbrDv();
+        StCplxTrue = null;
 
+//        to get real measurement
         composeFullHMatrix();
 
         oneBadAtATime = false;
@@ -251,6 +252,9 @@ public class Estimator {
         zIds.clear();
 
         zIds.addAll(powerSystem.getMeasureSystem().getzIds());
+
+//        need to recompute jacobi matrix
+        composeFullHMatrix();
 
     }
 
@@ -503,9 +507,9 @@ public class Estimator {
 
         printWithTitle("dSt_dVa", dStDvaCplx);
 
-        printWithTitle("SfCplx", SfCplx);
+        printWithTitle("SfCplxTrue", SfCplxTrue);
 
-        printWithTitle("StCplx", StCplx);
+        printWithTitle("StCplxTrue", StCplxTrue);
 
         printWithTitle("Full H matrix", HFReal);
 
@@ -558,6 +562,10 @@ public class Estimator {
     *
     * */
     private void composeFullHMatrix() {
+
+        computeDSbusDv();
+
+        computeDSbrDv();
 
         int nb = powerSystem.getMpData().getnBus();
 
@@ -666,9 +674,18 @@ public class Estimator {
         dStDvmCplx = new OperationChain(VtMatrix).multiply(new OperationChain(Yt).multiply(VpfNormMatrixCplx).conj())
                 .add(new OperationChain(ItMatrix).conj().multiply(VNbrNbNormT)).getArray();
 
-        SfCplx = new OperationChain(Vf).multiplyByElement(new OperationChain(If).conj()).getArray();
+//        here sf st are true measurement from power flow, so only need to compute once
+        if (SfCplxTrue == null) {
 
-        StCplx = new OperationChain(Vt).multiplyByElement(new OperationChain(It).conj()).getArray();
+            SfCplxTrue = new OperationChain(Vf).multiplyByElement(new OperationChain(If).conj()).getArray();
+
+        }
+
+        if (StCplxTrue == null) {
+
+            StCplxTrue = new OperationChain(Vt).multiplyByElement(new OperationChain(It).conj()).getArray();
+
+        }
 
         disposeMatrix(If, It, IfMatrix, ItMatrix, Vf, Vt, VfNorm, VtNorm, VfMatrix, VtMatrix,
                 VNbrNbF, VNbrNbT, VNbrNbNormF, VNbrNbNormT);
@@ -760,12 +777,12 @@ public class Estimator {
         return dSbDvmCplx;
     }
 
-    public MWNumericArray getSfCplx() {
-        return SfCplx;
+    public MWNumericArray getSfCplxTrue() {
+        return SfCplxTrue;
     }
 
-    public MWNumericArray getStCplx() {
-        return StCplx;
+    public MWNumericArray getStCplxTrue() {
+        return StCplxTrue;
     }
 
     public void setWInvReal(MWNumericArray WInvReal) {

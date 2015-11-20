@@ -1,8 +1,10 @@
 import java.util.ArrayList;
 import java.util.List;
 
+import static thu.instcloud.app.se.common.Utils.Common.getDigitStr;
 import static thu.instcloud.app.se.common.Utils.Common.isLinux;
-import static thu.instcloud.app.se.debug.Test.*;
+import static thu.instcloud.app.se.debug.Test.getFileList;
+import static thu.instcloud.app.se.debug.Test.writeToFile;
 
 /**
  * Created on 2015/11/13.
