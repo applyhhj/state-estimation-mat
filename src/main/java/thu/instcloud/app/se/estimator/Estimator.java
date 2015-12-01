@@ -518,6 +518,7 @@ public class Estimator {
     public void printWithTitle(String title, MWNumericArray matrix) {
 
         System.out.print("\n" + title + "\n");
+
         System.out.print(matrix + "\n");
 
     }
@@ -599,6 +600,8 @@ public class Estimator {
                         new OperationChain(dSbDvmCplx).getImag(),
                         eyenb);
 
+        disposeMatrix(HFReal);
+
         HFReal = new OperationChain(HFRealCol1).mergeRow(HFRealCol2).getArray();
 
     }
@@ -659,6 +662,8 @@ public class Estimator {
 
         VNbrNbNormT = new OperationChain().sparseMatrix(idxBranch, idxBusTInter, VtNorm, NBranch, NBus).getArray();
 
+        disposeMatrix(dSfDvaCplx,dSfDvmCplx,dStDvaCplx,dStDvmCplx);
+
         dSfDvaCplx = new OperationChain(IfMatrix).conj().multiply(VNbrNbF).subtract(
                 new OperationChain(VfMatrix).multiply(
                         new OperationChain(Yf).multiply(VpfMatrixCplx).conj())
@@ -698,6 +703,8 @@ public class Estimator {
 
         VpfCplx = powerSystem.getPowerFlow().getV();
 
+        disposeMatrix(VpfNormCplx,VpfMatrixCplx,VpfNormMatrixCplx,dSbDvmCplx,dSbDvaCplx);
+
         VpfNormCplx = computeVnorm(VpfCplx);
 
         VpfMatrixCplx = new OperationChain(VpfCplx).diagonal().getArray();
@@ -714,8 +721,7 @@ public class Estimator {
 
         dSbDvaCplx = new OperationChain(VpfMatrixCplx).multiplyI().multiply(new OperationChain(IbusMatrix).subtract(
                 new OperationChain(powerSystem.getyMatrix().getYbus()).multiply(VpfMatrixCplx)
-                ).conj()
-        ).getArray();
+                ).conj()).getArray();
 
 //        dispose local instance
         IbusMatrix.dispose();
