@@ -1,5 +1,8 @@
 package thu.instcloud.app.se.mpdata;
 
+import com.mathworks.toolbox.javabuilder.MWClassID;
+import com.mathworks.toolbox.javabuilder.MWComplexity;
+import com.mathworks.toolbox.javabuilder.MWNumericArray;
 import thu.instcloud.app.se.common.Constants;
 
 import java.util.ArrayList;
@@ -202,6 +205,13 @@ public class MPData {
 
         }
 
+    }
+
+    public MWNumericArray getSbaseMat(){
+        int[] dims={1,1};
+        MWNumericArray res=MWNumericArray.newInstance(dims, MWClassID.DOUBLE, MWComplexity.REAL);
+        res.set(0,sbase);
+        return res;
     }
 
     public double getSbase() {

@@ -1,5 +1,8 @@
 package thu.instcloud.app.se.mpdata;
 
+import com.mathworks.toolbox.javabuilder.MWClassID;
+import com.mathworks.toolbox.javabuilder.MWComplexity;
+import com.mathworks.toolbox.javabuilder.MWNumericArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thu.instcloud.app.se.common.Constants;
@@ -357,6 +360,77 @@ public class BusData {
             QD[TOA.get(TIO.get(NpqIn.get(i)))] = qdNew[i];
 
         }
+
+    }
+
+    public MWNumericArray toOriginalMatArray(){
+
+        int[] dims={numberOut.length,paraNum};
+
+        MWNumericArray array=MWNumericArray.newInstance(dims, MWClassID.DOUBLE, MWComplexity.REAL);
+
+        int[] ids=new int[2];
+
+        for (int i = 0; i < numberOut.length; i++) {
+
+            ids[0]=i+1;
+
+            ids[1]=1;
+
+            array.set(ids,numberOut[i]);
+
+            ids[1]=2;
+
+            array.set(ids,type[i]);
+
+            ids[1]=3;
+
+            array.set(ids,PD[i]);
+
+            ids[1]=4;
+
+            array.set(ids,QD[i]);
+
+            ids[1]=5;
+
+            array.set(ids,Gs[i]);
+
+            ids[1]=6;
+
+            array.set(ids,Bs[i]);
+
+            ids[1]=7;
+
+            array.set(ids,area[i]);
+
+            ids[1]=8;
+
+            array.set(ids,voltage[i]);
+
+            ids[1]=9;
+
+//            restore angle to degree
+            array.set(ids,angle[i]/Math.PI*180);
+
+            ids[1]=10;
+
+            array.set(ids,VBaseKV[i]);
+
+            ids[1]=11;
+
+            array.set(ids,zone[i]);
+
+            ids[1]=12;
+
+            array.set(ids,VMax[i]);
+
+            ids[1]=13;
+
+            array.set(ids,VMin[i]);
+
+        }
+
+        return array;
 
     }
 

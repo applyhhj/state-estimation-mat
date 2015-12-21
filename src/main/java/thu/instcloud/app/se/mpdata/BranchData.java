@@ -1,5 +1,7 @@
 package thu.instcloud.app.se.mpdata;
 
+import com.mathworks.toolbox.javabuilder.MWClassID;
+import com.mathworks.toolbox.javabuilder.MWComplexity;
 import com.mathworks.toolbox.javabuilder.MWNumericArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -345,6 +347,76 @@ public class BranchData {
 
         }
 
+
+    }
+
+    public MWNumericArray toOriginalMatArray(){
+
+        int[] dims={i.length,paraNum-4};
+
+        MWNumericArray array=MWNumericArray.newInstance(dims, MWClassID.DOUBLE, MWComplexity.REAL);
+
+        int[] ids=new int[2];
+
+        for (int k = 0; k < i.length; k++) {
+
+            ids[0]=k+1;
+
+            ids[1]=1;
+
+            array.set(ids,i[k]);
+
+            ids[1]=2;
+
+            array.set(ids,j[k]);
+
+            ids[1]=3;
+
+            array.set(ids,r[k]);
+
+            ids[1]=4;
+
+            array.set(ids,x[k]);
+
+            ids[1]=5;
+
+            array.set(ids,b[k]);
+
+            ids[1]=6;
+
+            array.set(ids,rateA[k]);
+
+            ids[1]=7;
+
+            array.set(ids,rateB[k]);
+
+            ids[1]=8;
+
+            array.set(ids,rateC[k]);
+
+            ids[1]=9;
+
+            array.set(ids,ratio[k]);
+
+            ids[1]=10;
+
+            array.set(ids,angle[k]);
+
+            ids[1]=11;
+
+            array.set(ids,status[k]);
+
+            ids[1]=12;
+
+            array.set(ids,angmin[k]);
+
+            ids[1]=13;
+
+            array.set(ids,angmax[k]);
+
+        }
+
+        return array;
 
     }
 

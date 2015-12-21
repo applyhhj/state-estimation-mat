@@ -1,6 +1,7 @@
 package thu.instcloud.app.se.mpdata;
 
 import com.mathworks.toolbox.javabuilder.MWClassID;
+import com.mathworks.toolbox.javabuilder.MWComplexity;
 import com.mathworks.toolbox.javabuilder.MWNumericArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -513,6 +514,108 @@ public class GeneratorData {
             Qg[e.getKey()] = e.getValue();
 
         }
+
+    }
+
+    public MWNumericArray toOriginalMatArray(){
+
+        int[] dims={number.length,paraNum};
+
+        MWNumericArray array=MWNumericArray.newInstance(dims, MWClassID.DOUBLE, MWComplexity.REAL);
+
+        int[] ids=new int[2];
+
+        for (int k = 0; k < number.length; k++) {
+
+            ids[0]=k+1;
+
+            ids[1]=1;
+
+            array.set(ids,number[k]);
+
+            ids[1]=2;
+
+            array.set(ids,Pg[k]);
+
+            ids[1]=3;
+
+            array.set(ids,Qg[k]);
+
+            ids[1]=4;
+
+            array.set(ids,Qmax[k]);
+
+            ids[1]=5;
+
+            array.set(ids,Qmin[k]);
+
+            ids[1]=6;
+
+            array.set(ids,Vg[k]);
+
+            ids[1]=7;
+
+            array.set(ids,mBase[k]);
+
+            ids[1]=8;
+
+            array.set(ids,status[k]);
+
+            ids[1]=9;
+
+            array.set(ids,Pmax[k]);
+
+            ids[1]=10;
+
+            array.set(ids,Pmin[k]);
+
+            ids[1]=11;
+
+            array.set(ids,Pc1[k]);
+
+            ids[1]=12;
+
+            array.set(ids,Pc2[k]);
+
+            ids[1]=13;
+
+            array.set(ids,Qc1min[k]);
+
+            ids[1]=14;
+
+            array.set(ids,Qc1max[k]);
+
+            ids[1]=15;
+
+            array.set(ids,Qc2min[k]);
+
+            ids[1]=16;
+
+            array.set(ids,Qc2max[k]);
+
+            ids[1]=17;
+
+            array.set(ids,ramp_agc[k]);
+
+            ids[1]=18;
+
+            array.set(ids,ramp_10[k]);
+
+            ids[1]=19;
+
+            array.set(ids,ramp_30[k]);
+
+            ids[1]=20;
+
+            array.set(ids,ramp_q[k]);
+
+            ids[1]=21;
+
+            array.set(ids,apf[k]);
+
+        }
+
+        return array;
 
     }
 
