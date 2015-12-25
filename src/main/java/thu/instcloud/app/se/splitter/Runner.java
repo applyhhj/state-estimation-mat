@@ -14,7 +14,15 @@ public class Runner {
 
     public static void main(String[] args)throws MWException {
 
-        String filepath="F:\\projects\\data\\matpower-data-process\\data\\case1354pegase.txt";
+        String filepath;
+
+        String os = System.getProperty("os.name").toLowerCase();
+
+        if (os != null && os.startsWith("windows")) {
+            filepath = "F:\\projects\\data\\matpower-data-process\\data\\case1354pegase.txt";
+        }else {
+            filepath = "/home/hjh/projects/data/case1354pegase.txt";
+        }
 
         MPData mpData=new MPData(filepath);
 
