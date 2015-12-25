@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
-  <configuration build-checksum="2000200291" file="F:\projects\state-estimation-mat\matlab\MatOperation.prj" location="F:\projects\state-estimation-mat\matlab" name="MatOperation" preferred-package-location="F:\projects\state-estimation-mat\matlab\MatOperation\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.library" target-name="MATLAB Compiler for Libraries and Classes">
+  <configuration build-checksum="731984292" file="F:\projects\state-estimation-mat\matlab\MatOp\MatOperation.prj" location="F:\projects\state-estimation-mat\matlab\MatOp" name="MatOperation" preferred-package-location="F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.library" target-name="MATLAB Compiler for Libraries and Classes">
     <param.appname>MatOperation</param.appname>
     <param.icon />
     <param.icons />
@@ -46,7 +46,7 @@
     <param.net.tsa.namespace>MatOperation</param.net.tsa.namespace>
     <param.net.tsa.superclass>MatOperation</param.net.tsa.superclass>
     <param.net.tsa.metadata />
-    <param.net.tsa.metadata.assembly>F:\projects\state-estimation-mat-piec-api</param.net.tsa.metadata.assembly>
+    <param.net.tsa.metadata.assembly>C:\Program Files\MATLAB\R2014a\bin</param.net.tsa.metadata.assembly>
     <unset>
       <param.icon />
       <param.icons />
@@ -159,9 +159,9 @@
     <fileset.resources />
     <fileset.package />
     <build-deliverables>
-      <file location="${PROJECT_ROOT}\MatOperation\for_testing" name="readme.txt" optional="true">F:\projects\state-estimation-mat\matlab\MatOperation\for_testing\readme.txt</file>
-      <file location="${PROJECT_ROOT}\MatOperation\for_testing" name="doc" optional="false">F:\projects\state-estimation-mat\matlab\MatOperation\for_testing\doc</file>
-      <file location="${PROJECT_ROOT}\MatOperation\for_testing" name="MatOperation.jar" optional="false">F:\projects\state-estimation-mat\matlab\MatOperation\for_testing\MatOperation.jar</file>
+      <file location="${PROJECT_ROOT}\MatOperation\for_testing" name="MatOperation.jar" optional="false">F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_testing\MatOperation.jar</file>
+      <file location="${PROJECT_ROOT}\MatOperation\for_testing" name="doc" optional="false">F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_testing\doc</file>
+      <file location="${PROJECT_ROOT}\MatOperation\for_testing" name="readme.txt" optional="true">F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_testing\readme.txt</file>
     </build-deliverables>
     <workflow />
     <matlab>

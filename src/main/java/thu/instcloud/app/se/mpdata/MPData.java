@@ -210,7 +210,7 @@ public class MPData {
     public MWNumericArray getSbaseMat(){
         int[] dims={1,1};
         MWNumericArray res=MWNumericArray.newInstance(dims, MWClassID.DOUBLE, MWComplexity.REAL);
-        res.set(0,sbase);
+        res.set(1,sbase);
         return res;
     }
 

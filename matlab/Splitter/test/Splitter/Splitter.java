@@ -1,6 +1,6 @@
 /*
  * MATLAB Compiler: 5.1 (R2014a)
- * Date: Mon Dec 21 17:39:47 2015
+ * Date: Fri Dec 25 22:06:19 2015
  * Arguments: "-B" "macro_default" "-W" "java:Splitter,Splitter" "-T" "link:lib" "-d" 
  * "F:\\projects\\state-estimation-mat\\matlab\\Splitter\\test" "-v" 
  * "F:\\projects\\state-estimation-mat-piec-api\\graph\\BFSDivideGraph.m" 
@@ -9,6 +9,15 @@
  * "F:\\projects\\state-estimation-mat-piec-api\\graph\\reassignZone.m" 
  * "F:\\projects\\state-estimation-mat-piec-api\\graph\\splitLargeZone.m" 
  * "class{Splitter:F:\\projects\\state-estimation-mat-piec-api\\graph\\BFSDivideGraph.m,F:\\projects\\state-estimation-mat-piec-api\\graph\\mergeZones.m,F:\\projects\\state-estimation-mat-piec-api\\graph\\piecewise.m,F:\\projects\\state-estimation-mat-piec-api\\graph\\reassignZone.m,F:\\projects\\state-estimation-mat-piec-api\\graph\\splitLargeZone.m}" 
+ * "-a" "F:\\projects\\state-estimation-mat-grid-piecewise\\diffRep.m" "-a" 
+ * "F:\\projects\\matpower5.1\\e2i_data.m" "-a" "F:\\projects\\matpower5.1\\e2i_field.m" 
+ * "-a" "F:\\projects\\matpower5.1\\ext2int.m" "-a" 
+ * "F:\\projects\\matpower5.1\\get_reorder.m" "-a" 
+ * "F:\\projects\\state-estimation-mat-grid-piecewise\\getBusType.m" "-a" 
+ * "F:\\projects\\matpower5.1\\idx_brch.m" "-a" "F:\\projects\\matpower5.1\\idx_bus.m" 
+ * "-a" "F:\\projects\\matpower5.1\\idx_gen.m" "-a" 
+ * "F:\\projects\\state-estimation-mat-grid-piecewise\\intersectRep.m" "-a" 
+ * "F:\\projects\\matpower5.1\\run_userfcn.m" 
  */
 
 package Splitter;
@@ -65,7 +74,7 @@ public class Splitter extends MWComponentInstance<Splitter>
         new MWFunctionSignature(/* max outputs = */ 1,
                                 /* has varargout = */ false,
                                 /* function name = */ "piecewise",
-                                /* max inputs = */ 3,
+                                /* max inputs = */ 4,
                                 /* has varargin = */ false);
     /**
      * Maintains information used in calling the <code>reassignZone</code> M-function.
@@ -410,7 +419,7 @@ public class Splitter extends MWComponentInstance<Splitter>
 
     /**
      * Provides the standard interface for calling the <code>piecewise</code>
-     * M-function with 3 input arguments.
+     * M-function with 4 input arguments.
      * Input arguments may be passed as sub-classes of
      * <code>com.mathworks.toolbox.javabuilder.MWArray</code>, or as arrays of
      * any supported Java type. Arguments passed as Java types are converted to

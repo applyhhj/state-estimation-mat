@@ -1,182 +1,132 @@
 ant:
 <ant>
-  <mkdir dir="F:\projects\state-estimation-mat\matlab\MatOperation\for_redistribution" />
-  <mkdir dir="F:\projects\state-estimation-mat\matlab\MatOperation\for_testing" />
+  <mkdir dir="F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_redistribution" />
+  <mkdir dir="F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_testing" />
 </ant>
-mcc -W 'java:MatOperation,MatOperation' -T link:lib -d F:\projects\state-estimation-mat\matlab\MatOperation\for_testing -v F:\projects\state-estimation-mat\matlab\absJ.m F:\projects\state-estimation-mat\matlab\add.m F:\projects\state-estimation-mat\matlab\angleJ.m F:\projects\state-estimation-mat\matlab\conjugate.m F:\projects\state-estimation-mat\matlab\diagonal.m F:\projects\state-estimation-mat\matlab\divideByElement.m F:\projects\state-estimation-mat\matlab\eyeJ.m F:\projects\state-estimation-mat\matlab\getImag.m F:\projects\state-estimation-mat\matlab\getReal.m F:\projects\state-estimation-mat\matlab\invert.m F:\projects\state-estimation-mat\matlab\maxJ.m F:\projects\state-estimation-mat\matlab\mergeColumn.m F:\projects\state-estimation-mat\matlab\mergeRow.m F:\projects\state-estimation-mat\matlab\multiply.m F:\projects\state-estimation-mat\matlab\multiplyByElement.m F:\projects\state-estimation-mat\matlab\multiplyI.m F:\projects\state-estimation-mat\matlab\normJ.m F:\projects\state-estimation-mat\matlab\onesJ.m F:\projects\state-estimation-mat\matlab\selectColumns.m F:\projects\state-estimation-mat\matlab\selectRows.m F:\projects\state-estimation-mat\matlab\solveLinear.m F:\projects\state-estimation-mat\matlab\sparseMatrix.m F:\projects\state-estimation-mat\matlab\substract.m F:\projects\state-estimation-mat\matlab\sumJ.m F:\projects\state-estimation-mat\matlab\toSparse.m F:\projects\state-estimation-mat\matlab\transposeJ.m F:\projects\state-estimation-mat\matlab\zerosJ.m 'class{MatOperation:F:\projects\state-estimation-mat\matlab\absJ.m,F:\projects\state-estimation-mat\matlab\add.m,F:\projects\state-estimation-mat\matlab\angleJ.m,F:\projects\state-estimation-mat\matlab\conjugate.m,F:\projects\state-estimation-mat\matlab\diagonal.m,F:\projects\state-estimation-mat\matlab\divideByElement.m,F:\projects\state-estimation-mat\matlab\eyeJ.m,F:\projects\state-estimation-mat\matlab\getImag.m,F:\projects\state-estimation-mat\matlab\getReal.m,F:\projects\state-estimation-mat\matlab\invert.m,F:\projects\state-estimation-mat\matlab\maxJ.m,F:\projects\state-estimation-mat\matlab\mergeColumn.m,F:\projects\state-estimation-mat\matlab\mergeRow.m,F:\projects\state-estimation-mat\matlab\multiply.m,F:\projects\state-estimation-mat\matlab\multiplyByElement.m,F:\projects\state-estimation-mat\matlab\multiplyI.m,F:\projects\state-estimation-mat\matlab\normJ.m,F:\projects\state-estimation-mat\matlab\onesJ.m,F:\projects\state-estimation-mat\matlab\selectColumns.m,F:\projects\state-estimation-mat\matlab\selectRows.m,F:\projects\state-estimation-mat\matlab\solveLinear.m,F:\projects\state-estimation-mat\matlab\sparseMatrix.m,F:\projects\state-estimation-mat\matlab\substract.m,F:\projects\state-estimation-mat\matlab\sumJ.m,F:\projects\state-estimation-mat\matlab\toSparse.m,F:\projects\state-estimation-mat\matlab\transposeJ.m,F:\projects\state-estimation-mat\matlab\zerosJ.m}' 
+mcc -W 'java:MatOperation,MatOperation' -T link:lib -d F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_testing -v F:\projects\state-estimation-mat\matlab\MatOp\absJ.m F:\projects\state-estimation-mat\matlab\MatOp\add.m F:\projects\state-estimation-mat\matlab\MatOp\angleJ.m F:\projects\state-estimation-mat\matlab\MatOp\conjugate.m F:\projects\state-estimation-mat\matlab\MatOp\diagonal.m F:\projects\state-estimation-mat\matlab\MatOp\divideByElement.m F:\projects\state-estimation-mat\matlab\MatOp\eyeJ.m F:\projects\state-estimation-mat\matlab\MatOp\getImag.m F:\projects\state-estimation-mat\matlab\MatOp\getReal.m F:\projects\state-estimation-mat\matlab\MatOp\invert.m F:\projects\state-estimation-mat\matlab\MatOp\maxJ.m F:\projects\state-estimation-mat\matlab\MatOp\mergeColumn.m F:\projects\state-estimation-mat\matlab\MatOp\mergeRow.m F:\projects\state-estimation-mat\matlab\MatOp\multiply.m F:\projects\state-estimation-mat\matlab\MatOp\multiplyByElement.m F:\projects\state-estimation-mat\matlab\MatOp\multiplyI.m F:\projects\state-estimation-mat\matlab\MatOp\normJ.m F:\projects\state-estimation-mat\matlab\MatOp\onesJ.m F:\projects\state-estimation-mat\matlab\MatOp\selectColumns.m F:\projects\state-estimation-mat\matlab\MatOp\selectRows.m F:\projects\state-estimation-mat\matlab\MatOp\solveLinear.m F:\projects\state-estimation-mat\matlab\MatOp\sparseMatrix.m F:\projects\state-estimation-mat\matlab\MatOp\substract.m F:\projects\state-estimation-mat\matlab\MatOp\sumJ.m F:\projects\state-estimation-mat\matlab\MatOp\toSparse.m F:\projects\state-estimation-mat\matlab\MatOp\transposeJ.m F:\projects\state-estimation-mat\matlab\MatOp\zerosJ.m 'class{MatOperation:F:\projects\state-estimation-mat\matlab\MatOp\absJ.m,F:\projects\state-estimation-mat\matlab\MatOp\add.m,F:\projects\state-estimation-mat\matlab\MatOp\angleJ.m,F:\projects\state-estimation-mat\matlab\MatOp\conjugate.m,F:\projects\state-estimation-mat\matlab\MatOp\diagonal.m,F:\projects\state-estimation-mat\matlab\MatOp\divideByElement.m,F:\projects\state-estimation-mat\matlab\MatOp\eyeJ.m,F:\projects\state-estimation-mat\matlab\MatOp\getImag.m,F:\projects\state-estimation-mat\matlab\MatOp\getReal.m,F:\projects\state-estimation-mat\matlab\MatOp\invert.m,F:\projects\state-estimation-mat\matlab\MatOp\maxJ.m,F:\projects\state-estimation-mat\matlab\MatOp\mergeColumn.m,F:\projects\state-estimation-mat\matlab\MatOp\mergeRow.m,F:\projects\state-estimation-mat\matlab\MatOp\multiply.m,F:\projects\state-estimation-mat\matlab\MatOp\multiplyByElement.m,F:\projects\state-estimation-mat\matlab\MatOp\multiplyI.m,F:\projects\state-estimation-mat\matlab\MatOp\normJ.m,F:\projects\state-estimation-mat\matlab\MatOp\onesJ.m,F:\projects\state-estimation-mat\matlab\MatOp\selectColumns.m,F:\projects\state-estimation-mat\matlab\MatOp\selectRows.m,F:\projects\state-estimation-mat\matlab\MatOp\solveLinear.m,F:\projects\state-estimation-mat\matlab\MatOp\sparseMatrix.m,F:\projects\state-estimation-mat\matlab\MatOp\substract.m,F:\projects\state-estimation-mat\matlab\MatOp\sumJ.m,F:\projects\state-estimation-mat\matlab\MatOp\toSparse.m,F:\projects\state-estimation-mat\matlab\MatOp\transposeJ.m,F:\projects\state-estimation-mat\matlab\MatOp\zerosJ.m}' 
 Compiler version: 5.1 (R2014a)
 Dependency analysis by REQUIREMENTS.
-[Warning: Duplicate directory name: C:\Program
-Files\MATLAB\R2014a\toolbox\coder\simulinkcoder\cgv\API] 
-[> In path at 33
-  In requirements at 156] 
-[Warning: Duplicate directory name: C:\Program
-Files\MATLAB\R2014a\toolbox\matlab\winfun\NET] 
-[> In path at 33
-  In requirements at 156] 
-[Warning: Duplicate directory name: C:\Program
-Files\MATLAB\R2014a\toolbox\rtw\targets\AUTOSAR\AUTOSAR] 
-[> In path at 33
-  In requirements at 156] 
-[Warning: Duplicate directory name: C:\Program
-Files\MATLAB\R2014a\toolbox\rtw\targets\AUTOSAR\AUTOSAR\dataclasses] 
-[> In path at 33
-  In requirements at 156] 
-[Warning: Duplicate directory name: C:\Program
-Files\MATLAB\R2014a\toolbox\simulink\simulink\MPlayIO] 
-[> In path at 33
-  In requirements at 156] 
-[Warning: Duplicate directory name: C:\Program
-Files\MATLAB\R2014a\toolbox\slvnv\reqmgt\RTExplorer] 
-[> In path at 33
-  In requirements at 156] 
-[Warning: Adding path "F:\projects\state-estimation-mat\matlab" to Compiler path
-instance.] 
-[Warning: Adding path "F:\projects\state-estimation-mat\matlab" to Compiler path
-instance.] 
-[Warning: Duplicate directory name: F:\projects\state-estimation-mat\matlab] 
-[Warning: Adding path "F:\projects\state-estimation-mat\matlab" to Compiler path
-instance.] 
-[Warning: Duplicate directory name: F:\projects\state-estimation-mat\matlab] 
-[Warning: Adding path "F:\projects\state-estimation-mat\matlab" to Compiler path
-instance.] 
-[Warning: Duplicate directory name: F:\projects\state-estimation-mat\matlab] 
-[Warning: Adding path "F:\projects\state-estimation-mat\matlab" to Compiler path
-instance.] 
-[Warning: Duplicate directory name: F:\projects\state-estimation-mat\matlab] 
-[Warning: Adding path "F:\projects\state-estimation-mat\matlab" to Compiler path
-instance.] 
-[Warning: Duplicate directory name: F:\projects\state-estimation-mat\matlab] 
-[Warning: Adding path "F:\projects\state-estimation-mat\matlab" to Compiler path
-instance.] 
-[Warning: Duplicate directory name: F:\projects\state-estimation-mat\matlab] 
-[Warning: Adding path "F:\projects\state-estimation-mat\matlab" to Compiler path
-instance.] 
-[Warning: Duplicate directory name: F:\projects\state-estimation-mat\matlab] 
-[Warning: Adding path "F:\projects\state-estimation-mat\matlab" to Compiler path
-instance.] 
-[Warning: Duplicate directory name: F:\projects\state-estimation-mat\matlab] 
-[Warning: Adding path "F:\projects\state-estimation-mat\matlab" to Compiler path
-instance.] 
-[Warning: Duplicate directory name: F:\projects\state-estimation-mat\matlab] 
-[Warning: Adding path "F:\projects\state-estimation-mat\matlab" to Compiler path
-instance.] 
-[Warning: Duplicate directory name: F:\projects\state-estimation-mat\matlab] 
-[Warning: Adding path "F:\projects\state-estimation-mat\matlab" to Compiler path
-instance.] 
-[Warning: Duplicate directory name: F:\projects\state-estimation-mat\matlab] 
-[Warning: Adding path "F:\projects\state-estimation-mat\matlab" to Compiler path
-instance.] 
-[Warning: Duplicate directory name: F:\projects\state-estimation-mat\matlab] 
-[Warning: Adding path "F:\projects\state-estimation-mat\matlab" to Compiler path
-instance.] 
-[Warning: Duplicate directory name: F:\projects\state-estimation-mat\matlab] 
-[Warning: Adding path "F:\projects\state-estimation-mat\matlab" to Compiler path
-instance.] 
-[Warning: Duplicate directory name: F:\projects\state-estimation-mat\matlab] 
-[Warning: Adding path "F:\projects\state-estimation-mat\matlab" to Compiler path
-instance.] 
-[Warning: Duplicate directory name: F:\projects\state-estimation-mat\matlab] 
-[Warning: Adding path "F:\projects\state-estimation-mat\matlab" to Compiler path
-instance.] 
-[Warning: Duplicate directory name: F:\projects\state-estimation-mat\matlab] 
-[Warning: Adding path "F:\projects\state-estimation-mat\matlab" to Compiler path
-instance.] 
-[Warning: Duplicate directory name: F:\projects\state-estimation-mat\matlab] 
-[Warning: Adding path "F:\projects\state-estimation-mat\matlab" to Compiler path
-instance.] 
-[Warning: Duplicate directory name: F:\projects\state-estimation-mat\matlab] 
-[Warning: Adding path "F:\projects\state-estimation-mat\matlab" to Compiler path
-instance.] 
-[Warning: Duplicate directory name: F:\projects\state-estimation-mat\matlab] 
-[Warning: Adding path "F:\projects\state-estimation-mat\matlab" to Compiler path
-instance.] 
-[Warning: Duplicate directory name: F:\projects\state-estimation-mat\matlab] 
-[Warning: Adding path "F:\projects\state-estimation-mat\matlab" to Compiler path
-instance.] 
-[Warning: Duplicate directory name: F:\projects\state-estimation-mat\matlab] 
-[Warning: Adding path "F:\projects\state-estimation-mat\matlab" to Compiler path
-instance.] 
-[Warning: Duplicate directory name: F:\projects\state-estimation-mat\matlab] 
-[Warning: Adding path "F:\projects\state-estimation-mat\matlab" to Compiler path
-instance.] 
-[Warning: Duplicate directory name: F:\projects\state-estimation-mat\matlab] 
-[Warning: Adding path "F:\projects\state-estimation-mat\matlab" to Compiler path
-instance.] 
-[Warning: Duplicate directory name: F:\projects\state-estimation-mat\matlab] 
-[Warning: Adding path "F:\projects\state-estimation-mat\matlab" to Compiler path
-instance.] 
-[Warning: Duplicate directory name: F:\projects\state-estimation-mat\matlab] 
-[Warning: Adding path "F:\projects\state-estimation-mat\matlab" to Compiler path
-instance.] 
-[Warning: Duplicate directory name: F:\projects\state-estimation-mat\matlab] 
-Parsing file "F:\projects\state-estimation-mat\matlab\absJ.m"
+[Warning: Adding path "F:\projects\state-estimation-mat\matlab\MatOp" to
+Compiler path instance.] 
+[Warning: Adding path "F:\projects\state-estimation-mat\matlab\MatOp" to
+Compiler path instance.] 
+[Warning: Adding path "F:\projects\state-estimation-mat\matlab\MatOp" to
+Compiler path instance.] 
+[Warning: Adding path "F:\projects\state-estimation-mat\matlab\MatOp" to
+Compiler path instance.] 
+[Warning: Adding path "F:\projects\state-estimation-mat\matlab\MatOp" to
+Compiler path instance.] 
+[Warning: Adding path "F:\projects\state-estimation-mat\matlab\MatOp" to
+Compiler path instance.] 
+[Warning: Adding path "F:\projects\state-estimation-mat\matlab\MatOp" to
+Compiler path instance.] 
+[Warning: Adding path "F:\projects\state-estimation-mat\matlab\MatOp" to
+Compiler path instance.] 
+[Warning: Adding path "F:\projects\state-estimation-mat\matlab\MatOp" to
+Compiler path instance.] 
+[Warning: Adding path "F:\projects\state-estimation-mat\matlab\MatOp" to
+Compiler path instance.] 
+[Warning: Adding path "F:\projects\state-estimation-mat\matlab\MatOp" to
+Compiler path instance.] 
+[Warning: Adding path "F:\projects\state-estimation-mat\matlab\MatOp" to
+Compiler path instance.] 
+[Warning: Adding path "F:\projects\state-estimation-mat\matlab\MatOp" to
+Compiler path instance.] 
+[Warning: Adding path "F:\projects\state-estimation-mat\matlab\MatOp" to
+Compiler path instance.] 
+[Warning: Adding path "F:\projects\state-estimation-mat\matlab\MatOp" to
+Compiler path instance.] 
+[Warning: Adding path "F:\projects\state-estimation-mat\matlab\MatOp" to
+Compiler path instance.] 
+[Warning: Adding path "F:\projects\state-estimation-mat\matlab\MatOp" to
+Compiler path instance.] 
+[Warning: Adding path "F:\projects\state-estimation-mat\matlab\MatOp" to
+Compiler path instance.] 
+[Warning: Adding path "F:\projects\state-estimation-mat\matlab\MatOp" to
+Compiler path instance.] 
+[Warning: Adding path "F:\projects\state-estimation-mat\matlab\MatOp" to
+Compiler path instance.] 
+[Warning: Adding path "F:\projects\state-estimation-mat\matlab\MatOp" to
+Compiler path instance.] 
+[Warning: Adding path "F:\projects\state-estimation-mat\matlab\MatOp" to
+Compiler path instance.] 
+[Warning: Adding path "F:\projects\state-estimation-mat\matlab\MatOp" to
+Compiler path instance.] 
+[Warning: Adding path "F:\projects\state-estimation-mat\matlab\MatOp" to
+Compiler path instance.] 
+[Warning: Adding path "F:\projects\state-estimation-mat\matlab\MatOp" to
+Compiler path instance.] 
+[Warning: Adding path "F:\projects\state-estimation-mat\matlab\MatOp" to
+Compiler path instance.] 
+[Warning: Adding path "F:\projects\state-estimation-mat\matlab\MatOp" to
+Compiler path instance.] 
+Parsing file "F:\projects\state-estimation-mat\matlab\MatOp\absJ.m"
 	(Referenced from: "Compiler Command Line").
-Parsing file "F:\projects\state-estimation-mat\matlab\add.m"
+Parsing file "F:\projects\state-estimation-mat\matlab\MatOp\add.m"
 	(Referenced from: "Compiler Command Line").
-Parsing file "F:\projects\state-estimation-mat\matlab\angleJ.m"
+Parsing file "F:\projects\state-estimation-mat\matlab\MatOp\angleJ.m"
 	(Referenced from: "Compiler Command Line").
-Parsing file "F:\projects\state-estimation-mat\matlab\conjugate.m"
+Parsing file "F:\projects\state-estimation-mat\matlab\MatOp\conjugate.m"
 	(Referenced from: "Compiler Command Line").
-Parsing file "F:\projects\state-estimation-mat\matlab\diagonal.m"
+Parsing file "F:\projects\state-estimation-mat\matlab\MatOp\diagonal.m"
 	(Referenced from: "Compiler Command Line").
-Parsing file "F:\projects\state-estimation-mat\matlab\divideByElement.m"
+Parsing file "F:\projects\state-estimation-mat\matlab\MatOp\divideByElement.m"
 	(Referenced from: "Compiler Command Line").
-Parsing file "F:\projects\state-estimation-mat\matlab\eyeJ.m"
+Parsing file "F:\projects\state-estimation-mat\matlab\MatOp\eyeJ.m"
 	(Referenced from: "Compiler Command Line").
-Parsing file "F:\projects\state-estimation-mat\matlab\getImag.m"
+Parsing file "F:\projects\state-estimation-mat\matlab\MatOp\getImag.m"
 	(Referenced from: "Compiler Command Line").
-Parsing file "F:\projects\state-estimation-mat\matlab\getReal.m"
+Parsing file "F:\projects\state-estimation-mat\matlab\MatOp\getReal.m"
 	(Referenced from: "Compiler Command Line").
-Parsing file "F:\projects\state-estimation-mat\matlab\invert.m"
+Parsing file "F:\projects\state-estimation-mat\matlab\MatOp\invert.m"
 	(Referenced from: "Compiler Command Line").
-Parsing file "F:\projects\state-estimation-mat\matlab\maxJ.m"
+Parsing file "F:\projects\state-estimation-mat\matlab\MatOp\maxJ.m"
 	(Referenced from: "Compiler Command Line").
-Parsing file "F:\projects\state-estimation-mat\matlab\mergeColumn.m"
+Parsing file "F:\projects\state-estimation-mat\matlab\MatOp\mergeColumn.m"
 	(Referenced from: "Compiler Command Line").
-Parsing file "F:\projects\state-estimation-mat\matlab\mergeRow.m"
+Parsing file "F:\projects\state-estimation-mat\matlab\MatOp\mergeRow.m"
 	(Referenced from: "Compiler Command Line").
-Parsing file "F:\projects\state-estimation-mat\matlab\multiply.m"
+Parsing file "F:\projects\state-estimation-mat\matlab\MatOp\multiply.m"
 	(Referenced from: "Compiler Command Line").
-Parsing file "F:\projects\state-estimation-mat\matlab\multiplyByElement.m"
+Parsing file "F:\projects\state-estimation-mat\matlab\MatOp\multiplyByElement.m"
 	(Referenced from: "Compiler Command Line").
-Parsing file "F:\projects\state-estimation-mat\matlab\multiplyI.m"
+Parsing file "F:\projects\state-estimation-mat\matlab\MatOp\multiplyI.m"
 	(Referenced from: "Compiler Command Line").
-Parsing file "F:\projects\state-estimation-mat\matlab\normJ.m"
+Parsing file "F:\projects\state-estimation-mat\matlab\MatOp\normJ.m"
 	(Referenced from: "Compiler Command Line").
-Parsing file "F:\projects\state-estimation-mat\matlab\onesJ.m"
+Parsing file "F:\projects\state-estimation-mat\matlab\MatOp\onesJ.m"
 	(Referenced from: "Compiler Command Line").
-Parsing file "F:\projects\state-estimation-mat\matlab\selectColumns.m"
+Parsing file "F:\projects\state-estimation-mat\matlab\MatOp\selectColumns.m"
 	(Referenced from: "Compiler Command Line").
-Parsing file "F:\projects\state-estimation-mat\matlab\selectRows.m"
+Parsing file "F:\projects\state-estimation-mat\matlab\MatOp\selectRows.m"
 	(Referenced from: "Compiler Command Line").
-Parsing file "F:\projects\state-estimation-mat\matlab\solveLinear.m"
+Parsing file "F:\projects\state-estimation-mat\matlab\MatOp\solveLinear.m"
 	(Referenced from: "Compiler Command Line").
-Parsing file "F:\projects\state-estimation-mat\matlab\sparseMatrix.m"
+Parsing file "F:\projects\state-estimation-mat\matlab\MatOp\sparseMatrix.m"
 	(Referenced from: "Compiler Command Line").
-Parsing file "F:\projects\state-estimation-mat\matlab\substract.m"
+Parsing file "F:\projects\state-estimation-mat\matlab\MatOp\substract.m"
 	(Referenced from: "Compiler Command Line").
-Parsing file "F:\projects\state-estimation-mat\matlab\sumJ.m"
+Parsing file "F:\projects\state-estimation-mat\matlab\MatOp\sumJ.m"
 	(Referenced from: "Compiler Command Line").
-Parsing file "F:\projects\state-estimation-mat\matlab\toSparse.m"
+Parsing file "F:\projects\state-estimation-mat\matlab\MatOp\toSparse.m"
 	(Referenced from: "Compiler Command Line").
-Parsing file "F:\projects\state-estimation-mat\matlab\transposeJ.m"
+Parsing file "F:\projects\state-estimation-mat\matlab\MatOp\transposeJ.m"
 	(Referenced from: "Compiler Command Line").
-Parsing file "F:\projects\state-estimation-mat\matlab\zerosJ.m"
+Parsing file "F:\projects\state-estimation-mat\matlab\MatOp\zerosJ.m"
 	(Referenced from: "Compiler Command Line").
 Parsing file "C:\Program Files\MATLAB\R2014a\toolbox\compiler\deploy\deployprint.m"
 	(Referenced from: "Compiler Command Line").
 Parsing file "C:\Program Files\MATLAB\R2014a\toolbox\compiler\deploy\printdlg.m"
 	(Referenced from: "Compiler Command Line").
 Deleting 0 temporary MEX authorization files.
-Generating file "F:\projects\state-estimation-mat\matlab\MatOperation\for_testing\readme.txt".
-[解析开始时间 RegularFileObject[F:\projects\state-estimation-mat\matlab\MatOperation\for_testing\MatOperation\MatOperation.java]]
-[解析已完成, 用时 40 毫秒]
-[解析开始时间 RegularFileObject[F:\projects\state-estimation-mat\matlab\MatOperation\for_testing\MatOperation\MatOperationMCRFactory.java]]
-[解析已完成, 用时 2 毫秒]
-[解析开始时间 RegularFileObject[F:\projects\state-estimation-mat\matlab\MatOperation\for_testing\MatOperation\MatOperationRemote.java]]
+Generating file "F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_testing\readme.txt".
+[解析开始时间 RegularFileObject[F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_testing\MatOperation\MatOperation.java]]
+[解析已完成, 用时 36 毫秒]
+[解析开始时间 RegularFileObject[F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_testing\MatOperation\MatOperationMCRFactory.java]]
+[解析已完成, 用时 1 毫秒]
+[解析开始时间 RegularFileObject[F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_testing\MatOperation\MatOperationRemote.java]]
 [解析已完成, 用时 3 毫秒]
-[解析开始时间 RegularFileObject[F:\projects\state-estimation-mat\matlab\MatOperation\for_testing\MatOperation\package-info.java]]
+[解析开始时间 RegularFileObject[F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_testing\MatOperation\package-info.java]]
 [解析已完成, 用时 0 毫秒]
 [源文件的搜索路径: C:\Program Files\MATLAB\R2014a\toolbox\javabuilder\jar\javabuilder.jar]
 [类文件的搜索路径: C:\Program Files\Java\jdk1.7.0_80\jre\lib\resources.jar,C:\Program Files\Java\jdk1.7.0_80\jre\lib\rt.jar,C:\Program Files\Java\jdk1.7.0_80\jre\lib\sunrsasign.jar,C:\Program Files\Java\jdk1.7.0_80\jre\lib\jsse.jar,C:\Program Files\Java\jdk1.7.0_80\jre\lib\jce.jar,C:\Program Files\Java\jdk1.7.0_80\jre\lib\charsets.jar,C:\Program Files\Java\jdk1.7.0_80\jre\lib\jfr.jar,C:\Program Files\Java\jdk1.7.0_80\jre\classes,C:\Program Files\Java\jdk1.7.0_80\jre\lib\ext\access-bridge-64.jar,C:\Program Files\Java\jdk1.7.0_80\jre\lib\ext\dnsns.jar,C:\Program Files\Java\jdk1.7.0_80\jre\lib\ext\jaccess.jar,C:\Program Files\Java\jdk1.7.0_80\jre\lib\ext\localedata.jar,C:\Program Files\Java\jdk1.7.0_80\jre\lib\ext\sunec.jar,C:\Program Files\Java\jdk1.7.0_80\jre\lib\ext\sunjce_provider.jar,C:\Program Files\Java\jdk1.7.0_80\jre\lib\ext\sunmscapi.jar,C:\Program Files\Java\jdk1.7.0_80\jre\lib\ext\zipfs.jar,C:\Program Files\MATLAB\R2014a\toolbox\javabuilder\jar\javabuilder.jar]
@@ -211,42 +161,42 @@ Generating file "F:\projects\state-estimation-mat\matlab\MatOperation\for_testin
 [正在加载ZipFileIndexFileObject[C:\Program Files\Java\jdk1.7.0_80\lib\ct.sym(META-INF/sym/rt.jar/java/lang/Error.class)]]
 [正在加载ZipFileIndexFileObject[C:\Program Files\Java\jdk1.7.0_80\lib\ct.sym(META-INF/sym/rt.jar/java/lang/RuntimeException.class)]]
 [正在加载ZipFileIndexFileObject[C:\Program Files\Java\jdk1.7.0_80\lib\ct.sym(META-INF/sym/rt.jar/java/util/Iterator.class)]]
-[已写入RegularFileObject[F:\projects\state-estimation-mat\matlab\MatOperation\for_testing\classes\MatOperation\MatOperation.class]]
+[已写入RegularFileObject[F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_testing\classes\MatOperation\MatOperation.class]]
 [正在检查MatOperation.MatOperationMCRFactory]
 [正在加载ZipFileIndexFileObject[C:\Program Files\MATLAB\R2014a\toolbox\javabuilder\jar\javabuilder.jar(com/mathworks/toolbox/javabuilder/MWCtfClassLoaderSource.class)]]
-[已写入RegularFileObject[F:\projects\state-estimation-mat\matlab\MatOperation\for_testing\classes\MatOperation\MatOperationMCRFactory.class]]
+[已写入RegularFileObject[F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_testing\classes\MatOperation\MatOperationMCRFactory.class]]
 [正在检查MatOperation.MatOperationRemote]
 [正在加载ZipFileIndexFileObject[C:\Program Files\Java\jdk1.7.0_80\lib\ct.sym(META-INF/sym/rt.jar/java/io/IOException.class)]]
-[已写入RegularFileObject[F:\projects\state-estimation-mat\matlab\MatOperation\for_testing\classes\MatOperation\MatOperationRemote.class]]
-[共 628 毫秒]
-Executing command: ""C:\Program Files\Java\jdk1.7.0_80\bin\javac" -verbose -classpath "C:\Program Files\MATLAB\R2014a\toolbox\javabuilder\jar\javabuilder.jar" -d "F:\projects\state-estimation-mat\matlab\MatOperation\for_testing\classes" "F:\projects\state-estimation-mat\matlab\MatOperation\for_testing\MatOperation\MatOperation.java" "F:\projects\state-estimation-mat\matlab\MatOperation\for_testing\MatOperation\MatOperationMCRFactory.java" "F:\projects\state-estimation-mat\matlab\MatOperation\for_testing\MatOperation\MatOperationRemote.java" "F:\projects\state-estimation-mat\matlab\MatOperation\for_testing\MatOperation\package-info.java""Executing command: ""C:\Program Files\Java\jdk1.7.0_80\bin\jar" -vcf "F:\projects\state-estimation-mat\matlab\MatOperation\for_testing\MatOperation.jar" -C "F:\projects\state-estimation-mat\matlab\MatOperation\for_testing\classes" ."已添加清单
+[已写入RegularFileObject[F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_testing\classes\MatOperation\MatOperationRemote.class]]
+[共 464 毫秒]
+Executing command: ""C:\Program Files\Java\jdk1.7.0_80\bin\javac" -verbose -classpath "C:\Program Files\MATLAB\R2014a\toolbox\javabuilder\jar\javabuilder.jar" -d "F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_testing\classes" "F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_testing\MatOperation\MatOperation.java" "F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_testing\MatOperation\MatOperationMCRFactory.java" "F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_testing\MatOperation\MatOperationRemote.java" "F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_testing\MatOperation\package-info.java""Executing command: ""C:\Program Files\Java\jdk1.7.0_80\bin\jar" -vcf "F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_testing\MatOperation.jar" -C "F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_testing\classes" ."已添加清单
 正在添加: MatOperation/(输入 = 0) (输出 = 0)(存储了 0%)
 正在添加: MatOperation/MatOperation.class(输入 = 11518) (输出 = 3585)(压缩了 68%)
-正在添加: MatOperation/MatOperation.ctf(输入 = 74691) (输出 = 67219)(压缩了 10%)
-正在添加: MatOperation/MatOperationMCRFactory.class(输入 = 1826) (输出 = 770)(压缩了 57%)
+正在添加: MatOperation/MatOperation.ctf(输入 = 51281) (输出 = 44581)(压缩了 13%)
+正在添加: MatOperation/MatOperationMCRFactory.class(输入 = 1826) (输出 = 769)(压缩了 57%)
 正在添加: MatOperation/MatOperationRemote.class(输入 = 1095) (输出 = 470)(压缩了 57%)
-Executing command: ""C:\Program Files\Java\jdk1.7.0_80\bin\javadoc" -d "F:\projects\state-estimation-mat\matlab\MatOperation\for_testing\doc\html" -sourcepath "F:\projects\state-estimation-mat\matlab\MatOperation\for_testing" -classpath "C:\Program Files\MATLAB\R2014a\toolbox\javabuilder\jar\javabuilder.jar" MatOperation"正在加载程序包MatOperation的源文件...
+Executing command: ""C:\Program Files\Java\jdk1.7.0_80\bin\javadoc" -d "F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_testing\doc\html" -sourcepath "F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_testing" -classpath "C:\Program Files\MATLAB\R2014a\toolbox\javabuilder\jar\javabuilder.jar" MatOperation"正在加载程序包MatOperation的源文件...
 正在构造 Javadoc 信息...
 标准 Doclet 版本 1.7.0_80
 正在构建所有程序包和类的树...
-正在生成F:\projects\state-estimation-mat\matlab\MatOperation\for_testing\doc\html\MatOperation\MatOperation.html...
-正在生成F:\projects\state-estimation-mat\matlab\MatOperation\for_testing\doc\html\MatOperation\MatOperationMCRFactory.html...
-正在生成F:\projects\state-estimation-mat\matlab\MatOperation\for_testing\doc\html\MatOperation\MatOperationRemote.html...
-正在生成F:\projects\state-estimation-mat\matlab\MatOperation\for_testing\doc\html\MatOperation\package-frame.html...
-正在生成F:\projects\state-estimation-mat\matlab\MatOperation\for_testing\doc\html\MatOperation\package-summary.html...
-正在生成F:\projects\state-estimation-mat\matlab\MatOperation\for_testing\doc\html\MatOperation\package-tree.html...
-正在生成F:\projects\state-estimation-mat\matlab\MatOperation\for_testing\doc\html\constant-values.html...
+正在生成F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_testing\doc\html\MatOperation\MatOperation.html...
+正在生成F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_testing\doc\html\MatOperation\MatOperationMCRFactory.html...
+正在生成F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_testing\doc\html\MatOperation\MatOperationRemote.html...
+正在生成F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_testing\doc\html\MatOperation\package-frame.html...
+正在生成F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_testing\doc\html\MatOperation\package-summary.html...
+正在生成F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_testing\doc\html\MatOperation\package-tree.html...
+正在生成F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_testing\doc\html\constant-values.html...
 正在构建所有程序包和类的索引...
-正在生成F:\projects\state-estimation-mat\matlab\MatOperation\for_testing\doc\html\overview-tree.html...
-正在生成F:\projects\state-estimation-mat\matlab\MatOperation\for_testing\doc\html\index-all.html...
-正在生成F:\projects\state-estimation-mat\matlab\MatOperation\for_testing\doc\html\deprecated-list.html...
+正在生成F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_testing\doc\html\overview-tree.html...
+正在生成F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_testing\doc\html\index-all.html...
+正在生成F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_testing\doc\html\deprecated-list.html...
 正在构建所有类的索引...
-正在生成F:\projects\state-estimation-mat\matlab\MatOperation\for_testing\doc\html\allclasses-frame.html...
-正在生成F:\projects\state-estimation-mat\matlab\MatOperation\for_testing\doc\html\allclasses-noframe.html...
-正在生成F:\projects\state-estimation-mat\matlab\MatOperation\for_testing\doc\html\index.html...
-正在生成F:\projects\state-estimation-mat\matlab\MatOperation\for_testing\doc\html\help-doc.html...
+正在生成F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_testing\doc\html\allclasses-frame.html...
+正在生成F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_testing\doc\html\allclasses-noframe.html...
+正在生成F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_testing\doc\html\index.html...
+正在生成F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_testing\doc\html\help-doc.html...
 Packaging...
 Creating the bundle...
-Web based installer created at F:\projects\state-estimation-mat\matlab\MatOperation\for_redistribution\MyAppInstaller_web.exe.
+Web based installer created at F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_redistribution\MyAppInstaller_web.exe.
 Packaging complete.
-Source 'F:\projects\state-estimation-mat\matlab\MatOperation\for_testing\doc' exists but is a directory
+Source 'F:\projects\state-estimation-mat\matlab\MatOp\MatOperation\for_testing\doc' exists but is a directory

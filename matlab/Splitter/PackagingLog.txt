@@ -3,52 +3,19 @@ ant:
   <mkdir dir="F:\projects\state-estimation-mat\matlab\Splitter\redistribution" />
   <mkdir dir="F:\projects\state-estimation-mat\matlab\Splitter\test" />
 </ant>
-mcc -W 'java:Splitter,Splitter' -T link:lib -d F:\projects\state-estimation-mat\matlab\Splitter\test -v F:\projects\state-estimation-mat-piec-api\graph\BFSDivideGraph.m F:\projects\state-estimation-mat-piec-api\graph\mergeZones.m F:\projects\state-estimation-mat-piec-api\graph\piecewise.m F:\projects\state-estimation-mat-piec-api\graph\reassignZone.m F:\projects\state-estimation-mat-piec-api\graph\splitLargeZone.m 'class{Splitter:F:\projects\state-estimation-mat-piec-api\graph\BFSDivideGraph.m,F:\projects\state-estimation-mat-piec-api\graph\mergeZones.m,F:\projects\state-estimation-mat-piec-api\graph\piecewise.m,F:\projects\state-estimation-mat-piec-api\graph\reassignZone.m,F:\projects\state-estimation-mat-piec-api\graph\splitLargeZone.m}' 
-Name is nonexistent or not a directory: F:\projects\state-estimation-mat-piec-api\graph\.\graph
+mcc -W 'java:Splitter,Splitter' -T link:lib -d F:\projects\state-estimation-mat\matlab\Splitter\test -v F:\projects\state-estimation-mat-piec-api\graph\BFSDivideGraph.m F:\projects\state-estimation-mat-piec-api\graph\mergeZones.m F:\projects\state-estimation-mat-piec-api\graph\piecewise.m F:\projects\state-estimation-mat-piec-api\graph\reassignZone.m F:\projects\state-estimation-mat-piec-api\graph\splitLargeZone.m 'class{Splitter:F:\projects\state-estimation-mat-piec-api\graph\BFSDivideGraph.m,F:\projects\state-estimation-mat-piec-api\graph\mergeZones.m,F:\projects\state-estimation-mat-piec-api\graph\piecewise.m,F:\projects\state-estimation-mat-piec-api\graph\reassignZone.m,F:\projects\state-estimation-mat-piec-api\graph\splitLargeZone.m}' -a F:\projects\state-estimation-mat-grid-piecewise\diffRep.m -a F:\projects\matpower5.1\e2i_data.m -a F:\projects\matpower5.1\e2i_field.m -a F:\projects\matpower5.1\ext2int.m -a F:\projects\matpower5.1\get_reorder.m -a F:\projects\state-estimation-mat-grid-piecewise\getBusType.m -a F:\projects\matpower5.1\idx_brch.m -a F:\projects\matpower5.1\idx_bus.m -a F:\projects\matpower5.1\idx_gen.m -a F:\projects\state-estimation-mat-grid-piecewise\intersectRep.m -a F:\projects\matpower5.1\run_userfcn.m 
 Compiler version: 5.1 (R2014a)
 Dependency analysis by REQUIREMENTS.
-[Warning: Duplicate directory name: C:\Program
-Files\MATLAB\R2014a\toolbox\coder\simulinkcoder\cgv\API] 
-[> In path at 33
-  In requirements at 156] 
-[Warning: Duplicate directory name: C:\Program
-Files\MATLAB\R2014a\toolbox\matlab\winfun\NET] 
-[> In path at 33
-  In requirements at 156] 
-[Warning: Duplicate directory name: C:\Program
-Files\MATLAB\R2014a\toolbox\rtw\targets\AUTOSAR\AUTOSAR] 
-[> In path at 33
-  In requirements at 156] 
-[Warning: Duplicate directory name: C:\Program
-Files\MATLAB\R2014a\toolbox\rtw\targets\AUTOSAR\AUTOSAR\dataclasses] 
-[> In path at 33
-  In requirements at 156] 
-[Warning: Duplicate directory name: C:\Program
-Files\MATLAB\R2014a\toolbox\simulink\simulink\MPlayIO] 
-[> In path at 33
-  In requirements at 156] 
-[Warning: Duplicate directory name: C:\Program
-Files\MATLAB\R2014a\toolbox\slvnv\reqmgt\RTExplorer] 
-[> In path at 33
-  In requirements at 156] 
 [Warning: Adding path "F:\projects\state-estimation-mat-piec-api\graph" to
 Compiler path instance.] 
 [Warning: Adding path "F:\projects\state-estimation-mat-piec-api\graph" to
 Compiler path instance.] 
-[Warning: Duplicate directory name:
-F:\projects\state-estimation-mat-piec-api\graph] 
 [Warning: Adding path "F:\projects\state-estimation-mat-piec-api\graph" to
 Compiler path instance.] 
-[Warning: Duplicate directory name:
-F:\projects\state-estimation-mat-piec-api\graph] 
 [Warning: Adding path "F:\projects\state-estimation-mat-piec-api\graph" to
 Compiler path instance.] 
-[Warning: Duplicate directory name:
-F:\projects\state-estimation-mat-piec-api\graph] 
 [Warning: Adding path "F:\projects\state-estimation-mat-piec-api\graph" to
 Compiler path instance.] 
-[Warning: Duplicate directory name:
-F:\projects\state-estimation-mat-piec-api\graph] 
 Parsing file "F:\projects\state-estimation-mat-piec-api\graph\BFSDivideGraph.m"
 	(Referenced from: "Compiler Command Line").
 Parsing file "F:\projects\state-estimation-mat-piec-api\graph\mergeZones.m"
@@ -66,13 +33,13 @@ Parsing file "C:\Program Files\MATLAB\R2014a\toolbox\compiler\deploy\printdlg.m"
 Deleting 0 temporary MEX authorization files.
 Generating file "F:\projects\state-estimation-mat\matlab\Splitter\test\readme.txt".
 [解析开始时间 RegularFileObject[F:\projects\state-estimation-mat\matlab\Splitter\test\Splitter\Splitter.java]]
-[解析已完成, 用时 21 毫秒]
+[解析已完成, 用时 18 毫秒]
 [解析开始时间 RegularFileObject[F:\projects\state-estimation-mat\matlab\Splitter\test\Splitter\SplitterMCRFactory.java]]
 [解析已完成, 用时 1 毫秒]
 [解析开始时间 RegularFileObject[F:\projects\state-estimation-mat\matlab\Splitter\test\Splitter\SplitterRemote.java]]
-[解析已完成, 用时 1 毫秒]
+[解析已完成, 用时 2 毫秒]
 [解析开始时间 RegularFileObject[F:\projects\state-estimation-mat\matlab\Splitter\test\Splitter\package-info.java]]
-[解析已完成, 用时 0 毫秒]
+[解析已完成, 用时 1 毫秒]
 [源文件的搜索路径: C:\Program Files\MATLAB\R2014a\toolbox\javabuilder\jar\javabuilder.jar]
 [类文件的搜索路径: C:\Program Files\Java\jdk1.7.0_80\jre\lib\resources.jar,C:\Program Files\Java\jdk1.7.0_80\jre\lib\rt.jar,C:\Program Files\Java\jdk1.7.0_80\jre\lib\sunrsasign.jar,C:\Program Files\Java\jdk1.7.0_80\jre\lib\jsse.jar,C:\Program Files\Java\jdk1.7.0_80\jre\lib\jce.jar,C:\Program Files\Java\jdk1.7.0_80\jre\lib\charsets.jar,C:\Program Files\Java\jdk1.7.0_80\jre\lib\jfr.jar,C:\Program Files\Java\jdk1.7.0_80\jre\classes,C:\Program Files\Java\jdk1.7.0_80\jre\lib\ext\access-bridge-64.jar,C:\Program Files\Java\jdk1.7.0_80\jre\lib\ext\dnsns.jar,C:\Program Files\Java\jdk1.7.0_80\jre\lib\ext\jaccess.jar,C:\Program Files\Java\jdk1.7.0_80\jre\lib\ext\localedata.jar,C:\Program Files\Java\jdk1.7.0_80\jre\lib\ext\sunec.jar,C:\Program Files\Java\jdk1.7.0_80\jre\lib\ext\sunjce_provider.jar,C:\Program Files\Java\jdk1.7.0_80\jre\lib\ext\sunmscapi.jar,C:\Program Files\Java\jdk1.7.0_80\jre\lib\ext\zipfs.jar,C:\Program Files\MATLAB\R2014a\toolbox\javabuilder\jar\javabuilder.jar]
 [正在加载ZipFileIndexFileObject[C:\Program Files\MATLAB\R2014a\toolbox\javabuilder\jar\javabuilder.jar(com/mathworks/toolbox/javabuilder/internal/MWComponentInstance.class)]]
@@ -113,14 +80,15 @@ Generating file "F:\projects\state-estimation-mat\matlab\Splitter\test\readme.tx
 [正在检查Splitter.SplitterRemote]
 [正在加载ZipFileIndexFileObject[C:\Program Files\Java\jdk1.7.0_80\lib\ct.sym(META-INF/sym/rt.jar/java/io/IOException.class)]]
 [已写入RegularFileObject[F:\projects\state-estimation-mat\matlab\Splitter\test\classes\Splitter\SplitterRemote.class]]
-[共 351 毫秒]
+[共 340 毫秒]
 Executing command: ""C:\Program Files\Java\jdk1.7.0_80\bin\javac" -verbose -classpath "C:\Program Files\MATLAB\R2014a\toolbox\javabuilder\jar\javabuilder.jar" -d "F:\projects\state-estimation-mat\matlab\Splitter\test\classes" "F:\projects\state-estimation-mat\matlab\Splitter\test\Splitter\Splitter.java" "F:\projects\state-estimation-mat\matlab\Splitter\test\Splitter\SplitterMCRFactory.java" "F:\projects\state-estimation-mat\matlab\Splitter\test\Splitter\SplitterRemote.java" "F:\projects\state-estimation-mat\matlab\Splitter\test\Splitter\package-info.java""Executing command: ""C:\Program Files\Java\jdk1.7.0_80\bin\jar" -vcf "F:\projects\state-estimation-mat\matlab\Splitter\test\Splitter.jar" -C "F:\projects\state-estimation-mat\matlab\Splitter\test\classes" ."已添加清单
 正在添加: Splitter/(输入 = 0) (输出 = 0)(存储了 0%)
-正在添加: Splitter/Splitter.class(输入 = 5082) (输出 = 1981)(压缩了 61%)
-正在添加: Splitter/Splitter.ctf(输入 = 229401) (输出 = 220103)(压缩了 4%)
+正在添加: Splitter/Splitter.class(输入 = 5082) (输出 = 1984)(压缩了 60%)
+正在添加: Splitter/Splitter.ctf(输入 = 47797) (输出 = 43519)(压缩了 8%)
 正在添加: Splitter/SplitterMCRFactory.class(输入 = 1806) (输出 = 769)(压缩了 57%)
 正在添加: Splitter/SplitterRemote.class(输入 = 461) (输出 = 280)(压缩了 39%)
-Executing command: ""C:\Program Files\Java\jdk1.7.0_80\bin\javadoc" -d "F:\projects\state-estimation-mat\matlab\Splitter\test\doc\html" -sourcepath "F:\projects\state-estimation-mat\matlab\Splitter\test" -classpath "C:\Program Files\MATLAB\R2014a\toolbox\javabuilder\jar\javabuilder.jar" Splitter"正在加载程序包Splitter的源文件...
+Executing command: ""C:\Program Files\Java\jdk1.7.0_80\bin\javadoc" -d "F:\projects\state-estimation-mat\matlab\Splitter\test\doc\html" -sourcepath "F:\projects\state-estimation-mat\matlab\Splitter\test" -classpath "C:\Program Files\MATLAB\R2014a\toolbox\javabuilder\jar\javabuilder.jar" Splitter"正在创建目标目录: "F:\projects\state-estimation-mat\matlab\Splitter\test\doc\html\"
+正在加载程序包Splitter的源文件...
 正在构造 Javadoc 信息...
 标准 Doclet 版本 1.7.0_80
 正在构建所有程序包和类的树...

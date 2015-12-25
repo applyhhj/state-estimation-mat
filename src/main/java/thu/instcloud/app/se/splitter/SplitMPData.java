@@ -42,7 +42,7 @@ public class SplitMPData {
         bus.dispose();
         bus=newbus;
 
-        zones=(MWStructArray)splitter.piecewise(1,bus,gen,branch)[0];
+        zones=(MWStructArray)splitter.piecewise(1,baseMVA,bus,gen,branch)[0];
     }
 
     private MWNumericArray initN() {

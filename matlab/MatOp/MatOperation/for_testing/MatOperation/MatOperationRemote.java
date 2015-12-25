@@ -1,36 +1,36 @@
 /*
  * MATLAB Compiler: 5.1 (R2014a)
- * Date: Wed Nov 18 10:26:08 2015
+ * Date: Fri Dec 25 22:00:38 2015
  * Arguments: "-B" "macro_default" "-W" "java:MatOperation,MatOperation" "-T" "link:lib" 
- * "-d" "F:\\projects\\state-estimation-mat\\matlab\\MatOperation\\for_testing" "-v" 
- * "F:\\projects\\state-estimation-mat\\matlab\\absJ.m" 
- * "F:\\projects\\state-estimation-mat\\matlab\\add.m" 
- * "F:\\projects\\state-estimation-mat\\matlab\\angleJ.m" 
- * "F:\\projects\\state-estimation-mat\\matlab\\conjugate.m" 
- * "F:\\projects\\state-estimation-mat\\matlab\\diagonal.m" 
- * "F:\\projects\\state-estimation-mat\\matlab\\divideByElement.m" 
- * "F:\\projects\\state-estimation-mat\\matlab\\eyeJ.m" 
- * "F:\\projects\\state-estimation-mat\\matlab\\getImag.m" 
- * "F:\\projects\\state-estimation-mat\\matlab\\getReal.m" 
- * "F:\\projects\\state-estimation-mat\\matlab\\invert.m" 
- * "F:\\projects\\state-estimation-mat\\matlab\\maxJ.m" 
- * "F:\\projects\\state-estimation-mat\\matlab\\mergeColumn.m" 
- * "F:\\projects\\state-estimation-mat\\matlab\\mergeRow.m" 
- * "F:\\projects\\state-estimation-mat\\matlab\\multiply.m" 
- * "F:\\projects\\state-estimation-mat\\matlab\\multiplyByElement.m" 
- * "F:\\projects\\state-estimation-mat\\matlab\\multiplyI.m" 
- * "F:\\projects\\state-estimation-mat\\matlab\\normJ.m" 
- * "F:\\projects\\state-estimation-mat\\matlab\\onesJ.m" 
- * "F:\\projects\\state-estimation-mat\\matlab\\selectColumns.m" 
- * "F:\\projects\\state-estimation-mat\\matlab\\selectRows.m" 
- * "F:\\projects\\state-estimation-mat\\matlab\\solveLinear.m" 
- * "F:\\projects\\state-estimation-mat\\matlab\\sparseMatrix.m" 
- * "F:\\projects\\state-estimation-mat\\matlab\\substract.m" 
- * "F:\\projects\\state-estimation-mat\\matlab\\sumJ.m" 
- * "F:\\projects\\state-estimation-mat\\matlab\\toSparse.m" 
- * "F:\\projects\\state-estimation-mat\\matlab\\transposeJ.m" 
- * "F:\\projects\\state-estimation-mat\\matlab\\zerosJ.m" 
- * "class{MatOperation:F:\\projects\\state-estimation-mat\\matlab\\absJ.m,F:\\projects\\state-estimation-mat\\matlab\\add.m,F:\\projects\\state-estimation-mat\\matlab\\angleJ.m,F:\\projects\\state-estimation-mat\\matlab\\conjugate.m,F:\\projects\\state-estimation-mat\\matlab\\diagonal.m,F:\\projects\\state-estimation-mat\\matlab\\divideByElement.m,F:\\projects\\state-estimation-mat\\matlab\\eyeJ.m,F:\\projects\\state-estimation-mat\\matlab\\getImag.m,F:\\projects\\state-estimation-mat\\matlab\\getReal.m,F:\\projects\\state-estimation-mat\\matlab\\invert.m,F:\\projects\\state-estimation-mat\\matlab\\maxJ.m,F:\\projects\\state-estimation-mat\\matlab\\mergeColumn.m,F:\\projects\\state-estimation-mat\\matlab\\mergeRow.m,F:\\projects\\state-estimation-mat\\matlab\\multiply.m,F:\\projects\\state-estimation-mat\\matlab\\multiplyByElement.m,F:\\projects\\state-estimation-mat\\matlab\\multiplyI.m,F:\\projects\\state-estimation-mat\\matlab\\normJ.m,F:\\projects\\state-estimation-mat\\matlab\\onesJ.m,F:\\projects\\state-estimation-mat\\matlab\\selectColumns.m,F:\\projects\\state-estimation-mat\\matlab\\selectRows.m,F:\\projects\\state-estimation-mat\\matlab\\solveLinear.m,F:\\projects\\state-estimation-mat\\matlab\\sparseMatrix.m,F:\\projects\\state-estimation-mat\\matlab\\substract.m,F:\\projects\\state-estimation-mat\\matlab\\sumJ.m,F:\\projects\\state-estimation-mat\\matlab\\toSparse.m,F:\\projects\\state-estimation-mat\\matlab\\transposeJ.m,F:\\projects\\state-estimation-mat\\matlab\\zerosJ.m}" 
+ * "-d" "F:\\projects\\state-estimation-mat\\matlab\\MatOp\\MatOperation\\for_testing" 
+ * "-v" "F:\\projects\\state-estimation-mat\\matlab\\MatOp\\absJ.m" 
+ * "F:\\projects\\state-estimation-mat\\matlab\\MatOp\\add.m" 
+ * "F:\\projects\\state-estimation-mat\\matlab\\MatOp\\angleJ.m" 
+ * "F:\\projects\\state-estimation-mat\\matlab\\MatOp\\conjugate.m" 
+ * "F:\\projects\\state-estimation-mat\\matlab\\MatOp\\diagonal.m" 
+ * "F:\\projects\\state-estimation-mat\\matlab\\MatOp\\divideByElement.m" 
+ * "F:\\projects\\state-estimation-mat\\matlab\\MatOp\\eyeJ.m" 
+ * "F:\\projects\\state-estimation-mat\\matlab\\MatOp\\getImag.m" 
+ * "F:\\projects\\state-estimation-mat\\matlab\\MatOp\\getReal.m" 
+ * "F:\\projects\\state-estimation-mat\\matlab\\MatOp\\invert.m" 
+ * "F:\\projects\\state-estimation-mat\\matlab\\MatOp\\maxJ.m" 
+ * "F:\\projects\\state-estimation-mat\\matlab\\MatOp\\mergeColumn.m" 
+ * "F:\\projects\\state-estimation-mat\\matlab\\MatOp\\mergeRow.m" 
+ * "F:\\projects\\state-estimation-mat\\matlab\\MatOp\\multiply.m" 
+ * "F:\\projects\\state-estimation-mat\\matlab\\MatOp\\multiplyByElement.m" 
+ * "F:\\projects\\state-estimation-mat\\matlab\\MatOp\\multiplyI.m" 
+ * "F:\\projects\\state-estimation-mat\\matlab\\MatOp\\normJ.m" 
+ * "F:\\projects\\state-estimation-mat\\matlab\\MatOp\\onesJ.m" 
+ * "F:\\projects\\state-estimation-mat\\matlab\\MatOp\\selectColumns.m" 
+ * "F:\\projects\\state-estimation-mat\\matlab\\MatOp\\selectRows.m" 
+ * "F:\\projects\\state-estimation-mat\\matlab\\MatOp\\solveLinear.m" 
+ * "F:\\projects\\state-estimation-mat\\matlab\\MatOp\\sparseMatrix.m" 
+ * "F:\\projects\\state-estimation-mat\\matlab\\MatOp\\substract.m" 
+ * "F:\\projects\\state-estimation-mat\\matlab\\MatOp\\sumJ.m" 
+ * "F:\\projects\\state-estimation-mat\\matlab\\MatOp\\toSparse.m" 
+ * "F:\\projects\\state-estimation-mat\\matlab\\MatOp\\transposeJ.m" 
+ * "F:\\projects\\state-estimation-mat\\matlab\\MatOp\\zerosJ.m" 
+ * "class{MatOperation:F:\\projects\\state-estimation-mat\\matlab\\MatOp\\absJ.m,F:\\projects\\state-estimation-mat\\matlab\\MatOp\\add.m,F:\\projects\\state-estimation-mat\\matlab\\MatOp\\angleJ.m,F:\\projects\\state-estimation-mat\\matlab\\MatOp\\conjugate.m,F:\\projects\\state-estimation-mat\\matlab\\MatOp\\diagonal.m,F:\\projects\\state-estimation-mat\\matlab\\MatOp\\divideByElement.m,F:\\projects\\state-estimation-mat\\matlab\\MatOp\\eyeJ.m,F:\\projects\\state-estimation-mat\\matlab\\MatOp\\getImag.m,F:\\projects\\state-estimation-mat\\matlab\\MatOp\\getReal.m,F:\\projects\\state-estimation-mat\\matlab\\MatOp\\invert.m,F:\\projects\\state-estimation-mat\\matlab\\MatOp\\maxJ.m,F:\\projects\\state-estimation-mat\\matlab\\MatOp\\mergeColumn.m,F:\\projects\\state-estimation-mat\\matlab\\MatOp\\mergeRow.m,F:\\projects\\state-estimation-mat\\matlab\\MatOp\\multiply.m,F:\\projects\\state-estimation-mat\\matlab\\MatOp\\multiplyByElement.m,F:\\projects\\state-estimation-mat\\matlab\\MatOp\\multiplyI.m,F:\\projects\\state-estimation-mat\\matlab\\MatOp\\normJ.m,F:\\projects\\state-estimation-mat\\matlab\\MatOp\\onesJ.m,F:\\projects\\state-estimation-mat\\matlab\\MatOp\\selectColumns.m,F:\\projects\\state-estimation-mat\\matlab\\MatOp\\selectRows.m,F:\\projects\\state-estimation-mat\\matlab\\MatOp\\solveLinear.m,F:\\projects\\state-estimation-mat\\matlab\\MatOp\\sparseMatrix.m,F:\\projects\\state-estimation-mat\\matlab\\MatOp\\substract.m,F:\\projects\\state-estimation-mat\\matlab\\MatOp\\sumJ.m,F:\\projects\\state-estimation-mat\\matlab\\MatOp\\toSparse.m,F:\\projects\\state-estimation-mat\\matlab\\MatOp\\transposeJ.m,F:\\projects\\state-estimation-mat\\matlab\\MatOp\\zerosJ.m}" 
  */
 
 package MatOperation;
@@ -44,33 +44,33 @@ import java.rmi.RemoteException;
  * The <code>MatOperationRemote</code> class provides a Java RMI-compliant interface to 
  * the M-functions from the files:
  * <pre>
- *  F:\\projects\\state-estimation-mat\\matlab\\absJ.m
- *  F:\\projects\\state-estimation-mat\\matlab\\add.m
- *  F:\\projects\\state-estimation-mat\\matlab\\angleJ.m
- *  F:\\projects\\state-estimation-mat\\matlab\\conjugate.m
- *  F:\\projects\\state-estimation-mat\\matlab\\diagonal.m
- *  F:\\projects\\state-estimation-mat\\matlab\\divideByElement.m
- *  F:\\projects\\state-estimation-mat\\matlab\\eyeJ.m
- *  F:\\projects\\state-estimation-mat\\matlab\\getImag.m
- *  F:\\projects\\state-estimation-mat\\matlab\\getReal.m
- *  F:\\projects\\state-estimation-mat\\matlab\\invert.m
- *  F:\\projects\\state-estimation-mat\\matlab\\maxJ.m
- *  F:\\projects\\state-estimation-mat\\matlab\\mergeColumn.m
- *  F:\\projects\\state-estimation-mat\\matlab\\mergeRow.m
- *  F:\\projects\\state-estimation-mat\\matlab\\multiply.m
- *  F:\\projects\\state-estimation-mat\\matlab\\multiplyByElement.m
- *  F:\\projects\\state-estimation-mat\\matlab\\multiplyI.m
- *  F:\\projects\\state-estimation-mat\\matlab\\normJ.m
- *  F:\\projects\\state-estimation-mat\\matlab\\onesJ.m
- *  F:\\projects\\state-estimation-mat\\matlab\\selectColumns.m
- *  F:\\projects\\state-estimation-mat\\matlab\\selectRows.m
- *  F:\\projects\\state-estimation-mat\\matlab\\solveLinear.m
- *  F:\\projects\\state-estimation-mat\\matlab\\sparseMatrix.m
- *  F:\\projects\\state-estimation-mat\\matlab\\substract.m
- *  F:\\projects\\state-estimation-mat\\matlab\\sumJ.m
- *  F:\\projects\\state-estimation-mat\\matlab\\toSparse.m
- *  F:\\projects\\state-estimation-mat\\matlab\\transposeJ.m
- *  F:\\projects\\state-estimation-mat\\matlab\\zerosJ.m
+ *  F:\\projects\\state-estimation-mat\\matlab\\MatOp\\absJ.m
+ *  F:\\projects\\state-estimation-mat\\matlab\\MatOp\\add.m
+ *  F:\\projects\\state-estimation-mat\\matlab\\MatOp\\angleJ.m
+ *  F:\\projects\\state-estimation-mat\\matlab\\MatOp\\conjugate.m
+ *  F:\\projects\\state-estimation-mat\\matlab\\MatOp\\diagonal.m
+ *  F:\\projects\\state-estimation-mat\\matlab\\MatOp\\divideByElement.m
+ *  F:\\projects\\state-estimation-mat\\matlab\\MatOp\\eyeJ.m
+ *  F:\\projects\\state-estimation-mat\\matlab\\MatOp\\getImag.m
+ *  F:\\projects\\state-estimation-mat\\matlab\\MatOp\\getReal.m
+ *  F:\\projects\\state-estimation-mat\\matlab\\MatOp\\invert.m
+ *  F:\\projects\\state-estimation-mat\\matlab\\MatOp\\maxJ.m
+ *  F:\\projects\\state-estimation-mat\\matlab\\MatOp\\mergeColumn.m
+ *  F:\\projects\\state-estimation-mat\\matlab\\MatOp\\mergeRow.m
+ *  F:\\projects\\state-estimation-mat\\matlab\\MatOp\\multiply.m
+ *  F:\\projects\\state-estimation-mat\\matlab\\MatOp\\multiplyByElement.m
+ *  F:\\projects\\state-estimation-mat\\matlab\\MatOp\\multiplyI.m
+ *  F:\\projects\\state-estimation-mat\\matlab\\MatOp\\normJ.m
+ *  F:\\projects\\state-estimation-mat\\matlab\\MatOp\\onesJ.m
+ *  F:\\projects\\state-estimation-mat\\matlab\\MatOp\\selectColumns.m
+ *  F:\\projects\\state-estimation-mat\\matlab\\MatOp\\selectRows.m
+ *  F:\\projects\\state-estimation-mat\\matlab\\MatOp\\solveLinear.m
+ *  F:\\projects\\state-estimation-mat\\matlab\\MatOp\\sparseMatrix.m
+ *  F:\\projects\\state-estimation-mat\\matlab\\MatOp\\substract.m
+ *  F:\\projects\\state-estimation-mat\\matlab\\MatOp\\sumJ.m
+ *  F:\\projects\\state-estimation-mat\\matlab\\MatOp\\toSparse.m
+ *  F:\\projects\\state-estimation-mat\\matlab\\MatOp\\transposeJ.m
+ *  F:\\projects\\state-estimation-mat\\matlab\\MatOp\\zerosJ.m
  * </pre>
  * The {@link #dispose} method <b>must</b> be called on a <code>MatOperationRemote</code> 
  * instance when it is no longer needed to ensure that native resources allocated by this 
