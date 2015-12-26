@@ -15,7 +15,7 @@ MATLAB Builder JA Read Me
 
   (2) run the MCR Installer.
 
-Or download the Windows 64-bit version of the MCR for R2014a 
+Or download the Linux 64-bit version of the MCR for R2014a 
 from the MathWorks Web site by navigating to
 
    http://www.mathworks.com/products/compiler/mcr/index.html
@@ -33,15 +33,13 @@ in the MathWorks Documentation Center.
 . javabuilder.jar must be included in your CLASSPATH. javabuilder.jar 
   can be found in: 
   
-  <mcr_root>*\toolbox\javabuilder\jar\win64\javabuilder.jar
+  <mcr_root>*/toolbox/javabuilder/jar/glnxa64/javabuilder.jar
   
-
-NOTE: You will need administrator rights to run MCRInstaller. 
  
 2. Files to Deploy and Package
 
 -Splitter.jar
--MCRInstaller.exe 
+-MCRInstaller.zip 
    - if end users are unable to download the MCR using the above  
      link, include it when building your component by clicking 
      the "Add MCR" link in the Deployment Tool

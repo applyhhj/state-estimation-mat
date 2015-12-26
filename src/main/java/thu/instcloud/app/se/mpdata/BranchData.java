@@ -68,7 +68,9 @@ public class BranchData {
 
     private List<Integer> runBranchTBusNumIn;
 
-    private int paraNum;
+    private int paraNumPF;
+
+    private int paraNumOPF;
 
     private int n;
 
@@ -82,7 +84,9 @@ public class BranchData {
 
         offBranchIds = new ArrayList<Integer>();
 
-        paraNum = 17;
+        paraNumPF = 17;
+
+        paraNumOPF=21;
 
         n = 0;
 
@@ -133,7 +137,7 @@ public class BranchData {
 
             cols = dataStr.get(j).trim().split(" +");
 
-            if (cols.length != paraNum) {
+            if (cols.length != paraNumPF&&cols.length!=paraNumOPF) {
 
                 logger.error("Incorrect data format!");
 
@@ -175,6 +179,8 @@ public class BranchData {
             PTtmp[j] = Double.parseDouble(cols[15]);
 
             QTtmp[j] = Double.parseDouble(cols[16]);
+
+//            discard OPF related data
 
         }
 
@@ -352,7 +358,7 @@ public class BranchData {
 
     public MWNumericArray toOriginalMatArray(){
 
-        int[] dims={i.length,paraNum-4};
+        int[] dims={i.length, paraNumPF -4};
 
         MWNumericArray array=MWNumericArray.newInstance(dims, MWClassID.DOUBLE, MWComplexity.REAL);
 
@@ -556,12 +562,12 @@ public class BranchData {
         this.QT = QT;
     }
 
-    public int getParaNum() {
-        return paraNum;
+    public int getParaNumPF() {
+        return paraNumPF;
     }
 
-    public void setParaNum(int paraNum) {
-        this.paraNum = paraNum;
+    public void setParaNumPF(int paraNumPF) {
+        this.paraNumPF = paraNumPF;
     }
 
     public int getN() {

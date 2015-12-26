@@ -4,16 +4,16 @@
         <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} [%t] %-5level %logger{36} - %msg%n"/>
         </Console>
-        <File name="log" fileName="logs/state-estimation-simple.log" append="false">
+        <File name="log" fileName="logs/state-estimation-mat.log" append="false">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %class{36} %L %M - %msg%xEx%n"/>
         </File>
     </Appenders>
     <Loggers>
-        <Logger name="ic.app.se.simple" level="all">
+        <Logger name="thu.instcloud.app.se" level="info">
             <AppenderRef ref="Console"/>
             <AppenderRef ref="log"/>
         </Logger>
-        <Root level="trace">
+        <Root level="info">
             <AppenderRef ref="Console"/>
             <AppenderRef ref="log"/>
         </Root>

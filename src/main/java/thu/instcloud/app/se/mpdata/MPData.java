@@ -31,29 +31,36 @@ public class MPData {
 
     private int nBus;
 
-    public MPData(String filepath) {
-
-        branchData = new BranchData();
-
-        busData = new BusData();
-
-        genData = new GeneratorData(busData);
-
-        importData(filepath);
-
-        busData.reorderBusNumbers(branchData);
-
-        genData.ClassifyGenBusNumberIn();
-
-        nBranch = branchData.getN();
-
-        nBus = busData.getN();
-
+    public MPData(List<String> data){
+        init();
+        importData(data);
     }
 
-    private void importData(String filepath) {
+    public MPData(String filepath) {
+        init();
+        importData(filepath);
+    }
 
+    private void init(){
+        branchData = new BranchData();
+        busData = new BusData();
+        genData = new GeneratorData(busData);
+    }
+
+    private void initThen(){
+
+        busData.reorderBusNumbers(branchData);
+        genData.ClassifyGenBusNumberIn();
+        nBranch = branchData.getN();
+        nBus = busData.getN();
+    }
+
+    private void importData(String filepath){
         List<String> fileContent = readStringFromFile(filepath);
+        importData(fileContent);
+    }
+
+    private void importData(List<String>  fileContent) {
 
         String entry;
 
@@ -204,6 +211,8 @@ public class MPData {
             i++;
 
         }
+
+        initThen();
 
     }
 

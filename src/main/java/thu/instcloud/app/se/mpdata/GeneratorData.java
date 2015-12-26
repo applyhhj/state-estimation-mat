@@ -69,6 +69,8 @@ public class GeneratorData {
 
     private int paraNum;
 
+    private int paraNumOPF;
+
     private List<Integer> runGenIds;
 
     private List<Integer> runNonePQGenIds;
@@ -96,6 +98,8 @@ public class GeneratorData {
         this.busData = busData;
 
         paraNum = 21;
+
+        paraNumOPF=25;
 
         n = 0;
 
@@ -153,7 +157,7 @@ public class GeneratorData {
 
             cols = dataStr.get(i).trim().split(" +");
 
-            if (cols.length != paraNum) {
+            if (cols.length != paraNum&&cols.length!=paraNumOPF) {
 
                 logger.error("Incorrect data format!");
 
@@ -202,6 +206,8 @@ public class GeneratorData {
             ramp_qtmp[i] = Double.parseDouble(cols[19]);
 
             apftmp[i] = Double.parseDouble(cols[20]);
+
+//            we discard data related to OPF
 
         }
 

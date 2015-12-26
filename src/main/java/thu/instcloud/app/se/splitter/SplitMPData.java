@@ -15,18 +15,24 @@ public class SplitMPData {
     private MWNumericArray branch;
     private MWNumericArray N;
     private MWNumericArray baseMVA;
+    private String caseID;
     private int Nint;
     private MPData mpData;
 
     private MWStructArray zones;
 
-    public SplitMPData(MPData mpData, int N) throws MWException {
-        if (splitter == null) {
-            splitter = new Splitter();
+    public SplitMPData(MPData mpData, int N) {
+        try {
+            if (splitter == null) {
+                splitter = new Splitter();
+            }
+            this.mpData = mpData;
+            this.Nint = N;
+            split();
+        }catch (MWException e){
+            e.printStackTrace();
         }
-        this.mpData = mpData;
-        this.Nint = N;
-        split();
+
     }
 
 //    all keeps original bus number
@@ -91,5 +97,17 @@ public class SplitMPData {
 
     public MWStructArray getZones() {
         return zones;
+    }
+
+    public String getCaseID() {
+        return caseID;
+    }
+
+    public void setCaseID(String caseID) {
+        this.caseID = caseID;
+    }
+
+    public MWNumericArray getBaseMVA() {
+        return baseMVA;
     }
 }

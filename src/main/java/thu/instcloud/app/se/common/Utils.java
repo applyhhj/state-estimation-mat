@@ -23,6 +23,23 @@ public class Utils {
 
         public static IntComparator comparator = new IntComparator();
 
+
+        public static List<String> getFileList(String fpath) {
+            List<String> ret=new ArrayList<String>();
+
+            File file = new File(fpath);
+            File[] fileList = file.listFiles();
+
+            for (int i = 0; i < fileList.length; i++) {
+                if (fileList[i].isFile()) {
+                    ret.add(fileList[i].getName());
+                }
+            }
+
+            return ret;
+
+        }
+
         public static List<Long> getDigitStr(String text) {
 
             List<Long> digitList = new ArrayList<Long>();

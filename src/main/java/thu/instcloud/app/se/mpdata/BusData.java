@@ -54,6 +54,8 @@ public class BusData {
 
     private int paraNum;
 
+    private int paraNumOPF;
+
     private int n;
 
     private int nrefI;
@@ -69,6 +71,8 @@ public class BusData {
         TOA = new HashMap<Integer, Integer>();
 
         paraNum = 13;
+
+        paraNumOPF=17;
 
         n = 0;
 
@@ -110,7 +114,7 @@ public class BusData {
 
             cols = dataStr.get(i).trim().split(" +");
 
-            if (cols.length != paraNum) {
+            if (cols.length != paraNum&&cols.length!=paraNumOPF) {
 
                 logger.error("Incorrect data format!");
 
@@ -144,6 +148,8 @@ public class BusData {
             Vmaxtmp[i] = Double.parseDouble(cols[11]);
 
             Vmintmp[i] = Double.parseDouble(cols[12]);
+
+//            we discard the data related to OPF
 
         }
 
