@@ -78,6 +78,8 @@ public class SplitSystemRBolt extends JedisRichBolt {
 
 //              TODO: later, try to pass this data to the next bolt instead of store to redis then fetch it
                 p.set(mkByteKey(rawdatakey, SplitterUtils.REDIS.KEYS.ZONES), data.getZones().serialize());
+                p.set(mkKey(caseid, SplitterUtils.REDIS.KEYS.ZONES, SplitterUtils.REDIS.KEYS.NUM),
+                        data.getZones().getDimensions()[1]+"");
 
 //                well this is clumsy but we have no choice
                 String keysRec = mkKey(caseid, SplitterUtils.REDIS.KEYS.KEYS);
@@ -88,7 +90,8 @@ public class SplitSystemRBolt extends JedisRichBolt {
                         mkKey(rawdatakey, SplitterUtils.REDIS.KEYS.BRANCH),
                         mkKey(rawdatakey, SplitterUtils.REDIS.KEYS.GEN),
                         mkKey(rawdatakey, SplitterUtils.REDIS.KEYS.SBASE),
-                        mkKey(rawdatakey, SplitterUtils.REDIS.KEYS.ZONES)
+                        mkKey(rawdatakey, SplitterUtils.REDIS.KEYS.ZONES),
+                        mkKey(caseid, SplitterUtils.REDIS.KEYS.ZONES, SplitterUtils.REDIS.KEYS.NUM)
                 );
 
                 p.sync();

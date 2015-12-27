@@ -30,7 +30,7 @@ public class ShowCaseRBolt extends JedisRichBolt {
 
     @Override
     public void execute(Tuple tuple) {
-        String caseID=tuple.getStringByField(SplitterUtils.FIELDS.CASE_ID);
+        String caseID=tuple.getStringByField(SplitterUtils.STORM.FIELDS.CASE_ID);
         printDataStrs(caseID);
         collector.ack(tuple);
     }

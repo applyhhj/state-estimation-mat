@@ -29,8 +29,8 @@ public class SplitterUtils {
     }
 
     public abstract class REDIS{
-
         public abstract class KEYS{
+
             public static final String RAW_DATA="rawData";
 
             public static final String BUS="bus";
@@ -38,6 +38,9 @@ public class SplitterUtils {
             public static final String BRANCH="branch";
             public static final String SBASE="sbase";
             public static final String ZONES="zones";
+            public static final String NUM="N";
+
+            public static final String MEASURE="measure";
 
 //            use this one to remember all data related to a case
             public static final String KEYS="keys";
@@ -56,6 +59,11 @@ public class SplitterUtils {
 
             public static final String OVERWRITE = "overwrite";
             public static final String DATA_CHANGED = "changed";
+
+//            for measurement system
+            public static final String MEASURE_TYPE="measureType";
+            public static final String MEASURE_ID="measureId";
+            public static final String MEASURE_DATA="measureData";
 
         }
     }
@@ -78,6 +86,21 @@ public class SplitterUtils {
             public static final String OUT_BUS_NUM_OUT="ii2eout";
             public static final String BUS_NUM_OUT="ii2e";
             public static final String BRANCH_IDS="brids";
+        }
+
+    }
+
+    public abstract class MEASURE{
+
+        public abstract class TYPE{
+            public static final String PF="pf";
+            public static final String PT="pt";
+            public static final String PBUS="pbus";
+            public static final String VA="va";
+            public static final String VM="vm";
+            public static final String QF="qf";
+            public static final String QT="qt";
+            public static final String QBUS="qbus";
         }
 
     }

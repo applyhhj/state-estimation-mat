@@ -52,8 +52,8 @@ public class CaseDataSpout extends BaseRichSpout {
             Utils.sleep(5000);
             return;
         }
-        String currentCaseFile= caseFiles.get(caseidx++);
-//        String currentCaseFile="case2869pegase.txt";
+//        String currentCaseFile= caseFiles.get(caseidx++);
+        String currentCaseFile="case2869pegase.txt";
         List<String> caseDataStrs=readStringFromFile(casedir+currentCaseFile);
         System.out.printf("\nEmitted case file %5d/%d %25s.\n",caseidx,caseFiles.size(),currentCaseFile);
 
@@ -61,10 +61,10 @@ public class CaseDataSpout extends BaseRichSpout {
                 getCaseFromFileName(currentCaseFile),
                 caseDataStrs,
                 N,
-                false
+                true
                 ));
 
-        Utils.sleep(1000);
+        Utils.sleep(10000000);
     }
 
     @Override

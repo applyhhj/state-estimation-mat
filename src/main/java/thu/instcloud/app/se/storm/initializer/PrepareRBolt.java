@@ -49,7 +49,7 @@ public class PrepareRBolt extends JedisRichBolt {
 
     @Override
     public void execute(Tuple tuple) {
-        caseid=tuple.getStringByField(SplitterUtils.FIELDS.CASE_ID);
+        caseid=tuple.getStringByField(SplitterUtils.STORM.FIELDS.CASE_ID);
         initializeZoneNew(tuple);
         storeNewZoneData();
         collector.ack(tuple);
@@ -57,7 +57,7 @@ public class PrepareRBolt extends JedisRichBolt {
 
     private void initializeZoneNew(Tuple tuple){
         try {
-            zone=(MWStructArray)MWStructArray.deserialize(tuple.getBinaryByField(SplitterUtils.FIELDS.ZONE_DATA));
+            zone=(MWStructArray)MWStructArray.deserialize(tuple.getBinaryByField(SplitterUtils.STORM.FIELDS.ZONE_DATA));
             if (zone!=null) {
                 zoneNew = (MWStructArray) initializer.Api_PrepareEstimation(1, zone)[0];
             }
@@ -94,6 +94,18 @@ public class PrepareRBolt extends JedisRichBolt {
                 p.sadd(keysRec,e.getKey());
             }
 
+//            add measure keys to keys that need to flush when exit estimation
+            p.sadd(keysRec,
+                    mkKey(caseid, SplitterUtils.REDIS.KEYS.MEASURE, SplitterUtils.MEASURE.TYPE.PF),
+                    mkKey(caseid, SplitterUtils.REDIS.KEYS.MEASURE, SplitterUtils.MEASURE.TYPE.PBUS),
+                    mkKey(caseid, SplitterUtils.REDIS.KEYS.MEASURE, SplitterUtils.MEASURE.TYPE.PT),
+                    mkKey(caseid, SplitterUtils.REDIS.KEYS.MEASURE, SplitterUtils.MEASURE.TYPE.QBUS),
+                    mkKey(caseid, SplitterUtils.REDIS.KEYS.MEASURE, SplitterUtils.MEASURE.TYPE.QT),
+                    mkKey(caseid, SplitterUtils.REDIS.KEYS.MEASURE, SplitterUtils.MEASURE.TYPE.QF),
+                    mkKey(caseid, SplitterUtils.REDIS.KEYS.MEASURE, SplitterUtils.MEASURE.TYPE.VA),
+                    mkKey(caseid, SplitterUtils.REDIS.KEYS.MEASURE, SplitterUtils.MEASURE.TYPE.VM)
+                    );
+
             p.sync();
         }finally {
             zoneNew.dispose();
@@ -107,6 +119,7 @@ public class PrepareRBolt extends JedisRichBolt {
         double[][] brids=(double[][]) zoneNew.get(SplitterUtils.MW.FIELDS.BRANCH_IDS,1);
         double[][] ii2e=(double[][]) zoneNew.get(SplitterUtils.MW.FIELDS.BUS_NUM_OUT,1);
 
+//        if any of this list is empty then no entry will be add in redis
         String[] ii2eoutArr=toStringArray(ii2eout);
         String[] bridsArr=toStringArray(brids);
         String[] ii2eArr=toStringArray(ii2e);

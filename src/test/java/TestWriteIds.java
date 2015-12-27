@@ -38,10 +38,18 @@ public class TestWriteIds {
 //            jedis.del(lii2eoutkey);
 
             Set<String> keys=jedis.smembers(testkey);
-            for (String str:keys){
-                p.del(str);
+            Set<String> allkeys=jedis.keys("*");
+            System.out.printf("%d   %d\n",keys.size(),allkeys.size());
+            for (String str:allkeys){
+                if (keys.contains(str)){
+                    keys.remove(str);
+                }
             }
-            p.sync();
+            for (String str:keys){
+                System.out.println(str);
+            }
+
+//            p.sync();
         }
 
         jedisPool.destroy();
