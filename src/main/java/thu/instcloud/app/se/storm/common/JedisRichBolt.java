@@ -1,4 +1,4 @@
-package thu.instcloud.app.se.storm.splitter;
+package thu.instcloud.app.se.storm.common;
 
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -14,7 +14,8 @@ import java.util.Map;
  * Created by hjh on 15-12-26.
  */
 public class JedisRichBolt extends BaseRichBolt {
-    static JedisPool jedisPool;
+    protected static JedisPool jedisPool;
+    protected OutputCollector collector;
 
     public JedisRichBolt(String reidsIp){
         if (jedisPool==null){
@@ -29,7 +30,7 @@ public class JedisRichBolt extends BaseRichBolt {
 
     @Override
     public void prepare(Map map, TopologyContext topologyContext, OutputCollector outputCollector) {
-
+        collector=outputCollector;
     }
 
     @Override

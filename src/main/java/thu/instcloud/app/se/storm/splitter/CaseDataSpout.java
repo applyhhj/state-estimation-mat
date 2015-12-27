@@ -61,11 +61,10 @@ public class CaseDataSpout extends BaseRichSpout {
                 getCaseFromFileName(currentCaseFile),
                 caseDataStrs,
                 N,
-                true
+                false
                 ));
 
         Utils.sleep(1000);
-
     }
 
     @Override

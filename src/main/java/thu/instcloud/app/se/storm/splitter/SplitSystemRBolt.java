@@ -12,6 +12,7 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import thu.instcloud.app.se.mpdata.MPData;
 import thu.instcloud.app.se.splitter.SplitMPData;
+import thu.instcloud.app.se.storm.common.JedisRichBolt;
 
 import java.util.List;
 import java.util.Map;
@@ -22,15 +23,12 @@ import static thu.instcloud.app.se.storm.splitter.SplitterUtils.mkKey;
 /**
  * Created by hjh on 15-12-26.
  */
-public class SplitSystemBolt extends BaseRichBolt {
+public class SplitSystemRBolt extends JedisRichBolt {
     OutputCollector collector;
-    static JedisPool jedisPool;
     boolean changed;
 
-    public SplitSystemBolt(String reidsIp){
-        if (jedisPool==null){
-            jedisPool = new JedisPool(new JedisPoolConfig(), reidsIp);
-        }
+    public SplitSystemRBolt(String reidsIp){
+        super(reidsIp);
     }
 
     @Override
@@ -59,7 +57,6 @@ public class SplitSystemBolt extends BaseRichBolt {
     @Override
     public void cleanup() {
         super.cleanup();
-        jedisPool.destroy();
     }
 
     private void splitAndStore(String caseid,Tuple tuple){
@@ -74,10 +71,13 @@ public class SplitSystemBolt extends BaseRichBolt {
                 int zbn=tuple.getIntegerByField(SplitterUtils.FIELDS.CASE_ZONE_BN);
                 SplitMPData data=splitSystem(caseid,caseDataStrs,zbn);
 
+//                TODO: use kryo to serialize
                 jedis.set(mkByteKey(rawdatakey,SplitterUtils.REDIS.KEYS.BUS),data.getBus().serialize());
                 jedis.set(mkByteKey(rawdatakey,SplitterUtils.REDIS.KEYS.BRANCH),data.getBranch().serialize());
                 jedis.set(mkByteKey(rawdatakey,SplitterUtils.REDIS.KEYS.GEN),data.getGen().serialize());
                 jedis.set(mkByteKey(rawdatakey,SplitterUtils.REDIS.KEYS.SBASE),data.getBaseMVA().serialize());
+
+//              TODO: later, try to pass this data to the next bolt instead of store to redis then fetch it
                 jedis.set(mkByteKey(rawdatakey, SplitterUtils.REDIS.KEYS.ZONES),data.getZones().serialize());
 
 //              do remember to release mem used by matlab

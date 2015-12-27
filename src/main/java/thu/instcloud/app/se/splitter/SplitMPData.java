@@ -9,7 +9,8 @@ import thu.instcloud.app.se.mpdata.MPData;
  */
 public class SplitMPData {
 
-    private static Splitter splitter;
+//    not sure if matlab java built method is thread safe or not
+    private Splitter splitter;
     private MWNumericArray bus;
     private MWNumericArray gen;
     private MWNumericArray branch;

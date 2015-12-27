@@ -1,5 +1,7 @@
 package thu.instcloud.app.se.storm.splitter;
 
+import com.mathworks.toolbox.javabuilder.MWStructArray;
+
 import java.util.List;
 
 /**
@@ -20,6 +22,10 @@ public class SplitterUtils {
 
     public static byte[] mkByteKey(String ...keys){
         return mkKey(keys).getBytes();
+    }
+
+    public static String getCaseFromFileName(String caseFile){
+        return caseFile.replace(CONSTANTS.CASE_FILE_EXT,"");
     }
 
     public abstract class REDIS{
@@ -43,6 +49,8 @@ public class SplitterUtils {
         public static final String CASE_ID="caseID";
         public static final String CASE_DATA="caseData";
         public static final String CASE_ZONE_BN="zoneBusNum";
+        public static final String ZONE_DATA="zoneData";
+
         public static final String OVERWRITE="overwrite";
         public static final String DATA_CHANGED="changed";
 
@@ -52,8 +60,19 @@ public class SplitterUtils {
         public static final String CASE_FILE_EXT=".txt";
     }
 
-    public static String getCaseFromFileName(String caseFile){
-        return caseFile.replace(CONSTANTS.CASE_FILE_EXT,"");
+    public static class MW{
+        public static MWStructArray getArrayElement(MWStructArray array,int idx){
+            MWStructArray res=new MWStructArray(1,1,array.fieldNames());
+            for (String key:array.fieldNames()){
+                res.set(key,1,array.get(key,idx));
+            }
+            return res;
+        }
+
+        public abstract class FIELDS{
+            public static final String ZONE_NUM="num";
+        }
+
     }
 
 }
