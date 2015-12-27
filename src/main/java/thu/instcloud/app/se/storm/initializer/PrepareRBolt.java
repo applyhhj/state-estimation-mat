@@ -8,12 +8,16 @@ import backtype.storm.tuple.Tuple;
 import com.mathworks.toolbox.javabuilder.MWException;
 import com.mathworks.toolbox.javabuilder.MWStructArray;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Pipeline;
 import thu.instcloud.app.se.storm.common.JedisRichBolt;
 import thu.instcloud.app.se.storm.splitter.SplitterUtils;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static thu.instcloud.app.se.storm.splitter.SplitterUtils.mkByteKey;
+import static thu.instcloud.app.se.storm.splitter.SplitterUtils.mkKey;
 
 /**
  * Created by hjh on 15-12-27.
@@ -73,13 +77,59 @@ public class PrepareRBolt extends JedisRichBolt {
         }
 
         try (Jedis jedis=jedisPool.getResource()){
+            Pipeline p=jedis.pipelined();
+            jedis.auth(SplitterUtils.REDIS.PASS);
+
+            String keysRec = mkKey(caseid, SplitterUtils.REDIS.KEYS.KEYS);
+
             int zoneNum=(int)((double[][]) zoneNew.get(SplitterUtils.MW.FIELDS.ZONE_NUM,1))[0][0];
             byte[] key=mkByteKey(caseid, SplitterUtils.REDIS.KEYS.ZONES,String.valueOf(zoneNum));
-            jedis.auth(SplitterUtils.REDIS.PASS);
-            jedis.set(key,zoneNew.serialize());
+            p.set(key,zoneNew.serialize());
+            p.sadd(keysRec,new String(key));
+
+            Map<String,String[]> idsKeyVals=getIdsMap(zoneNew,new String(key));
+            for (Map.Entry<String,String[]> e:idsKeyVals.entrySet()){
+                p.del( e.getKey());
+                p.lpush(e.getKey(),e.getValue());
+                p.sadd(keysRec,e.getKey());
+            }
+
+            p.sync();
         }finally {
             zoneNew.dispose();
         }
 
+    }
+
+    private Map<String,String[]> getIdsMap(MWStructArray zoneNew,String zonesKey){
+        Map<String,String[]> res=new HashMap<>();
+        double[][] ii2eout=(double[][]) zoneNew.get(SplitterUtils.MW.FIELDS.OUT_BUS_NUM_OUT,1);
+        double[][] brids=(double[][]) zoneNew.get(SplitterUtils.MW.FIELDS.BRANCH_IDS,1);
+        double[][] ii2e=(double[][]) zoneNew.get(SplitterUtils.MW.FIELDS.BUS_NUM_OUT,1);
+
+        String[] ii2eoutArr=toStringArray(ii2eout);
+        String[] bridsArr=toStringArray(brids);
+        String[] ii2eArr=toStringArray(ii2e);
+
+        String ii2eoutKey=mkKey(zonesKey, SplitterUtils.MW.FIELDS.OUT_BUS_NUM_OUT);
+        String ii2eKey=mkKey(zonesKey, SplitterUtils.MW.FIELDS.BUS_NUM_OUT);
+        String bridsKey=mkKey(zonesKey, SplitterUtils.MW.FIELDS.BRANCH_IDS);
+
+        res.put(ii2eKey,ii2eArr);
+        res.put(ii2eoutKey,ii2eoutArr);
+        res.put(bridsKey,bridsArr);
+
+        return res;
+
+    }
+
+
+    private String[] toStringArray(double[][] data){
+        String[] res=new String[data.length];
+        for (int i = 0; i < data.length; i++) {
+            res[i]=String.valueOf((int)data[i][0]);
+        }
+
+        return res;
     }
 }

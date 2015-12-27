@@ -37,23 +37,27 @@ public class SplitterUtils {
             public static final String GEN="gen";
             public static final String BRANCH="branch";
             public static final String SBASE="sbase";
-
             public static final String ZONES="zones";
+
+//            use this one to remember all data related to a case
+            public static final String KEYS="keys";
         }
 
         public static final String REDIS_SERVER_IP="10.0.0.1";
         public static final String PASS="redis";
     }
 
-    public abstract class FIELDS{
-        public static final String CASE_ID="caseID";
-        public static final String CASE_DATA="caseData";
-        public static final String CASE_ZONE_BN="zoneBusNum";
-        public static final String ZONE_DATA="zoneData";
+    public abstract class STORM {
+        public abstract class FIELDS {
+            public static final String CASE_ID = "caseID";
+            public static final String CASE_DATA = "caseData";
+            public static final String CASE_ZONE_BN = "zoneBusNum";
+            public static final String ZONE_DATA = "zoneData";
 
-        public static final String OVERWRITE="overwrite";
-        public static final String DATA_CHANGED="changed";
+            public static final String OVERWRITE = "overwrite";
+            public static final String DATA_CHANGED = "changed";
 
+        }
     }
 
     public abstract class CONSTANTS{
@@ -71,6 +75,9 @@ public class SplitterUtils {
 
         public abstract class FIELDS{
             public static final String ZONE_NUM="num";
+            public static final String OUT_BUS_NUM_OUT="ii2eout";
+            public static final String BUS_NUM_OUT="ii2e";
+            public static final String BRANCH_IDS="brids";
         }
 
     }

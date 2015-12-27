@@ -31,8 +31,8 @@ public class DistrbuteZoneRBolt extends JedisRichBolt {
     @Override
     public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {
         outputFieldsDeclarer.declare(new Fields(
-                SplitterUtils.FIELDS.CASE_ID,
-                SplitterUtils.FIELDS.ZONE_DATA
+                SplitterUtils.STORM.FIELDS.CASE_ID,
+                SplitterUtils.STORM.FIELDS.ZONE_DATA
         ));
     }
 
@@ -43,7 +43,7 @@ public class DistrbuteZoneRBolt extends JedisRichBolt {
 
     @Override
     public void execute(Tuple tuple) {
-        caseid=tuple.getStringByField(SplitterUtils.FIELDS.CASE_ID);
+        caseid=tuple.getStringByField(SplitterUtils.STORM.FIELDS.CASE_ID);
         getZones();
         emitZone();
         collector.ack(tuple);

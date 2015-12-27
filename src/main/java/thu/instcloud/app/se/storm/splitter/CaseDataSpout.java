@@ -70,10 +70,10 @@ public class CaseDataSpout extends BaseRichSpout {
     @Override
     public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {
         outputFieldsDeclarer.declare(new Fields(
-                SplitterUtils.FIELDS.CASE_ID,
-                SplitterUtils.FIELDS.CASE_DATA,
-                SplitterUtils.FIELDS.CASE_ZONE_BN,
-                SplitterUtils.FIELDS.OVERWRITE
+                SplitterUtils.STORM.FIELDS.CASE_ID,
+                SplitterUtils.STORM.FIELDS.CASE_DATA,
+                SplitterUtils.STORM.FIELDS.CASE_ZONE_BN,
+                SplitterUtils.STORM.FIELDS.OVERWRITE
         ));
     }
 }
