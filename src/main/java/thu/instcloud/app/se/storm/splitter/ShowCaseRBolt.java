@@ -19,8 +19,8 @@ import static thu.instcloud.app.se.storm.splitter.SplitterUtils.mkByteKey;
  */
 public class ShowCaseRBolt extends JedisRichBolt {
 
-    public ShowCaseRBolt(String reidsIp) {
-        super(reidsIp);
+    public ShowCaseRBolt(String reidsIp,String pass) {
+        super(reidsIp,pass);
     }
 
     @Override

@@ -28,6 +28,13 @@ public class CaseDataSpout extends BaseRichSpout {
 
     int caseidx;
 
+    private boolean debug;
+    private long delay;
+
+    public CaseDataSpout(boolean debug){
+        this.debug=debug;
+    }
+
     @Override
     public void open(Map map, TopologyContext topologyContext, SpoutOutputCollector spoutOutputCollector) {
         _collector=spoutOutputCollector;
@@ -43,6 +50,8 @@ public class CaseDataSpout extends BaseRichSpout {
         N=300;
 
         caseidx=0;
+
+        delay=1000;
     }
 
     @Override
@@ -52,8 +61,11 @@ public class CaseDataSpout extends BaseRichSpout {
             Utils.sleep(5000);
             return;
         }
-//        String currentCaseFile= caseFiles.get(caseidx++);
-        String currentCaseFile="case2869pegase.txt";
+        String currentCaseFile= caseFiles.get(caseidx++);
+        if (debug) {
+            currentCaseFile = "case2869pegase.txt";
+            delay=delay*10000;
+        }
         List<String> caseDataStrs=readStringFromFile(casedir+currentCaseFile);
         System.out.printf("\nEmitted case file %5d/%d %25s.\n",caseidx,caseFiles.size(),currentCaseFile);
 
@@ -64,7 +76,7 @@ public class CaseDataSpout extends BaseRichSpout {
                 true
                 ));
 
-        Utils.sleep(10000000);
+        Utils.sleep(delay);
     }
 
     @Override

@@ -28,8 +28,8 @@ public class PrepareRBolt extends JedisRichBolt {
     private MWStructArray zoneNew;
     private Initializer initializer;
 
-    public PrepareRBolt(String reidsIp) {
-        super(reidsIp);
+    public PrepareRBolt(String reidsIp,String pass) {
+        super(reidsIp,pass);
     }
 
     @Override
@@ -119,14 +119,17 @@ public class PrepareRBolt extends JedisRichBolt {
         double[][] brids=(double[][]) zoneNew.get(SplitterUtils.MW.FIELDS.BRANCH_IDS,1);
         double[][] ii2e=(double[][]) zoneNew.get(SplitterUtils.MW.FIELDS.BUS_NUM_OUT,1);
 
-//        if any of this list is empty then no entry will be add in redis
-        String[] ii2eoutArr=toStringArray(ii2eout);
-        String[] bridsArr=toStringArray(brids);
-        String[] ii2eArr=toStringArray(ii2e);
+//        if any of this list is empty then no entry will be add in redis.
+//        When adding element to a list reids uses push method which makes the
+//        first element the last one in redis so we need to inverse the sequence
+//        of the input list
+        String[] ii2eoutArr=toStringArrayInv(ii2eout);
+        String[] bridsArr=toStringArrayInv(brids);
+        String[] ii2eArr=toStringArrayInv(ii2e);
 
-        String ii2eoutKey=mkKey(zonesKey, SplitterUtils.MW.FIELDS.OUT_BUS_NUM_OUT);
-        String ii2eKey=mkKey(zonesKey, SplitterUtils.MW.FIELDS.BUS_NUM_OUT);
-        String bridsKey=mkKey(zonesKey, SplitterUtils.MW.FIELDS.BRANCH_IDS);
+        String ii2eoutKey=mkKey(zonesKey, SplitterUtils.REDIS.KEYS.OUT_BUS_NUM_OUT);
+        String ii2eKey=mkKey(zonesKey, SplitterUtils.REDIS.KEYS.BUS_NUM_OUT);
+        String bridsKey=mkKey(zonesKey, SplitterUtils.REDIS.KEYS.BRANCH_IDS);
 
         res.put(ii2eKey,ii2eArr);
         res.put(ii2eoutKey,ii2eoutArr);
@@ -137,10 +140,11 @@ public class PrepareRBolt extends JedisRichBolt {
     }
 
 
-    private String[] toStringArray(double[][] data){
+    private String[] toStringArrayInv(double[][] data){
         String[] res=new String[data.length];
         for (int i = 0; i < data.length; i++) {
-            res[i]=String.valueOf((int)data[i][0]);
+//            reverse sequence
+            res[data.length-i-1]=String.valueOf((int)data[i][0]);
         }
 
         return res;

@@ -1,4 +1,4 @@
-package thu.instcloud.app.se.storm.splitter;
+package thu.instcloud.app.se.storm.measure;
 
 import backtype.storm.Config;
 import backtype.storm.LocalCluster;
@@ -7,9 +7,12 @@ import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.utils.Utils;
 import thu.instcloud.app.se.storm.initializer.DistrbuteZoneRBolt;
 import thu.instcloud.app.se.storm.initializer.PrepareRBolt;
+import thu.instcloud.app.se.storm.splitter.CaseDataSpout;
+import thu.instcloud.app.se.storm.splitter.SplitSystemRBolt;
+import thu.instcloud.app.se.storm.splitter.SplitterUtils;
 
 /**
- * Created by hjh on 15-12-26.
+ * Created by hjh on 15-12-28.
  */
 public class Main {
 
@@ -18,11 +21,8 @@ public class Main {
         String pass= SplitterUtils.REDIS.PASS;
         TopologyBuilder builder = new TopologyBuilder();
 
-        builder.setSpout("caseSource", new CaseDataSpout(true), 1);
-        builder.setBolt("splitter", new SplitSystemRBolt(redisIp,pass), 3).shuffleGrouping("caseSource");
-        builder.setBolt("distributer",new DistrbuteZoneRBolt(redisIp,pass),1).shuffleGrouping("splitter");
-        builder.setBolt("prepare",new PrepareRBolt(redisIp,pass),2).shuffleGrouping("distributer");
-//        builder.setBolt("showCase", new ShowCaseRBolt(redisIp), 3).shuffleGrouping("splitter");
+        builder.setSpout("measureSource", new MeasurementRSpout(redisIp,pass), 1);
+        builder.setBolt("measure", new MeasureRBolt(redisIp,pass), 3).shuffleGrouping("measureSource");
 
         Config conf = new Config();
 
@@ -32,9 +32,9 @@ public class Main {
         }
         else {
             LocalCluster cluster = new LocalCluster();
-            cluster.submitTopology("processCaseFile", conf, builder.createTopology());
+            cluster.submitTopology("measureSystem", conf, builder.createTopology());
             Utils.sleep(100000000);
-            cluster.killTopology("processCaseFile");
+            cluster.killTopology("measureSystem");
             cluster.shutdown();
         }
     }

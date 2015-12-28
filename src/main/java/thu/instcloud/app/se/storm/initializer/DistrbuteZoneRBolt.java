@@ -24,8 +24,8 @@ public class DistrbuteZoneRBolt extends JedisRichBolt {
     private MWStructArray zones;
     private String caseid;
 
-    public DistrbuteZoneRBolt(String reidsIp) {
-        super(reidsIp);
+    public DistrbuteZoneRBolt(String reidsIp,String pass) {
+        super(reidsIp,pass);
     }
 
     @Override

@@ -27,6 +27,8 @@ public abstract class Constants {
 
         }
 
+        public static final String FILE_EXT=".txt";
+
     }
 
     public abstract class ESTIMATOR {

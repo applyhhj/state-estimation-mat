@@ -5,6 +5,7 @@ import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Tuple;
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
@@ -15,12 +16,14 @@ import java.util.Map;
  */
 public class JedisRichBolt extends BaseRichBolt {
     protected static JedisPool jedisPool;
+    protected String pass;
     protected OutputCollector collector;
 
-    public JedisRichBolt(String reidsIp){
+    public JedisRichBolt(String redisIp,String pass){
         if (jedisPool==null){
-            jedisPool = new JedisPool(new JedisPoolConfig(), reidsIp);
+            jedisPool = new JedisPool(new JedisPoolConfig(), redisIp);
         }
+        this.pass=pass;
     }
 
     @Override
@@ -39,6 +42,12 @@ public class JedisRichBolt extends BaseRichBolt {
     }
 
     @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        jedisPool.destroy();
+    }
+
+    @Override
     public void cleanup() {
         super.cleanup();
     }
@@ -46,5 +55,11 @@ public class JedisRichBolt extends BaseRichBolt {
     @Override
     public Map<String, Object> getComponentConfiguration() {
         return super.getComponentConfiguration();
+    }
+
+    protected void auth(Jedis jedis){
+        if (pass!=null){
+            jedis.auth(pass);
+        }
     }
 }

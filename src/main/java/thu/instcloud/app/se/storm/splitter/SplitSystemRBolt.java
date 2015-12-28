@@ -25,8 +25,8 @@ public class SplitSystemRBolt extends JedisRichBolt {
     OutputCollector collector;
     boolean changed;
 
-    public SplitSystemRBolt(String reidsIp) {
-        super(reidsIp);
+    public SplitSystemRBolt(String reidsIp,String pass) {
+        super(reidsIp,pass);
     }
 
     @Override

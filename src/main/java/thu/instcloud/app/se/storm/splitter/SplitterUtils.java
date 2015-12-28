@@ -38,12 +38,16 @@ public class SplitterUtils {
             public static final String BRANCH="branch";
             public static final String SBASE="sbase";
             public static final String ZONES="zones";
-            public static final String NUM="N";
+            public static final String NUM="NStr";
 
             public static final String MEASURE="measure";
 
+            public static final String OUT_BUS_NUM_OUT="ii2eoutList";
+            public static final String BUS_NUM_OUT="ii2eList";
+            public static final String BRANCH_IDS="bridsList";
+
 //            use this one to remember all data related to a case
-            public static final String KEYS="keys";
+            public static final String KEYS="keySet";
         }
 
         public static final String REDIS_SERVER_IP="10.0.0.1";
@@ -63,7 +67,7 @@ public class SplitterUtils {
 //            for measurement system
             public static final String MEASURE_TYPE="measureType";
             public static final String MEASURE_ID="measureId";
-            public static final String MEASURE_DATA="measureData";
+            public static final String MEASURE_VALUE ="measureData";
 
         }
     }
@@ -86,6 +90,8 @@ public class SplitterUtils {
             public static final String OUT_BUS_NUM_OUT="ii2eout";
             public static final String BUS_NUM_OUT="ii2e";
             public static final String BRANCH_IDS="brids";
+            public static final String Z_TRUE="zTrue";
+            public static final String SIGMA="sigma";
         }
 
     }

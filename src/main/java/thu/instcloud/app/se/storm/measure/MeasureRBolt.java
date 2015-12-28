@@ -31,39 +31,12 @@ public class MeasureRBolt extends JedisRichBolt {
     private Jedis jedis;
     private Pipeline p;
 
-    private class MeasureData {
-        private String caseid;
-        private String mtype;
-        private int mid;
-        private double mdata;
-
-        //        TODO: check data validation???
-        public MeasureData(Tuple tuple) {
-            caseid = tuple.getStringByField(SplitterUtils.STORM.FIELDS.CASE_ID);
-            mtype = tuple.getStringByField(SplitterUtils.STORM.FIELDS.MEASURE_TYPE);
-            mid = tuple.getIntegerByField(SplitterUtils.STORM.FIELDS.MEASURE_ID);
-            mdata = tuple.getDoubleByField(SplitterUtils.STORM.FIELDS.MEASURE_DATA);
-        }
-
-        public String getKey() {
-            return mkKey(caseid, SplitterUtils.REDIS.KEYS.MEASURE, mtype);
-        }
-
-        public String getHashKey() {
-            return String.valueOf(mid);
-        }
-
-        public String getHashValue() {
-            return String.valueOf(mdata);
-        }
+    public MeasureRBolt(String reidsIp,String pass) {
+        super(reidsIp,pass);
     }
 
-    public MeasureRBolt(String reidsIp) {
-        super(reidsIp);
-    }
-
-    public MeasureRBolt(String reidsIp, int cacheNum, long cacheDurationMil) {
-        super(reidsIp);
+    public MeasureRBolt(String reidsIp,String pass, int cacheNum, long cacheDurationMil) {
+        super(reidsIp,pass);
         this.cacheNum = cacheNum;
         this.cacheDurationMil = cacheDurationMil;
     }
@@ -92,11 +65,11 @@ public class MeasureRBolt extends JedisRichBolt {
         p = jedis.pipelined();
 
         flushDataService = Executors.newScheduledThreadPool(1);
-        flushDataService.schedule(new Runnable() {
+        flushDataService.scheduleWithFixedDelay(new Runnable() {
             public void run() {
                 refreshMeasurements();
             }
-        }, cacheDurationMil, TimeUnit.MILLISECONDS);
+        }, 0,cacheDurationMil, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -112,7 +85,7 @@ public class MeasureRBolt extends JedisRichBolt {
         }
     }
 
-    private synchronized void refreshMeasurements() {
+    private void refreshMeasurements() {
         if (measures.size() > 0) {
             for (MeasureData measureData : measures) {
                 p.hset(measureData.getKey(),

@@ -1,8 +1,5 @@
 import com.mathworks.toolbox.javabuilder.MWStructArray;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisPoolConfig;
-import redis.clients.jedis.Pipeline;
+import redis.clients.jedis.*;
 import thu.instcloud.app.se.storm.splitter.SplitterUtils;
 
 import java.util.ArrayList;
@@ -19,7 +16,8 @@ public class TestWriteIds {
     public static void main(String[] args) {
         JedisPool jedisPool = new JedisPool(new JedisPoolConfig(), SplitterUtils.REDIS.REDIS_SERVER_IP);
         String testkey="case2869pegase.keys";
-
+        Response<List<String>> res;
+        Response<List<String>> res1;
         try (Jedis jedis = jedisPool.getResource()) {
             jedis.auth(SplitterUtils.REDIS.PASS);
             Pipeline p=jedis.pipelined();
@@ -37,21 +35,24 @@ public class TestWriteIds {
 //            System.out.printf("%d\n",ret.size());
 //            jedis.del(lii2eoutkey);
 
-            Set<String> keys=jedis.smembers(testkey);
-            Set<String> allkeys=jedis.keys("*");
-            System.out.printf("%d   %d\n",keys.size(),allkeys.size());
-            for (String str:allkeys){
-                if (keys.contains(str)){
-                    keys.remove(str);
-                }
-            }
-            for (String str:keys){
-                System.out.println(str);
-            }
-
-//            p.sync();
+//            Set<String> keys=jedis.smembers(testkey);
+//            Set<String> allkeys=jedis.keys("*");
+//            System.out.printf("%d   %d\n",keys.size(),allkeys.size());
+//            for (String str:allkeys){
+//                if (keys.contains(str)){
+//                    keys.remove(str);
+//                }
+//            }
+//            for (String str:keys){
+//                System.out.println(str);
+//            }
+            res=p.lrange("test",0,-1);
+            res1=p.lrange("case2869pegase.zones.1.ii2eList",0,-1);
+            p.sync();
         }
 
+        List<String> resStr=res.get();
+        List<String> resStr1=res1.get();
         jedisPool.destroy();
     }
 
