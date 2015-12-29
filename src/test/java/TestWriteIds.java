@@ -1,7 +1,11 @@
 import redis.clients.jedis.*;
 import thu.instcloud.app.se.storm.common.StormUtils;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import static thu.instcloud.app.se.storm.common.StormUtils.mkByteKey;
+import static thu.instcloud.app.se.storm.common.StormUtils.mkKey;
 
 /**
  * Created by hjh on 15-12-28.
@@ -10,44 +14,27 @@ public class TestWriteIds {
 
     public static void main(String[] args) {
         JedisPool jedisPool = new JedisPool(new JedisPoolConfig(), StormUtils.REDIS.REDIS_SERVER_IP);
-        String testkey="case2869pegase.keys";
+        String caseid = "case2869pegase";
         Response<List<String>> res;
         Response<List<String>> res1;
+        List<Response<byte[]>> itsList = new ArrayList<>();
         try (Jedis jedis = jedisPool.getResource()) {
             jedis.auth(StormUtils.REDIS.PASS);
             Pipeline p=jedis.pipelined();
-
-//            byte[] val=jedis.get(testkey.getBytes());
-//            MWStructArray zones= (MWStructArray) MWStructArray.deserialize(val);
-//            double[][] iie2out=((double[][]) zones.get(StormUtils.MW.FIELDS.OUT_BUS_NUM_OUT,1));
-//            String[] ii2eoutStrArr=toStringArray(iie2out);
-//
-//            String lii2eoutkey=testkey+".ii2eout";
-//            jedis.del(lii2eoutkey);
-//            System.out.printf("%d\n",ii2eoutStrArr.length);
-//            jedis.lpush(lii2eoutkey,ii2eoutStrArr);
-//            List<String> ret=jedis.lrange(lii2eoutkey,0,-1);
-//            System.out.printf("%d\n",ret.size());
-//            jedis.del(lii2eoutkey);
-
-//            Set<String> keys=jedis.smembers(testkey);
-//            Set<String> allkeys=jedis.keys("*");
-//            System.out.printf("%d   %d\n",keys.size(),allkeys.size());
-//            for (String str:allkeys){
-//                if (keys.contains(str)){
-//                    keys.remove(str);
-//                }
-//            }
-//            for (String str:keys){
-//                System.out.println(str);
-//            }
-            res=p.lrange("test",0,-1);
-            res1=p.lrange("case2869pegase.zones.1.ii2eList",0,-1);
+            Response<String> nz = p.get(mkKey(caseid, StormUtils.REDIS.KEYS.ZONES, StormUtils.REDIS.KEYS.NUM_OF_ZONES));
+            p.sync();
+            long nzLong = Long.parseLong(nz.get());
+            for (int i = 1; i < nzLong; i++) {
+                itsList.add(p.get(mkByteKey(caseid, StormUtils.REDIS.KEYS.ZONES, i + "")));
+            }
             p.sync();
         }
 
-        List<String> resStr=res.get();
-        List<String> resStr1=res1.get();
+        for (Response<byte[]> resp :
+                itsList) {
+            System.out.println(resp.get().length);
+        }
+
         jedisPool.destroy();
     }
 

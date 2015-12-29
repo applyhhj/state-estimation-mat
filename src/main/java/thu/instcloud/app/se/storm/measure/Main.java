@@ -17,7 +17,7 @@ public class Main {
         String pass= StormUtils.REDIS.PASS;
         TopologyBuilder builder = new TopologyBuilder();
 
-        builder.setSpout("measureSource", new MeasurementRSpout(redisIp,pass), 1);
+        builder.setSpout("measureSource", new MeasurementRSpout(redisIp, pass), 3);
         builder.setBolt("measure", new MeasureRBolt(redisIp,pass), 3).shuffleGrouping("measureSource");
 
         Config conf = new Config();
@@ -29,7 +29,7 @@ public class Main {
         else {
             LocalCluster cluster = new LocalCluster();
             cluster.submitTopology("measureSystem", conf, builder.createTopology());
-            Utils.sleep(100000000);
+            Utils.sleep(500000000);
             cluster.killTopology("measureSystem");
             cluster.shutdown();
         }

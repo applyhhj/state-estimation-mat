@@ -21,6 +21,10 @@ import static thu.instcloud.app.se.storm.common.StormUtils.mkKey;
 public class DispatcherRSpout extends JedisRichSpout {
     private String caseid;
 
+    public DispatcherRSpout(String redisIp, String pass) {
+        super(redisIp, pass);
+    }
+
     @Override
     public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {
         outputFieldsDeclarer.declare(new Fields(
@@ -41,10 +45,6 @@ public class DispatcherRSpout extends JedisRichSpout {
         Utils.sleep(10000);
     }
 
-    public DispatcherRSpout(String redisIp, String pass) {
-        super(redisIp, pass);
-    }
-
     private void emitZones(String caseid){
         int nz;
         try (Jedis jedis=jedisPool.getResource()){
@@ -54,7 +54,7 @@ public class DispatcherRSpout extends JedisRichSpout {
 //            whether the case is being estimated
             String estimatingKey=mkKey(caseid, StormUtils.REDIS.KEYS.ESTIMATING_BIT);
             if (jedis.getbit(estimatingKey,0)){
-//                TODO: stop current estimate launch new estimation
+//                TODO: stop current estimate launch new estimation, and reset
 //                we are estimating this case, refuse another estimation on the same case
                 return;
             }else {
@@ -69,19 +69,41 @@ public class DispatcherRSpout extends JedisRichSpout {
 //            reference zone is always converged
             p.setbit(convergedKey,0,true);
 
+//            how many zones have already been estimated
+            String estimatedKey = mkKey(caseid, StormUtils.REDIS.KEYS.STATE_ESTIMATED_ZONES);
+//            always remember to exclude reference zone
+            p.set(estimatedKey, "1");
+
             String keysRec = mkKey(caseid, StormUtils.REDIS.KEYS.KEYS);
             p.sadd(keysRec,
                     convergedKey,
-                    estimatingKey);
+                    estimatingKey,
+                    estimatedKey
+            );
 //            ignore reference zone
             for (int i = 1; i < nz; i++) {
                 String zoneItKey=mkKey(caseid, i+"", StormUtils.REDIS.KEYS.STATE, StormUtils.REDIS.KEYS.STATE_IT);
                 String zoneIbadtKey=mkKey(caseid,i+"", StormUtils.REDIS.KEYS.STATE, StormUtils.REDIS.KEYS.STATE_IBADREG);
+                String vvKey = mkKey(caseid, i + "", StormUtils.REDIS.KEYS.STATE, StormUtils.REDIS.KEYS.STATE_VV);
+                String delzKey = mkKey(caseid, i + "", StormUtils.REDIS.KEYS.STATE, StormUtils.REDIS.KEYS.STATE_DELZ);
+
+                //            keys for some state generated later
+                String HHkey = mkKey(caseid, i + "", StormUtils.REDIS.KEYS.STATE_HH);
+                String WWKey = mkKey(caseid, i + "", StormUtils.REDIS.KEYS.STATE_WW);
+                String WWInvKey = mkKey(caseid, i + "", StormUtils.REDIS.KEYS.STATE_WWINV);
+                String ddelzKey = mkKey(caseid, i + "", StormUtils.REDIS.KEYS.STATE_DDELZ);
+
                 p.set(zoneItKey,"0");
                 p.set(zoneIbadtKey,"0");
                 p.sadd(keysRec,
                         zoneItKey,
-                        zoneIbadtKey);
+                        zoneIbadtKey,
+                        vvKey,
+                        delzKey,
+                        HHkey,
+                        WWKey,
+                        WWInvKey,
+                        ddelzKey);
             }
 
             p.sync();
@@ -91,7 +113,7 @@ public class DispatcherRSpout extends JedisRichSpout {
 
 //        we ignore the zone with only reference bus
         for (int i = 1; i < nz; i++) {
-            collector.emit(new Values(caseid,i));
+            collector.emit(new Values(caseid, i + ""));
         }
     }
 

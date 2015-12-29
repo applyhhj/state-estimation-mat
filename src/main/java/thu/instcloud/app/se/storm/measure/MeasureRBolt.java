@@ -24,8 +24,8 @@ public class MeasureRBolt extends JedisRichBolt {
     private int cacheNum = 50;
     private long cacheDurationMil = 500;
     private ScheduledExecutorService flushDataService;
-    private Jedis jedis;
-    private Pipeline p;
+//    private Jedis jedis;
+//    private Pipeline p;
 
     public MeasureRBolt(String reidsIp,String pass) {
         super(reidsIp,pass);
@@ -45,9 +45,6 @@ public class MeasureRBolt extends JedisRichBolt {
     @Override
     public void cleanup() {
         super.cleanup();
-        if (jedis != null) {
-            jedis.close();
-        }
     }
 
     @Override
@@ -56,9 +53,9 @@ public class MeasureRBolt extends JedisRichBolt {
         measures = new CopyOnWriteArrayList<>();
 
 //        jedis is called frequently, so we create a long term instance
-        jedis = jedisPool.getResource();
-        jedis.auth(StormUtils.REDIS.PASS);
-        p = jedis.pipelined();
+//        jedis = jedisPool.getResource();
+//        jedis.auth(StormUtils.REDIS.PASS);
+//        p = jedis.pipelined();
 
         flushDataService = Executors.newScheduledThreadPool(1);
         flushDataService.scheduleWithFixedDelay(new Runnable() {
@@ -83,12 +80,17 @@ public class MeasureRBolt extends JedisRichBolt {
 
     private void refreshMeasurements() {
         if (measures.size() > 0) {
-            for (MeasureData measureData : measures) {
-                p.hset(measureData.getKey(),
-                        measureData.getHashKey(),
-                        measureData.getHashValue());
+            try (Jedis jedis = jedisPool.getResource()) {
+                auth(jedis);
+                Pipeline p = jedis.pipelined();
+
+                for (MeasureData measureData : measures) {
+                    p.hset(measureData.getKey(),
+                            measureData.getHashKey(),
+                            measureData.getHashValue());
+                }
+                p.sync();
             }
-            p.sync();
             measures.clear();
         }
 

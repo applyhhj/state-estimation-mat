@@ -4,7 +4,6 @@ import Estimator.Estimator;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
-import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 import com.mathworks.toolbox.javabuilder.MWClassID;
@@ -18,6 +17,7 @@ import thu.instcloud.app.se.storm.common.JedisRichBolt;
 import thu.instcloud.app.se.storm.common.StormUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,27 +26,18 @@ import static thu.instcloud.app.se.storm.common.StormUtils.mkByteKey;
 import static thu.instcloud.app.se.storm.common.StormUtils.mkKey;
 
 /**
- * Created by hjh on 15-12-29.
+ * Created by hjh on 15-12-30.
  */
-public class FirstEstimationRBolt extends JedisRichBolt {
-    Estimator estimator;
+public class EstimateOnceRBolt extends JedisRichBolt {
+    private Estimator estimator;
 
-    public FirstEstimationRBolt(String redisIp, String pass) {
+    public EstimateOnceRBolt(String redisIp, String pass) {
         super(redisIp, pass);
     }
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {
-        outputFieldsDeclarer.declareStream(StormUtils.STORM.STREAM.STREAM_OUTPUT, new Fields(
-                StormUtils.STORM.FIELDS.CASE_ID,
-                StormUtils.STORM.FIELDS.EST_CONVERGED
-        ));
-
-        outputFieldsDeclarer.declareStream(StormUtils.STORM.STREAM.STREAM_ESTIMATE,
-                new Fields(
-                        StormUtils.STORM.FIELDS.CASE_ID,
-                        StormUtils.STORM.FIELDS.ZONE_ID
-                ));
+        super.declareOutputFields(outputFieldsDeclarer);
     }
 
     @Override
@@ -63,24 +54,33 @@ public class FirstEstimationRBolt extends JedisRichBolt {
     public void execute(Tuple tuple) {
         String caseid = tuple.getStringByField(StormUtils.STORM.FIELDS.CASE_ID);
         String zoneid = tuple.getStringByField(StormUtils.STORM.FIELDS.ZONE_ID);
-        firstEstimate(caseid, zoneid);
+
+        estimate(caseid, zoneid);
+        collector.emit(new Values(caseid, zoneid));
         collector.ack(tuple);
     }
 
-    private void firstEstimate(String caseid, String zoneid) {
-
+    private void estimate(String caseid, String zoneid) {
         try (Jedis jedis = jedisPool.getResource()) {
             auth(jedis);
             Pipeline p = jedis.pipelined();
 
-            Response<byte[]> zoneDataByte = p.get(mkByteKey(caseid, StormUtils.REDIS.KEYS.ZONES, zoneid));
+            byte[] HHkey = mkByteKey(caseid, zoneid, StormUtils.REDIS.KEYS.STATE_HH);
+            byte[] WWInvKey = mkByteKey(caseid, zoneid, StormUtils.REDIS.KEYS.STATE_WWINV);
+            byte[] ddelzKey = mkByteKey(caseid, zoneid, StormUtils.REDIS.KEYS.STATE_DDELZ);
+            byte[] vvKey = mkByteKey(caseid, zoneid, StormUtils.REDIS.KEYS.STATE, StormUtils.REDIS.KEYS.STATE_VV);
+            byte[] zoneDataKey = mkByteKey(caseid, StormUtils.REDIS.KEYS.ZONES, zoneid);
+
+            Response<byte[]> zoneDataByte = p.get(zoneDataKey);
+            Response<byte[]> HHByte = p.get(HHkey);
+            Response<byte[]> WWInvByte = p.get(WWInvKey);
+            Response<byte[]> ddelzByte = p.get(ddelzKey);
+            Response<byte[]> vvByte = p.get(vvKey);
             Response<List<String>> busIds = p.lrange(mkKey(caseid, StormUtils.REDIS.KEYS.ZONES, zoneid, StormUtils.REDIS.KEYS.BUS_NUM_OUT), 0, -1);
             Response<List<String>> outBusIds = p.lrange(mkKey(caseid, StormUtils.REDIS.KEYS.ZONES, zoneid, StormUtils.REDIS.KEYS.OUT_BUS_NUM_OUT), 0, -1);
             Response<List<String>> brids = p.lrange(mkKey(caseid, StormUtils.REDIS.KEYS.ZONES, zoneid, StormUtils.REDIS.KEYS.BRANCH_IDS), 0, -1);
-            Response<String> tol = p.hget(mkKey(caseid, StormUtils.REDIS.KEYS.OPTIONS_EST), StormUtils.OPTIONS.KEYS.OPT_EST_TOL);
 
             p.sync();
-
 //            get related ids
             List<String> busIdsLst = busIds.get();
             List<String> outBusIdsLst = outBusIds.get();
@@ -122,88 +122,73 @@ public class FirstEstimationRBolt extends JedisRichBolt {
             MWNumericArray vaExtMatSArrRow = new MWNumericArray(VaExt.get().toArray(), MWClassID.DOUBLE);
             MWNumericArray vmExtMatSArrRow = new MWNumericArray(VmExt.get().toArray(), MWClassID.DOUBLE);
 
-            MWNumericArray delz = null, normF = null, vv = null;
-            byte[] delzByte = null, vvByte = null;
-            double normFDbl = Double.MAX_VALUE;
+//            state
+            MWNumericArray HHMat = (MWNumericArray) MWNumericArray.deserialize(HHByte.get());
+            MWNumericArray WWInvMat = (MWNumericArray) MWNumericArray.deserialize(WWInvByte.get());
+            MWNumericArray ddelzMat = (MWNumericArray) MWNumericArray.deserialize(ddelzByte.get());
+            MWNumericArray vvMat = (MWNumericArray) MWNumericArray.deserialize(vvByte.get());
 
-//            first estimation
+            MWNumericArray[] res = null;
+            MWNumericArray delz = null, normF = null, ddelz = null, VVa = null, VVm = null, step = null, success = null;
+
             try {
-                Object[] res = estimator.Api_V2_FirstEstimation(1, vaEstMatSArrRow, vmEstMatSArrRow,
-                        vaExtMatSArrRow, vmExtMatSArrRow, zMatSArrRow, zoneDataMatSArr);
-                delz = (MWNumericArray) res[0];
-                normF = (MWNumericArray) res[1];
-                vv = (MWNumericArray) res[2];
-
-                delzByte = delz.serialize();
-                vvByte = vv.serialize();
-                normFDbl = normF.getDouble();
+                res = (MWNumericArray[]) estimator.Api_V2_EstimateOnce(1, HHMat, WWInvMat, ddelzMat, vvMat,
+                        vaEstMatSArrRow, vmEstMatSArrRow, vaExtMatSArrRow, vmExtMatSArrRow, zMatSArrRow, zoneDataMatSArr);
             } catch (MWException e) {
                 e.printStackTrace();
-            } finally {
-                disposeMatArrays(vaEstMatSArrRow, vmEstMatSArrRow,
-                        vaExtMatSArrRow, vmExtMatSArrRow, zMatSArrRow, zoneDataMatSArr, delz, vv, normF);
             }
 
-            String estimatedKey = mkKey(caseid, StormUtils.REDIS.KEYS.STATE_ESTIMATED_ZONES);
-            p.incr(estimatedKey);
-            Response<String> estimatedZones = p.get(estimatedKey);
-            Response<String> nz = p.get(mkKey(caseid, StormUtils.REDIS.KEYS.ZONES, StormUtils.REDIS.KEYS.NUM_OF_ZONES));
+            if (res != null) {
+                VVa = res[0];
+                VVm = res[1];
+                delz = res[2];
+                ddelz = res[3];
+                normF = res[4];
+                step = res[5];
+                success = res[6];
 
-            double toldbl = Double.parseDouble(tol.get());
-            String converKey = mkKey(caseid, StormUtils.REDIS.KEYS.STATE_CONVERGED);
-            if (normFDbl < toldbl) {
-//                converged
-                p.setbit(converKey, Long.parseLong(zoneid), true);
-            }
-            p.sync();
+//                update state
+                updateEstimatedVoltagesToBuffer(caseid, p, busIdsLst, VVa, VVm);
+                p.set(ddelzKey, ddelz.serialize());
+                p.set(mkByteKey(caseid, zoneid, StormUtils.REDIS.KEYS.STATE, StormUtils.REDIS.KEYS.STATE_DELZ), delz.serialize());
+//                estimated zones
+                p.incr(mkKey(caseid, StormUtils.REDIS.KEYS.STATE_ESTIMATED_ZONES));
+//                estimate times
+//                TODO: record only one iteration number
+                p.incr(mkKey(caseid, zoneid, StormUtils.REDIS.KEYS.STATE, StormUtils.REDIS.KEYS.STATE_IT));
+                Response<String> tol = p.hget(mkKey(caseid, StormUtils.REDIS.KEYS.OPTIONS_EST), StormUtils.OPTIONS.KEYS.OPT_EST_TOL);
+                p.sync();
 
-            long nzInt = Long.parseLong(nz.get());
-//                all zones are estimated, check if all estimations are converged
-            if (Long.parseLong(estimatedZones.get()) == nzInt) {
-                Long nConver = jedis.bitcount(converKey);
-                if (nConver == nzInt) {
-//                    all converged
-//                    reset converge states
-                    p.del(converKey);
-                    p.setbit(converKey, 0, true);
-                    p.set(estimatedKey, "1");
-//                    finished estimation
-                    p.setbit(mkKey(caseid, StormUtils.REDIS.KEYS.ESTIMATING_BIT), 0, false);
-
-//                    output
-                    collector.emit(StormUtils.STORM.STREAM.STREAM_OUTPUT, new Values(caseid, true));
-                    return;
-                } else {
-//              otherwise update states
-                    if (vvByte != null) {
-                        byte[] vvKey = mkByteKey(caseid, zoneid, StormUtils.REDIS.KEYS.STATE, StormUtils.REDIS.KEYS.STATE_VV);
-                        p.set(vvKey, vvByte);
-                    }
-
-                    if (delzByte != null) {
-                        byte[] delzKey = mkByteKey(caseid, zoneid, StormUtils.REDIS.KEYS.STATE, StormUtils.REDIS.KEYS.STATE_DELZ);
-                        p.set(delzKey, delzByte);
-                    }
-
-//                    reset converge states for further estimation, whenever their is an unconverged estimation we
-//                    estimate the whole system again.
-                    p.del(converKey);
-                    p.setbit(converKey, 0, true);
-                    p.set(estimatedKey, "1");
+                double toldbl = Double.parseDouble(tol.get());
+                if (step.getDouble() < toldbl) {
+                    String converKey = mkKey(caseid, StormUtils.REDIS.KEYS.STATE_CONVERGED);
+                    p.setbit(converKey, Long.parseLong(zoneid), true);
                     p.sync();
-
-//                    redispatch zone for further estimation
-                    for (int i = 1; i < nzInt; i++) {
-                        collector.emit(StormUtils.STORM.STREAM.STREAM_ESTIMATE,
-                                new Values(caseid, i + ""));
-                    }
-
-
                 }
+
+
             }
-
+            disposeMatArrays(VVa, VVm, delz, ddelz, normF, success, step);
+            disposeMatArrays(zoneDataMatSArr, zMatSArrRow, vaEstMatSArrRow, vmEstMatSArrRow, vaExtMatSArrRow, vmExtMatSArrRow,
+                    HHMat, WWInvMat, ddelzMat, vvMat);
         }
-
     }
 
+    private void updateEstimatedVoltagesToBuffer(String caseid, Pipeline p, List<String> busids, MWNumericArray va, MWNumericArray vm) {
+        double[][] vaArr = (double[][]) va.toArray();
+        double[][] vmArr = (double[][]) vm.toArray();
+        Map<String, String> vaMap = new HashMap<>();
+        Map<String, String> vmMap = new HashMap<>();
+
+        for (int i = 0; i < busids.size(); i++) {
+            vaMap.put(busids.get(i), String.valueOf(vaArr[i][0]));
+            vmMap.put(busids.get(i), String.valueOf(vmArr[i][0]));
+        }
+
+//        only when all zones have finished one round estimation can we update the voltages of the system, before
+//        that all estimated values are stored in buffer.
+        p.hmset(mkKey(caseid, StormUtils.REDIS.KEYS.VA_EST_BUFFER_HASH), vaMap);
+        p.hmset(mkKey(caseid, StormUtils.REDIS.KEYS.VM_EST_BUFFER_HASH), vmMap);
+        p.sync();
+    }
 }

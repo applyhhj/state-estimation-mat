@@ -27,6 +27,10 @@ public class MeasurementRSpout extends JedisRichSpout {
     private List<MeasureDataRaw> rawMeasures;
     private int midx;
 
+    public MeasurementRSpout(String redisIp, String pass) {
+        super(redisIp, pass);
+    }
+
     @Override
     public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {
         outputFieldsDeclarer.declare(new Fields(
@@ -47,13 +51,12 @@ public class MeasurementRSpout extends JedisRichSpout {
     @Override
     public void nextTuple() {
         if (rawMeasures.size()>0){
-            collector.emit(rawMeasures.get((midx++)%rawMeasures.size()).toTrueMeasureValues());
+            if (midx == rawMeasures.size()) {
+                midx = 0;
+            }
+            collector.emit(rawMeasures.get(midx++).toTrueMeasureValues());
         }
-        Utils.sleep(5);
-    }
-
-    public MeasurementRSpout(String redisIp,String pass) {
-        super(redisIp,pass);
+        Utils.sleep(1);
     }
 
     public List<MeasureDataRaw> importTrueMeasurement(String caseid){
@@ -155,4 +158,5 @@ public class MeasurementRSpout extends JedisRichSpout {
         return res;
 
     }
+
 }

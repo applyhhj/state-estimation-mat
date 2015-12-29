@@ -1,6 +1,6 @@
 package thu.instcloud.app.se.storm.initializer;
 
-import Initializer.Initializer;
+import Estimator.Estimator;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
@@ -25,7 +25,7 @@ public class PrepareRBolt extends JedisRichBolt {
     private String caseid;
     private MWStructArray zone;
     private MWStructArray zoneNew;
-    private Initializer initializer;
+    private Estimator estimator;
 
     public PrepareRBolt(String reidsIp,String pass) {
         super(reidsIp,pass);
@@ -40,7 +40,7 @@ public class PrepareRBolt extends JedisRichBolt {
     public void prepare(Map map, TopologyContext topologyContext, OutputCollector outputCollector) {
         super.prepare(map, topologyContext, outputCollector);
         try {
-            initializer=new Initializer();
+            estimator = new Estimator();
         } catch (MWException e) {
             e.printStackTrace();
         }
@@ -58,7 +58,7 @@ public class PrepareRBolt extends JedisRichBolt {
         try {
             zone=(MWStructArray)MWStructArray.deserialize(tuple.getBinaryByField(StormUtils.STORM.FIELDS.ZONE_DATA));
             if (zone!=null) {
-                zoneNew = (MWStructArray) initializer.Api_PrepareEstimation(1, zone)[0];
+                zoneNew = (MWStructArray) estimator.Api_PrepareEstimation(1, zone)[0];
             }
         } catch (MWException e) {
             e.printStackTrace();
