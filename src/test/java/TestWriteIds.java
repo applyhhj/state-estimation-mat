@@ -1,12 +1,7 @@
-import com.mathworks.toolbox.javabuilder.MWStructArray;
 import redis.clients.jedis.*;
-import thu.instcloud.app.se.storm.splitter.SplitterUtils;
+import thu.instcloud.app.se.storm.common.StormUtils;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-
-import static thu.instcloud.app.se.storm.splitter.SplitterUtils.mkKey;
 
 /**
  * Created by hjh on 15-12-28.
@@ -14,17 +9,17 @@ import static thu.instcloud.app.se.storm.splitter.SplitterUtils.mkKey;
 public class TestWriteIds {
 
     public static void main(String[] args) {
-        JedisPool jedisPool = new JedisPool(new JedisPoolConfig(), SplitterUtils.REDIS.REDIS_SERVER_IP);
+        JedisPool jedisPool = new JedisPool(new JedisPoolConfig(), StormUtils.REDIS.REDIS_SERVER_IP);
         String testkey="case2869pegase.keys";
         Response<List<String>> res;
         Response<List<String>> res1;
         try (Jedis jedis = jedisPool.getResource()) {
-            jedis.auth(SplitterUtils.REDIS.PASS);
+            jedis.auth(StormUtils.REDIS.PASS);
             Pipeline p=jedis.pipelined();
 
 //            byte[] val=jedis.get(testkey.getBytes());
 //            MWStructArray zones= (MWStructArray) MWStructArray.deserialize(val);
-//            double[][] iie2out=((double[][]) zones.get(SplitterUtils.MW.FIELDS.OUT_BUS_NUM_OUT,1));
+//            double[][] iie2out=((double[][]) zones.get(StormUtils.MW.FIELDS.OUT_BUS_NUM_OUT,1));
 //            String[] ii2eoutStrArr=toStringArray(iie2out);
 //
 //            String lii2eoutkey=testkey+".ii2eout";

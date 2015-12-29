@@ -1,13 +1,15 @@
-package thu.instcloud.app.se.storm.splitter;
+package thu.instcloud.app.se.storm.common;
 
 import com.mathworks.toolbox.javabuilder.MWStructArray;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by hjh on 15-12-26.
  */
-public class SplitterUtils {
+public class StormUtils {
 
     public static String mkKey(String ...keys){
         String res=keys[0];
@@ -38,13 +40,24 @@ public class SplitterUtils {
             public static final String BRANCH="branch";
             public static final String SBASE="sbase";
             public static final String ZONES="zones";
-            public static final String NUM="NStr";
+            public static final String NUM_OF_ZONES ="NStr";
 
             public static final String MEASURE="measure";
 
             public static final String OUT_BUS_NUM_OUT="ii2eoutList";
             public static final String BUS_NUM_OUT="ii2eList";
             public static final String BRANCH_IDS="bridsList";
+
+            public static final String OPTIONS_EST="optionsHash";
+            public static final String VA_EST_HASH="vaEstHash";
+            public static final String VM_EST_HASH="vmEstHash";
+
+            public static final String STATE="state";
+            public static final String STATE_CONVERGED="convergedBit";
+            public static final String STATE_IT="stateItStr";
+            public static final String STATE_IBADREG="stateIbadRegStr";
+
+            public static final String ESTIMATING_BIT ="estimatingBit";
 
 //            use this one to remember all data related to a case
             public static final String KEYS="keySet";
@@ -58,10 +71,10 @@ public class SplitterUtils {
         public abstract class FIELDS {
             public static final String CASE_ID = "caseID";
             public static final String CASE_DATA = "caseData";
-            public static final String CASE_ZONE_BN = "zoneBusNum";
+            public static final String OPTIONS_EST = "zoneBusNum";
             public static final String ZONE_DATA = "zoneData";
+            public static final String ZONE_ID ="zoneId";
 
-            public static final String OVERWRITE = "overwrite";
             public static final String DATA_CHANGED = "changed";
 
 //            for measurement system
@@ -92,6 +105,9 @@ public class SplitterUtils {
             public static final String BRANCH_IDS="brids";
             public static final String Z_TRUE="zTrue";
             public static final String SIGMA="sigma";
+            public static final String REF_NUM="refout";
+            public static final String VA_REF="VaRef";
+            public static final String VM_REF="VmRef";
         }
 
     }
@@ -109,6 +125,26 @@ public class SplitterUtils {
             public static final String QBUS="qbus";
         }
 
+    }
+
+    public static class OPTIONS{
+        public abstract class KEYS{
+            public static final String OPT_NBUS_ZONE="nbusZone";
+            public static final String OPT_EST_TOL="estTol";
+            public static final String OPT_MAX_EST_IT="maxEstIt";
+            public static final String OPT_MAX_BAD_REG_IT="maxBadRegIt";
+            public static final String OPT_OVERWRITE_CASEDATA="overWriteCase";
+        }
+
+        public static Map<String,String> getDefualtOptions(){
+            Map<String,String> res=new HashMap<>();
+            res.put(KEYS.OPT_NBUS_ZONE,"300");
+            res.put(KEYS.OPT_EST_TOL,"1e-8");
+            res.put(KEYS.OPT_MAX_BAD_REG_IT,"50");
+            res.put(KEYS.OPT_MAX_EST_IT,"10");
+            res.put(KEYS.OPT_OVERWRITE_CASEDATA,"true");
+            return res;
+        }
     }
 
 }

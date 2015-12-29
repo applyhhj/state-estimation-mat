@@ -1,9 +1,9 @@
 package thu.instcloud.app.se.storm.measure;
 
 import backtype.storm.tuple.Tuple;
-import thu.instcloud.app.se.storm.splitter.SplitterUtils;
+import thu.instcloud.app.se.storm.common.StormUtils;
 
-import static thu.instcloud.app.se.storm.splitter.SplitterUtils.mkKey;
+import static thu.instcloud.app.se.storm.common.StormUtils.mkKey;
 
 /**
  * Created by hjh on 15-12-28.
@@ -20,14 +20,14 @@ public class MeasureData {
 
     //        TODO: check data validation???
     public MeasureData(Tuple tuple) {
-        caseid = tuple.getStringByField(SplitterUtils.STORM.FIELDS.CASE_ID);
-        mtype = tuple.getStringByField(SplitterUtils.STORM.FIELDS.MEASURE_TYPE);
-        mid = tuple.getIntegerByField(SplitterUtils.STORM.FIELDS.MEASURE_ID);
-        mvalue = tuple.getDoubleByField(SplitterUtils.STORM.FIELDS.MEASURE_VALUE);
+        caseid = tuple.getStringByField(StormUtils.STORM.FIELDS.CASE_ID);
+        mtype = tuple.getStringByField(StormUtils.STORM.FIELDS.MEASURE_TYPE);
+        mid = tuple.getIntegerByField(StormUtils.STORM.FIELDS.MEASURE_ID);
+        mvalue = tuple.getDoubleByField(StormUtils.STORM.FIELDS.MEASURE_VALUE);
     }
 
     public String getKey() {
-        return mkKey(caseid, SplitterUtils.REDIS.KEYS.MEASURE, mtype);
+        return mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, mtype);
     }
 
     public String getHashKey() {

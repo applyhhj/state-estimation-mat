@@ -22,7 +22,7 @@ public class SplitMPData {
 
     private MWStructArray zones;
 
-    public SplitMPData(MPData mpData, int N) {
+    public SplitMPData(String caseid,MPData mpData, int N) {
         try {
             if (splitter == null) {
                 splitter = new Splitter();
@@ -33,6 +33,8 @@ public class SplitMPData {
         }catch (MWException e){
             e.printStackTrace();
         }
+
+        this.caseID=caseid;
 
     }
 
@@ -104,11 +106,11 @@ public class SplitMPData {
         return caseID;
     }
 
-    public void setCaseID(String caseID) {
-        this.caseID = caseID;
-    }
-
     public MWNumericArray getBaseMVA() {
         return baseMVA;
+    }
+
+    public MPData getMpData() {
+        return mpData;
     }
 }

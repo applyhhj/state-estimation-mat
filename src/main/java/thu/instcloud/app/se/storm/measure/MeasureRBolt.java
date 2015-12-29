@@ -7,17 +7,13 @@ import backtype.storm.tuple.Tuple;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 import thu.instcloud.app.se.storm.common.JedisRichBolt;
-import thu.instcloud.app.se.storm.splitter.SplitterUtils;
+import thu.instcloud.app.se.storm.common.StormUtils;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import static thu.instcloud.app.se.storm.splitter.SplitterUtils.mkKey;
 
 /**
  * Created by hjh on 15-12-28.
@@ -61,7 +57,7 @@ public class MeasureRBolt extends JedisRichBolt {
 
 //        jedis is called frequently, so we create a long term instance
         jedis = jedisPool.getResource();
-        jedis.auth(SplitterUtils.REDIS.PASS);
+        jedis.auth(StormUtils.REDIS.PASS);
         p = jedis.pipelined();
 
         flushDataService = Executors.newScheduledThreadPool(1);

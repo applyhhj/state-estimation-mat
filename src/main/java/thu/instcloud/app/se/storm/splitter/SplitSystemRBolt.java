@@ -11,12 +11,14 @@ import redis.clients.jedis.Pipeline;
 import thu.instcloud.app.se.mpdata.MPData;
 import thu.instcloud.app.se.splitter.SplitMPData;
 import thu.instcloud.app.se.storm.common.JedisRichBolt;
+import thu.instcloud.app.se.storm.common.StormUtils;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static thu.instcloud.app.se.storm.splitter.SplitterUtils.mkByteKey;
-import static thu.instcloud.app.se.storm.splitter.SplitterUtils.mkKey;
+import static thu.instcloud.app.se.storm.common.StormUtils.mkByteKey;
+import static thu.instcloud.app.se.storm.common.StormUtils.mkKey;
 
 /**
  * Created by hjh on 15-12-26.
@@ -37,7 +39,7 @@ public class SplitSystemRBolt extends JedisRichBolt {
     @Override
     public void execute(Tuple tuple) {
         changed = false;
-        String caseID = tuple.getStringByField(SplitterUtils.STORM.FIELDS.CASE_ID);
+        String caseID = tuple.getStringByField(StormUtils.STORM.FIELDS.CASE_ID);
         splitAndStore(caseID, tuple);
         collector.emit(new Values(caseID, changed));
         collector.ack(tuple);
@@ -46,8 +48,8 @@ public class SplitSystemRBolt extends JedisRichBolt {
     @Override
     public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {
         outputFieldsDeclarer.declare(new Fields(
-                SplitterUtils.STORM.FIELDS.CASE_ID,
-                SplitterUtils.STORM.FIELDS.DATA_CHANGED
+                StormUtils.STORM.FIELDS.CASE_ID,
+                StormUtils.STORM.FIELDS.DATA_CHANGED
         ));
 
     }
@@ -58,46 +60,68 @@ public class SplitSystemRBolt extends JedisRichBolt {
     }
 
     private void splitAndStore(String caseid, Tuple tuple) {
-        boolean overwrite = tuple.getBooleanByField(SplitterUtils.STORM.FIELDS.OVERWRITE);
+        Map<String,String> options=(Map<String,String>)tuple.getValueByField(StormUtils.STORM.FIELDS.OPTIONS_EST);
+        boolean overwrite = Boolean.parseBoolean(options.get(StormUtils.OPTIONS.KEYS.OPT_OVERWRITE_CASEDATA));
+        int zbn = Integer.parseInt(options.get(StormUtils.OPTIONS.KEYS.OPT_NBUS_ZONE));
 
         try (Jedis jedis = jedisPool.getResource()) {
-            jedis.auth(SplitterUtils.REDIS.PASS);
+            jedis.auth(StormUtils.REDIS.PASS);
             Pipeline p = jedis.pipelined();
-            String rawdatakey = mkKey(caseid, SplitterUtils.REDIS.KEYS.RAW_DATA);
+            String rawdatakey = mkKey(caseid, StormUtils.REDIS.KEYS.RAW_DATA);
 
-            if (!(!overwrite && jedis.exists(mkKey(rawdatakey, SplitterUtils.REDIS.KEYS.ZONES)))) {
-                List<String> caseDataStrs = (List<String>) tuple.getValueByField(SplitterUtils.STORM.FIELDS.CASE_DATA);
-                int zbn = tuple.getIntegerByField(SplitterUtils.STORM.FIELDS.CASE_ZONE_BN);
+            if (!(!overwrite && jedis.exists(mkKey(rawdatakey, StormUtils.REDIS.KEYS.ZONES)))) {
+                List<String> caseDataStrs = (List<String>) tuple.getValueByField(StormUtils.STORM.FIELDS.CASE_DATA);
                 SplitMPData data = splitSystem(caseid, caseDataStrs, zbn);
 
 //                TODO: use kryo to serialize
-                p.set(mkByteKey(rawdatakey, SplitterUtils.REDIS.KEYS.BUS), data.getBus().serialize());
-                p.set(mkByteKey(rawdatakey, SplitterUtils.REDIS.KEYS.BRANCH), data.getBranch().serialize());
-                p.set(mkByteKey(rawdatakey, SplitterUtils.REDIS.KEYS.GEN), data.getGen().serialize());
-                p.set(mkByteKey(rawdatakey, SplitterUtils.REDIS.KEYS.SBASE), data.getBaseMVA().serialize());
+//                store raw data
+                p.set(mkByteKey(rawdatakey, StormUtils.REDIS.KEYS.BUS), data.getBus().serialize());
+                p.set(mkByteKey(rawdatakey, StormUtils.REDIS.KEYS.BRANCH), data.getBranch().serialize());
+                p.set(mkByteKey(rawdatakey, StormUtils.REDIS.KEYS.GEN), data.getGen().serialize());
+                p.set(mkByteKey(rawdatakey, StormUtils.REDIS.KEYS.SBASE), data.getBaseMVA().serialize());
 
-//              TODO: later, try to pass this data to the next bolt instead of store to redis then fetch it
-                p.set(mkByteKey(rawdatakey, SplitterUtils.REDIS.KEYS.ZONES), data.getZones().serialize());
-                p.set(mkKey(caseid, SplitterUtils.REDIS.KEYS.ZONES, SplitterUtils.REDIS.KEYS.NUM),
+//              TODO: later, try to pass this data to the next bolt instead of store to redis then fetch it, that means discard data
+//                store piecewise zone struct array
+                p.set(mkByteKey(rawdatakey, StormUtils.REDIS.KEYS.ZONES), data.getZones().serialize());
+//                store number of zones
+                p.set(mkKey(caseid, StormUtils.REDIS.KEYS.ZONES, StormUtils.REDIS.KEYS.NUM_OF_ZONES),
                         data.getZones().getDimensions()[1]+"");
 
-//                well this is clumsy but we have no choice
-                String keysRec = mkKey(caseid, SplitterUtils.REDIS.KEYS.KEYS);
+//                add options
+                String optKey=mkKey(caseid, StormUtils.REDIS.KEYS.OPTIONS_EST);
+                p.del(optKey);
+                p.hmset(optKey,options);
+
+//                add initial values of estimated state
+                int[] busNumsOut=data.getMpData().getBusData().getNumberOut();
+                String vaEstKey=mkKey(caseid, StormUtils.REDIS.KEYS.VA_EST_HASH);
+                String vmEstKey=mkKey(caseid, StormUtils.REDIS.KEYS.VM_EST_HASH);
+                p.hmset(vaEstKey,getVEstInit(busNumsOut,true));
+                p.hmset(vmEstKey,getVEstInit(busNumsOut,false));
+
+//                need to store all keys for cleaning manually, well this is clumsy but we have no choice
+                String keysRec = mkKey(caseid, StormUtils.REDIS.KEYS.KEYS);
+//                clean original recorded keys, this should perform before any other recordings
                 p.del(keysRec);
                 p.sadd(keysRec,
                         keysRec,
-                        mkKey(rawdatakey, SplitterUtils.REDIS.KEYS.BUS),
-                        mkKey(rawdatakey, SplitterUtils.REDIS.KEYS.BRANCH),
-                        mkKey(rawdatakey, SplitterUtils.REDIS.KEYS.GEN),
-                        mkKey(rawdatakey, SplitterUtils.REDIS.KEYS.SBASE),
-                        mkKey(rawdatakey, SplitterUtils.REDIS.KEYS.ZONES),
-                        mkKey(caseid, SplitterUtils.REDIS.KEYS.ZONES, SplitterUtils.REDIS.KEYS.NUM)
+                        mkKey(rawdatakey, StormUtils.REDIS.KEYS.BUS),
+                        mkKey(rawdatakey, StormUtils.REDIS.KEYS.BRANCH),
+                        mkKey(rawdatakey, StormUtils.REDIS.KEYS.GEN),
+                        mkKey(rawdatakey, StormUtils.REDIS.KEYS.SBASE),
+                        mkKey(rawdatakey, StormUtils.REDIS.KEYS.ZONES),
+                        mkKey(caseid, StormUtils.REDIS.KEYS.ZONES, StormUtils.REDIS.KEYS.NUM_OF_ZONES),
+                        optKey,
+                        vaEstKey,
+                        vmEstKey
                 );
 
                 p.sync();
+
 //              do remember to release mem used by matlab
                 data.clear();
                 changed = true;
+
             } else {
                 System.out.printf("\nIgnore case %s", caseid);
             }
@@ -105,11 +129,25 @@ public class SplitSystemRBolt extends JedisRichBolt {
     }
 
     private SplitMPData splitSystem(String caseid, List<String> data, int zoneBn) {
-        MPData mpData = new MPData(data);
-        SplitMPData splitMPData = new SplitMPData(mpData, zoneBn);
-        splitMPData.setCaseID(caseid);
+        SplitMPData splitMPData = new SplitMPData(caseid,new MPData(data), zoneBn);
 
         return splitMPData;
+    }
+
+    private Map<String,String> getVEstInit(int[] nums,boolean va){
+        String val;
+        if (va){
+            val="0";
+        }else {
+            val="1";
+        }
+
+        Map<String,String> res=new HashMap<>();
+
+        for (int i = 0; i < nums.length; i++) {
+            res.put(nums[i]+"",val);
+        }
+        return res;
     }
 
 }

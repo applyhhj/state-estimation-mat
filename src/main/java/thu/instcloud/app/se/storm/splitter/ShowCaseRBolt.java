@@ -4,15 +4,14 @@ import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Tuple;
-import com.mathworks.toolbox.javabuilder.MWArray;
 import com.mathworks.toolbox.javabuilder.MWStructArray;
 import redis.clients.jedis.Jedis;
 import thu.instcloud.app.se.storm.common.JedisRichBolt;
+import thu.instcloud.app.se.storm.common.StormUtils;
 
 import java.util.Map;
 
-import static thu.instcloud.app.se.storm.splitter.SplitterUtils.MW.getArrayElement;
-import static thu.instcloud.app.se.storm.splitter.SplitterUtils.mkByteKey;
+import static thu.instcloud.app.se.storm.common.StormUtils.mkByteKey;
 
 /**
  * Created by hjh on 15-12-26.
@@ -30,7 +29,7 @@ public class ShowCaseRBolt extends JedisRichBolt {
 
     @Override
     public void execute(Tuple tuple) {
-        String caseID=tuple.getStringByField(SplitterUtils.STORM.FIELDS.CASE_ID);
+        String caseID=tuple.getStringByField(StormUtils.STORM.FIELDS.CASE_ID);
         printDataStrs(caseID);
         collector.ack(tuple);
     }
@@ -45,11 +44,11 @@ public class ShowCaseRBolt extends JedisRichBolt {
         byte[] zones=null;
 
         try (Jedis jedis = jedisPool.getResource()){
-            jedis.auth(SplitterUtils.REDIS.PASS);
+            jedis.auth(StormUtils.REDIS.PASS);
             byte[] zonesKey=mkByteKey(
                     caseid,
-                    SplitterUtils.REDIS.KEYS.RAW_DATA,
-                    SplitterUtils.REDIS.KEYS.ZONES
+                    StormUtils.REDIS.KEYS.RAW_DATA,
+                    StormUtils.REDIS.KEYS.ZONES
             );
             if (jedis.exists(zonesKey)){
                 zones=jedis.get(zonesKey);

@@ -13,20 +13,20 @@ import java.util.Map;
 public class Runner {
 
     public static void main(String[] args)throws MWException {
-
         String filepath;
 
         String os = System.getProperty("os.name").toLowerCase();
+        String caseid="case1354pegase";
 
         if (os != null && os.startsWith("windows")) {
-            filepath = "F:\\projects\\data\\matpower-data-process\\data\\case1354pegase.txt";
+            filepath = "F:\\projects\\data\\matpower-data-process\\data\\"+caseid+".txt";
         }else {
-            filepath = "/home/hjh/projects/data/case1354pegase.txt";
+            filepath = "/home/hjh/projects/data/"+caseid+".txt";
         }
 
         MPData mpData=new MPData(filepath);
 
-        SplitMPData splitMPData=new SplitMPData(mpData,300);
+        SplitMPData splitMPData=new SplitMPData(caseid,mpData,300);
 
         MWNumericArray newBus=splitMPData.getBus();
 

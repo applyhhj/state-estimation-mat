@@ -1,15 +1,12 @@
-import com.mathworks.toolbox.javabuilder.MWStructArray;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
-import thu.instcloud.app.se.storm.splitter.SplitterUtils;
+import thu.instcloud.app.se.storm.common.StormUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static thu.instcloud.app.se.storm.splitter.SplitterUtils.MW.getArrayElement;
-import static thu.instcloud.app.se.storm.splitter.SplitterUtils.mkByteKey;
-import static thu.instcloud.app.se.storm.splitter.SplitterUtils.mkKey;
+import static thu.instcloud.app.se.storm.common.StormUtils.mkKey;
 
 /**
  * Created by hjh on 15-12-27.
@@ -19,11 +16,11 @@ public class TestRedisPerf {
     public static void main(String[] args) {
         int N=500000;
         int Nsmall=1000;
-        jedisPool = new JedisPool(new JedisPoolConfig(), SplitterUtils.REDIS.REDIS_SERVER_IP);
+        jedisPool = new JedisPool(new JedisPoolConfig(), StormUtils.REDIS.REDIS_SERVER_IP);
         String testkey=mkKey("test","redis");
 
         try (Jedis jedis = jedisPool.getResource()) {
-            jedis.auth(SplitterUtils.REDIS.PASS);
+            jedis.auth(StormUtils.REDIS.PASS);
             jedis.flushAll();
             List<String> keyvals=new ArrayList<>();
             List<String> keys=new ArrayList<>();

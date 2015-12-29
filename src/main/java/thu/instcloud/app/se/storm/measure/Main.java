@@ -5,11 +5,7 @@ import backtype.storm.LocalCluster;
 import backtype.storm.StormSubmitter;
 import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.utils.Utils;
-import thu.instcloud.app.se.storm.initializer.DistrbuteZoneRBolt;
-import thu.instcloud.app.se.storm.initializer.PrepareRBolt;
-import thu.instcloud.app.se.storm.splitter.CaseDataSpout;
-import thu.instcloud.app.se.storm.splitter.SplitSystemRBolt;
-import thu.instcloud.app.se.storm.splitter.SplitterUtils;
+import thu.instcloud.app.se.storm.common.StormUtils;
 
 /**
  * Created by hjh on 15-12-28.
@@ -17,8 +13,8 @@ import thu.instcloud.app.se.storm.splitter.SplitterUtils;
 public class Main {
 
     public static void main(String[] args) throws Exception {
-        String redisIp= SplitterUtils.REDIS.REDIS_SERVER_IP;
-        String pass= SplitterUtils.REDIS.PASS;
+        String redisIp= StormUtils.REDIS.REDIS_SERVER_IP;
+        String pass= StormUtils.REDIS.PASS;
         TopologyBuilder builder = new TopologyBuilder();
 
         builder.setSpout("measureSource", new MeasurementRSpout(redisIp,pass), 1);

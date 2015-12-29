@@ -9,30 +9,29 @@ import backtype.storm.tuple.Values;
 import com.mathworks.toolbox.javabuilder.MWStructArray;
 import redis.clients.jedis.Jedis;
 import thu.instcloud.app.se.storm.common.JedisRichBolt;
-import thu.instcloud.app.se.storm.splitter.SplitterUtils;
+import thu.instcloud.app.se.storm.common.StormUtils;
 
 import java.util.Map;
 
-import static thu.instcloud.app.se.storm.splitter.SplitterUtils.MW.getArrayElement;
-import static thu.instcloud.app.se.storm.splitter.SplitterUtils.mkByteKey;
-import static thu.instcloud.app.se.storm.splitter.SplitterUtils.mkKey;
+import static thu.instcloud.app.se.storm.common.StormUtils.MW.getArrayElement;
+import static thu.instcloud.app.se.storm.common.StormUtils.mkByteKey;
 
 /**
  * Created by hjh on 15-12-27.
  */
-public class DistrbuteZoneRBolt extends JedisRichBolt {
+public class DistributeZoneRBolt extends JedisRichBolt {
     private MWStructArray zones;
     private String caseid;
 
-    public DistrbuteZoneRBolt(String reidsIp,String pass) {
+    public DistributeZoneRBolt(String reidsIp, String pass) {
         super(reidsIp,pass);
     }
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {
         outputFieldsDeclarer.declare(new Fields(
-                SplitterUtils.STORM.FIELDS.CASE_ID,
-                SplitterUtils.STORM.FIELDS.ZONE_DATA
+                StormUtils.STORM.FIELDS.CASE_ID,
+                StormUtils.STORM.FIELDS.ZONE_DATA
         ));
     }
 
@@ -43,7 +42,7 @@ public class DistrbuteZoneRBolt extends JedisRichBolt {
 
     @Override
     public void execute(Tuple tuple) {
-        caseid=tuple.getStringByField(SplitterUtils.STORM.FIELDS.CASE_ID);
+        caseid=tuple.getStringByField(StormUtils.STORM.FIELDS.CASE_ID);
         getZones();
         emitZone();
         collector.ack(tuple);
@@ -51,11 +50,11 @@ public class DistrbuteZoneRBolt extends JedisRichBolt {
 
     private void getZones(){
         try (Jedis jedis=jedisPool.getResource()){
-            jedis.auth(SplitterUtils.REDIS.PASS);
+            jedis.auth(StormUtils.REDIS.PASS);
             byte[] zonesKey=mkByteKey(
                     caseid,
-                    SplitterUtils.REDIS.KEYS.RAW_DATA,
-                    SplitterUtils.REDIS.KEYS.ZONES
+                    StormUtils.REDIS.KEYS.RAW_DATA,
+                    StormUtils.REDIS.KEYS.ZONES
             );
 
             if (jedis.exists(zonesKey)){

@@ -7,13 +7,15 @@ import backtype.storm.topology.base.BaseRichSpout;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
+import thu.instcloud.app.se.storm.common.StormUtils;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
 import static thu.instcloud.app.se.common.Utils.Common.*;
-import static thu.instcloud.app.se.storm.splitter.SplitterUtils.getCaseFromFileName;
+import static thu.instcloud.app.se.storm.common.StormUtils.OPTIONS.getDefualtOptions;
+import static thu.instcloud.app.se.storm.common.StormUtils.getCaseFromFileName;
 
 /**
  * Created by hjh on 15-12-26.
@@ -72,8 +74,7 @@ public class CaseDataSpout extends BaseRichSpout {
         _collector.emit(new Values(
                 getCaseFromFileName(currentCaseFile),
                 caseDataStrs,
-                N,
-                true
+                getDefualtOptions()
                 ));
 
         Utils.sleep(delay);
@@ -82,10 +83,9 @@ public class CaseDataSpout extends BaseRichSpout {
     @Override
     public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {
         outputFieldsDeclarer.declare(new Fields(
-                SplitterUtils.STORM.FIELDS.CASE_ID,
-                SplitterUtils.STORM.FIELDS.CASE_DATA,
-                SplitterUtils.STORM.FIELDS.CASE_ZONE_BN,
-                SplitterUtils.STORM.FIELDS.OVERWRITE
+                StormUtils.STORM.FIELDS.CASE_ID,
+                StormUtils.STORM.FIELDS.CASE_DATA,
+                StormUtils.STORM.FIELDS.OPTIONS_EST
         ));
     }
 }
