@@ -164,7 +164,7 @@ public class StormUtils {
             public static final String COMP_EST_ESTONCE = "estOnce";
             public static final String COMP_EST_CHECKCONV = "checkConv";
             public static final String COMP_EST_BADRECOG = "badRecog";
-            public static final String COMP_EST_OUTPUT = "output";
+            public static final String COMP_EST_OUTPUTDIFF = "outputDiff";
         }
     }
 

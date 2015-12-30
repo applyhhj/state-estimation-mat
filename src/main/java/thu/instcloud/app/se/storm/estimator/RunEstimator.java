@@ -6,8 +6,6 @@ import backtype.storm.StormSubmitter;
 import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.utils.Utils;
 import thu.instcloud.app.se.storm.common.StormUtils;
-import thu.instcloud.app.se.storm.measure.MeasureRBolt;
-import thu.instcloud.app.se.storm.measure.MeasurementRSpout;
 
 /**
  * Created by hjh on 15-12-30.
@@ -32,7 +30,7 @@ public class RunEstimator {
                 .shuffleGrouping(StormUtils.STORM.COMPONENT.COMP_EST_ESTONCE);
         builder.setBolt(StormUtils.STORM.COMPONENT.COMP_EST_BADRECOG, new BadDataRecognitionRBolt(redisIp, pass), 1)
                 .shuffleGrouping(StormUtils.STORM.COMPONENT.COMP_EST_CHECKCONV);
-        builder.setBolt(StormUtils.STORM.COMPONENT.COMP_EST_OUTPUT, new OutputBolt(redisIp, pass), 1)
+        builder.setBolt(StormUtils.STORM.COMPONENT.COMP_EST_OUTPUTDIFF, new OutputDiffBolt(redisIp, pass), 1)
                 .shuffleGrouping(StormUtils.STORM.COMPONENT.COMP_EST_BADRECOG, StormUtils.STORM.STREAM.STREAM_OUTPUT)
                 .shuffleGrouping(StormUtils.STORM.COMPONENT.COMP_EST_FIRSTEST, StormUtils.STORM.STREAM.STREAM_OUTPUT);
 

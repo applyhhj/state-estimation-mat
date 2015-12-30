@@ -11,8 +11,8 @@ import java.util.Map;
 /**
  * Created by hjh on 15-12-30.
  */
-public class OutputBolt extends JedisRichBolt {
-    public OutputBolt(String redisIp, String pass) {
+public class OutputDiffBolt extends JedisRichBolt {
+    public OutputDiffBolt(String redisIp, String pass) {
         super(redisIp, pass);
     }
 
