@@ -3,6 +3,7 @@ package thu.instcloud.app.se.storm.estimator;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
+import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 import redis.clients.jedis.Jedis;
@@ -27,7 +28,15 @@ public class CheckConvergeRBolt extends JedisRichBolt {
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {
-        super.declareOutputFields(outputFieldsDeclarer);
+        outputFieldsDeclarer.declareStream(StormUtils.STORM.STREAM.STREAM_BAD_RECOG, new Fields(
+                StormUtils.STORM.FIELDS.CASE_ID,
+                StormUtils.STORM.FIELDS.ZONE_ID
+        ));
+
+        outputFieldsDeclarer.declareStream(StormUtils.STORM.STREAM.STREAM_ESTIMATE, new Fields(
+                StormUtils.STORM.FIELDS.CASE_ID,
+                StormUtils.STORM.FIELDS.ZONE_ID
+        ));
     }
 
     @Override
@@ -38,12 +47,11 @@ public class CheckConvergeRBolt extends JedisRichBolt {
     @Override
     public void execute(Tuple tuple) {
         String caseid = tuple.getStringByField(StormUtils.STORM.FIELDS.CASE_ID);
-        String zoneid = tuple.getStringByField(StormUtils.STORM.FIELDS.ZONE_ID);
-        checkConverge(caseid, zoneid);
+        checkConverge(caseid);
         collector.ack(tuple);
     }
 
-    private void checkConverge(String caseid, String zoneid) {
+    private void checkConverge(String caseid) {
         try (Jedis jedis = jedisPool.getResource()) {
             auth(jedis);
             Pipeline p = jedis.pipelined();
@@ -54,6 +62,7 @@ public class CheckConvergeRBolt extends JedisRichBolt {
 
             long nzLong = Long.parseLong(nz.get());
 
+//            all zones are estimated
             if (nzLong == Long.parseLong(estimatedZones.get())) {
                 updateEstimation(caseid, p);
                 p.set(mkKey(caseid, StormUtils.REDIS.KEYS.STATE_ESTIMATED_ZONES), "1");
@@ -65,10 +74,16 @@ public class CheckConvergeRBolt extends JedisRichBolt {
                 Response<String> currItResp = p.get(mkKey(caseid, "1", StormUtils.REDIS.KEYS.STATE_IT));
                 p.sync();
 
-//                all converged or not converged prepare for bad data recognition
+//                all converged or reach max iteration number prepare for bad data recognition
                 if (nConver.get() == nzLong || Long.parseLong(currItResp.get()) >= Long.parseLong(maxItResp.get())) {
                     for (int i = 1; i < nzLong; i++) {
                         collector.emit(StormUtils.STORM.STREAM.STREAM_BAD_RECOG, new Values(caseid, i + ""));
+                    }
+                    return;
+                } else {
+//                    next iteration
+                    for (int i = 1; i < nzLong; i++) {
+                        collector.emit(StormUtils.STORM.STREAM.STREAM_ESTIMATE, new Values(caseid, i + ""));
                     }
                     return;
                 }

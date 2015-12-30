@@ -36,7 +36,7 @@ public class test {
         res.add("0.0");
         res.add("0.5");
 
-        MWNumericArray resmat = new MWNumericArray(res.toArray(), MWClassID.DOUBLE);
+        MWNumericArray resmat = new MWNumericArray(res.get(1), MWClassID.DOUBLE);
         Object[] resarr = resmat.toArray();
         System.out.print(resmat.getDouble());
 

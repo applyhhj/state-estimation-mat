@@ -84,6 +84,15 @@ public class PrepareRBolt extends JedisRichBolt {
             byte[] key=mkByteKey(caseid, StormUtils.REDIS.KEYS.ZONES,String.valueOf(zoneNum));
             p.set(key,zoneNew.serialize());
 
+//            store bad data recognition threshold separately
+            double thrshld = ((double[][]) zoneNew.get(StormUtils.MW.FIELDS.BAD_THRESHOLD, 1))[0][0];
+            String thrshldKey = mkKey(caseid,
+                    StormUtils.REDIS.KEYS.ZONES,
+                    zoneNum + "",
+                    StormUtils.REDIS.KEYS.BAD_RECOG_THRESHOLD);
+            p.set(thrshldKey, thrshld + "");
+            p.sadd(thrshldKey);
+
 //            store ids for getting estimated state
             Map<String,String[]> idsKeyVals=getIdsMap(zoneNew,new String(key));
             for (Map.Entry<String,String[]> e:idsKeyVals.entrySet()){

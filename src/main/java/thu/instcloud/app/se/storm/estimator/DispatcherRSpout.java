@@ -42,7 +42,7 @@ public class DispatcherRSpout extends JedisRichSpout {
     @Override
     public void nextTuple() {
         emitZones(caseid);
-        Utils.sleep(10000);
+        Utils.sleep(10000000);
     }
 
     private void emitZones(String caseid){
@@ -74,6 +74,11 @@ public class DispatcherRSpout extends JedisRichSpout {
 //            always remember to exclude reference zone
             p.set(estimatedKey, "1");
 
+//            how many zones have already checked bad data
+            String badrecogZnsKey = mkKey(caseid, StormUtils.REDIS.KEYS.STATE_BADRECOG_ZONES);
+//            always remember to exclude reference zone
+            p.set(badrecogZnsKey, "1");
+
             String keysRec = mkKey(caseid, StormUtils.REDIS.KEYS.KEYS);
             p.sadd(keysRec,
                     convergedKey,
@@ -83,6 +88,7 @@ public class DispatcherRSpout extends JedisRichSpout {
 //            ignore reference zone
             for (int i = 1; i < nz; i++) {
                 String zoneItKey=mkKey(caseid, i+"", StormUtils.REDIS.KEYS.STATE, StormUtils.REDIS.KEYS.STATE_IT);
+//                TODO: consider use one key to record ibad
                 String zoneIbadtKey=mkKey(caseid,i+"", StormUtils.REDIS.KEYS.STATE, StormUtils.REDIS.KEYS.STATE_IBADREG);
                 String vvKey = mkKey(caseid, i + "", StormUtils.REDIS.KEYS.STATE, StormUtils.REDIS.KEYS.STATE_VV);
                 String delzKey = mkKey(caseid, i + "", StormUtils.REDIS.KEYS.STATE, StormUtils.REDIS.KEYS.STATE_DELZ);

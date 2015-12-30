@@ -58,6 +58,7 @@ public class StormUtils {
             public static final String REF_NUM = "refout";
             public static final String VA_REF = "VaRef";
             public static final String VM_REF = "VmRef";
+            public static final String BAD_THRESHOLD = "bad_threshold";
         }
 
     }
@@ -102,6 +103,7 @@ public class StormUtils {
             public static final String OUT_BUS_NUM_OUT="ii2eoutList";
             public static final String BUS_NUM_OUT="ii2eList";
             public static final String BRANCH_IDS="bridsList";
+            public static final String BAD_RECOG_THRESHOLD = "badRecogThresholdStr";
 
             public static final String OPTIONS_EST="optionsHash";
             public static final String VA_EST_HASH="vaEstHash";
@@ -116,6 +118,7 @@ public class StormUtils {
             public static final String STATE_VV = "stateVv";
             public static final String STATE_DELZ = "delz";
             public static final String STATE_ESTIMATED_ZONES = "estimatedNStr";
+            public static final String STATE_BADRECOG_ZONES = "badRecogNStr";
             public static final String STATE_HH = "HH";
             public static final String STATE_WW = "WW";
             public static final String STATE_WWINV = "WWInv";
@@ -152,6 +155,16 @@ public class StormUtils {
             public static final String STREAM_OUTPUT = "output";
             public static final String STREAM_ESTIMATE = "estimate";
             public static final String STREAM_BAD_RECOG = "badRecog";
+        }
+
+        public abstract class COMPONENT {
+            public static final String COMP_EST_DISPATCHER_SPOUT = "dispatcher";
+            public static final String COMP_EST_FIRSTEST = "firstEstimation";
+            public static final String COMP_EST_REDUCEMAT = "reduceMat";
+            public static final String COMP_EST_ESTONCE = "estOnce";
+            public static final String COMP_EST_CHECKCONV = "checkConv";
+            public static final String COMP_EST_BADRECOG = "badRecog";
+            public static final String COMP_EST_OUTPUT = "output";
         }
     }
 

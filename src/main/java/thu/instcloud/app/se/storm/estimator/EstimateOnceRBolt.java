@@ -4,6 +4,7 @@ import Estimator.Estimator;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
+import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 import com.mathworks.toolbox.javabuilder.MWClassID;
@@ -37,7 +38,9 @@ public class EstimateOnceRBolt extends JedisRichBolt {
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {
-        super.declareOutputFields(outputFieldsDeclarer);
+        outputFieldsDeclarer.declare(new Fields(
+                StormUtils.STORM.FIELDS.CASE_ID
+        ));
     }
 
     @Override
@@ -56,7 +59,7 @@ public class EstimateOnceRBolt extends JedisRichBolt {
         String zoneid = tuple.getStringByField(StormUtils.STORM.FIELDS.ZONE_ID);
 
         estimate(caseid, zoneid);
-        collector.emit(new Values(caseid, zoneid));
+        collector.emit(new Values(caseid));
         collector.ack(tuple);
     }
 
