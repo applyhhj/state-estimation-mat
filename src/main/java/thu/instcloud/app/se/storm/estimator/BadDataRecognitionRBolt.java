@@ -57,7 +57,11 @@ public class BadDataRecognitionRBolt extends JedisRichBolt {
 
     @Override
     public void execute(Tuple tuple) {
-        super.execute(tuple);
+        String caesid = tuple.getStringByField(StormUtils.STORM.FIELDS.CASE_ID);
+        String zoneid = tuple.getStringByField(StormUtils.STORM.FIELDS.ZONE_ID);
+        recogBadData(caesid, zoneid);
+
+        collector.ack(tuple);
     }
 
     private void recogBadData(String caseid, String zoneid) {
@@ -92,9 +96,9 @@ public class BadDataRecognitionRBolt extends JedisRichBolt {
             MWNumericArray vvMat = (MWNumericArray) MWNumericArray.deserialize(vvByte.get());
 
             MWNumericArray vvNewMat = null, convergedMat = null;
-            MWNumericArray[] res = null;
+            Object[] res = null;
             try {
-                res = (MWNumericArray[]) estimator.Api_V2_BadDataRecognition(1, HHMat, WWMat, WWInvMat,
+                res = estimator.Api_V2_BadDataRecognition(2, HHMat, WWMat, WWInvMat,
                         vvMat, ddelzMat, badthrshldMat);
             } catch (MWException e) {
                 e.printStackTrace();
@@ -102,10 +106,10 @@ public class BadDataRecognitionRBolt extends JedisRichBolt {
 
 //            update state
             if (res != null) {
-                vvNewMat = res[0];
+                vvNewMat = (MWNumericArray) res[0];
                 p.set(vvKey, vvNewMat.serialize());
 
-                convergedMat = res[1];
+                convergedMat = (MWNumericArray) res[1];
                 boolean converbool;
                 if (convergedMat.getDouble() > 0) {
                     converbool = true;
@@ -121,13 +125,14 @@ public class BadDataRecognitionRBolt extends JedisRichBolt {
 
             disposeMatArrays(badthrshldMat, HHMat, WWInvMat, WWMat, ddelzMat, vvMat, vvNewMat, convergedMat);
 
+            checkCondition(caseid, p);
         }
     }
 
     private void checkCondition(String caseid, Pipeline p) {
         Response<String> nbadRecog = p.get(mkKey(caseid, StormUtils.REDIS.KEYS.STATE_BADRECOG_ZONES));
         Response<String> nz = p.get(mkKey(caseid, StormUtils.REDIS.KEYS.ZONES, StormUtils.REDIS.KEYS.NUM_OF_ZONES));
-        Response<String> currBadItResp = p.get(mkKey(caseid, "1", StormUtils.REDIS.KEYS.STATE_IBADREG));
+        Response<String> currBadItResp = p.get(mkKey(caseid, "1", StormUtils.REDIS.KEYS.STATE, StormUtils.REDIS.KEYS.STATE_IBADREG));
         Response<String> maxBadItResp = p.hget(mkKey(caseid, StormUtils.REDIS.KEYS.OPTIONS_EST), StormUtils.OPTIONS.KEYS.OPT_MAX_BAD_REG_IT);
         Response<Long> nConver = p.bitcount(mkKey(caseid, StormUtils.REDIS.KEYS.STATE_CONVERGED));
         p.sync();

@@ -90,20 +90,20 @@ public class EstimateOnceRBolt extends JedisRichBolt {
             List<String> bridsLst = brids.get();
 
 //            get estimated voltage and external bus voltage
-            Response<List<String>> VaEst = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.VA_EST_HASH), (String[]) busIdsLst.toArray());
-            Response<List<String>> VmEst = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.VM_EST_HASH), (String[]) busIdsLst.toArray());
-            Response<List<String>> VaExt = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.VA_EST_HASH), (String[]) outBusIdsLst.toArray());
-            Response<List<String>> VmExt = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.VM_EST_HASH), (String[]) outBusIdsLst.toArray());
+            Response<List<String>> VaEst = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.VA_EST_HASH), busIdsLst.toArray(new String[busIdsLst.size()]));
+            Response<List<String>> VmEst = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.VM_EST_HASH), busIdsLst.toArray(new String[busIdsLst.size()]));
+            Response<List<String>> VaExt = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.VA_EST_HASH), outBusIdsLst.toArray(new String[outBusIdsLst.size()]));
+            Response<List<String>> VmExt = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.VM_EST_HASH), outBusIdsLst.toArray(new String[outBusIdsLst.size()]));
 
 //            get measurement
-            Response<List<String>> zpf = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.PF), (String[]) bridsLst.toArray());
-            Response<List<String>> zpt = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.PT), (String[]) bridsLst.toArray());
-            Response<List<String>> zqf = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.QF), (String[]) bridsLst.toArray());
-            Response<List<String>> zqt = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.QT), (String[]) bridsLst.toArray());
-            Response<List<String>> pbus = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.PBUS), (String[]) busIdsLst.toArray());
-            Response<List<String>> qbus = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.QBUS), (String[]) busIdsLst.toArray());
-            Response<List<String>> Vam = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.VA), (String[]) busIdsLst.toArray());
-            Response<List<String>> Vmm = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.VM), (String[]) busIdsLst.toArray());
+            Response<List<String>> zpf = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.PF), bridsLst.toArray(new String[bridsLst.size()]));
+            Response<List<String>> zpt = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.PT), bridsLst.toArray(new String[bridsLst.size()]));
+            Response<List<String>> zqf = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.QF), bridsLst.toArray(new String[bridsLst.size()]));
+            Response<List<String>> zqt = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.QT), bridsLst.toArray(new String[bridsLst.size()]));
+            Response<List<String>> pbus = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.PBUS), busIdsLst.toArray(new String[busIdsLst.size()]));
+            Response<List<String>> qbus = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.QBUS), busIdsLst.toArray(new String[busIdsLst.size()]));
+            Response<List<String>> Vam = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.VA), busIdsLst.toArray(new String[busIdsLst.size()]));
+            Response<List<String>> Vmm = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.VM), busIdsLst.toArray(new String[busIdsLst.size()]));
 
             p.sync();
 
@@ -120,8 +120,10 @@ public class EstimateOnceRBolt extends JedisRichBolt {
 //            get zone data
             MWStructArray zoneDataMatSArr = (MWStructArray) MWStructArray.deserialize(zoneDataByte.get());
             MWNumericArray zMatSArrRow = new MWNumericArray(z.toArray(), MWClassID.DOUBLE);
+//            get estimated voltages of this zone
             MWNumericArray vaEstMatSArrRow = new MWNumericArray(VaEst.get().toArray(), MWClassID.DOUBLE);
             MWNumericArray vmEstMatSArrRow = new MWNumericArray(VmEst.get().toArray(), MWClassID.DOUBLE);
+//            get estimated voltages of external buses
             MWNumericArray vaExtMatSArrRow = new MWNumericArray(VaExt.get().toArray(), MWClassID.DOUBLE);
             MWNumericArray vmExtMatSArrRow = new MWNumericArray(VmExt.get().toArray(), MWClassID.DOUBLE);
 
@@ -131,24 +133,24 @@ public class EstimateOnceRBolt extends JedisRichBolt {
             MWNumericArray ddelzMat = (MWNumericArray) MWNumericArray.deserialize(ddelzByte.get());
             MWNumericArray vvMat = (MWNumericArray) MWNumericArray.deserialize(vvByte.get());
 
-            MWNumericArray[] res = null;
+            Object[] res = null;
             MWNumericArray delz = null, normF = null, ddelz = null, VVa = null, VVm = null, step = null, success = null;
 
             try {
-                res = (MWNumericArray[]) estimator.Api_V2_EstimateOnce(1, HHMat, WWInvMat, ddelzMat, vvMat,
+                res = estimator.Api_V2_EstimateOnce(7, HHMat, WWInvMat, ddelzMat, vvMat,
                         vaEstMatSArrRow, vmEstMatSArrRow, vaExtMatSArrRow, vmExtMatSArrRow, zMatSArrRow, zoneDataMatSArr);
             } catch (MWException e) {
                 e.printStackTrace();
             }
 
             if (res != null) {
-                VVa = res[0];
-                VVm = res[1];
-                delz = res[2];
-                ddelz = res[3];
-                normF = res[4];
-                step = res[5];
-                success = res[6];
+                VVa = (MWNumericArray) res[0];
+                VVm = (MWNumericArray) res[1];
+                delz = (MWNumericArray) res[2];
+                ddelz = (MWNumericArray) res[3];
+                normF = (MWNumericArray) res[4];
+                step = (MWNumericArray) res[5];
+                success = (MWNumericArray) res[6];
 
 //                update state
                 updateEstimatedVoltagesToBuffer(caseid, p, busIdsLst, VVa, VVm);

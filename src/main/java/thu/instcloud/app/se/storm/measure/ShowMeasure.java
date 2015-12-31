@@ -2,6 +2,7 @@ package thu.instcloud.app.se.storm.measure;
 
 import com.mathworks.toolbox.javabuilder.MWStructArray;
 import redis.clients.jedis.*;
+import thu.instcloud.app.se.storm.common.MeasureDataRaw;
 import thu.instcloud.app.se.storm.common.StormUtils;
 
 import java.util.ArrayList;
@@ -31,9 +32,9 @@ public class ShowMeasure {
             ret=jedis.hgetAll(mPbusKey);
         }
 
-        for (Map.Entry<String,String> e:ret.entrySet()){
-            System.out.printf("%10s %30.6f\n",e.getKey(),Double.parseDouble(e.getValue())*180/Math.PI);
-        }
+//        for (Map.Entry<String,String> e:ret.entrySet()){
+//            System.out.printf("%10s %30.6f\n",e.getKey(),Double.parseDouble(e.getValue())*180/Math.PI);
+//        }
 
         System.out.println(ret.size());
     }

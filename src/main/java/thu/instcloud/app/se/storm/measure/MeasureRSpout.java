@@ -10,6 +10,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
 import thu.instcloud.app.se.storm.common.JedisRichSpout;
+import thu.instcloud.app.se.storm.common.MeasureDataRaw;
 import thu.instcloud.app.se.storm.common.StormUtils;
 
 import java.util.ArrayList;
@@ -22,12 +23,12 @@ import static thu.instcloud.app.se.storm.common.StormUtils.mkKey;
 /**
  * Created by hjh on 15-12-28.
  */
-public class MeasurementRSpout extends JedisRichSpout {
+public class MeasureRSpout extends JedisRichSpout {
     private String caseid ="case2869pegase";
     private List<MeasureDataRaw> rawMeasures;
     private int midx;
 
-    public MeasurementRSpout(String redisIp, String pass) {
+    public MeasureRSpout(String redisIp, String pass) {
         super(redisIp, pass);
     }
 
@@ -56,7 +57,8 @@ public class MeasurementRSpout extends JedisRichSpout {
             }
             collector.emit(rawMeasures.get(midx++).toTrueMeasureValues());
         }
-        Utils.sleep(1);
+//        run at full capacity
+//        Utils.sleep(1);
     }
 
     public List<MeasureDataRaw> importTrueMeasurement(String caseid){

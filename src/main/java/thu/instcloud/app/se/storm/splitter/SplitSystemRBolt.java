@@ -93,11 +93,11 @@ public class SplitSystemRBolt extends JedisRichBolt {
                 p.hmset(optKey,options);
 
 //                add initial values of estimated state
-                int[] busNumsOut=data.getMpData().getBusData().getNumberOut();
+//                int[] busNumsOut=data.getMpData().getBusData().getNumberOut();
                 String vaEstKey=mkKey(caseid, StormUtils.REDIS.KEYS.VA_EST_HASH);
                 String vmEstKey=mkKey(caseid, StormUtils.REDIS.KEYS.VM_EST_HASH);
-                p.hmset(vaEstKey,getVEstInit(busNumsOut,true));
-                p.hmset(vmEstKey,getVEstInit(busNumsOut,false));
+//                p.hmset(vaEstKey,getVEstInit(busNumsOut,true));
+//                p.hmset(vmEstKey,getVEstInit(busNumsOut,false));
 
 //                need to store all keys for cleaning manually, well this is clumsy but we have no choice
                 String keysRec = mkKey(caseid, StormUtils.REDIS.KEYS.KEYS);
@@ -132,22 +132,6 @@ public class SplitSystemRBolt extends JedisRichBolt {
         SplitMPData splitMPData = new SplitMPData(caseid,new MPData(data), zoneBn);
 
         return splitMPData;
-    }
-
-    private Map<String,String> getVEstInit(int[] nums,boolean va){
-        String val;
-        if (va){
-            val="0";
-        }else {
-            val="1";
-        }
-
-        Map<String,String> res=new HashMap<>();
-
-        for (int i = 0; i < nums.length; i++) {
-            res.put(nums[i]+"",val);
-        }
-        return res;
     }
 
 }

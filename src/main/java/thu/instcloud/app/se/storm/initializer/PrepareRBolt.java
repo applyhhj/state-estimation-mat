@@ -100,20 +100,23 @@ public class PrepareRBolt extends JedisRichBolt {
                 p.lpush(e.getKey(),e.getValue());
             }
 
-//          we set estimated voltage of reference bus to the value of the computed power flow and in the estimation
-//            process we do not change this value, means we do not estimate zone 0
+//            keys for flush all data related to this case
+            String keysRec = mkKey(caseid, StormUtils.REDIS.KEYS.KEYS);
+
+//          store reference bus voltage
             if (zoneNum==0){
-                int refNum=(int)((double[][]) zoneNew.get(StormUtils.MW.FIELDS.REF_NUM,1))[0][0];
                 double vaRef=((double[][]) zoneNew.get(StormUtils.MW.FIELDS.VA_REF,1))[0][0];
                 double vmRef=((double[][]) zoneNew.get(StormUtils.MW.FIELDS.VM_REF,1))[0][0];
-                String vaEstKey=mkKey(caseid, StormUtils.REDIS.KEYS.VA_EST_HASH);
-                String vmEstKey=mkKey(caseid, StormUtils.REDIS.KEYS.VM_EST_HASH);
-                p.hset(vaEstKey,refNum+"",vaRef+"");
-                p.hset(vmEstKey,refNum+"",vmRef+"");
+                String vaRefKey = mkKey(caseid, StormUtils.REDIS.KEYS.VA_REF);
+                String vmRefKey = mkKey(caseid, StormUtils.REDIS.KEYS.VM_REF);
+                p.set(vaRefKey, vaRef + "");
+                p.set(vmRefKey, vmRef + "");
+                p.sadd(keysRec,
+                        vaRefKey,
+                        vmRefKey);
             }
 
 //            add measure keys to keys that need to flush when exit estimation
-            String keysRec = mkKey(caseid, StormUtils.REDIS.KEYS.KEYS);
             for (Map.Entry<String,String[]> e:idsKeyVals.entrySet()){
                 p.sadd(keysRec,e.getKey());
             }

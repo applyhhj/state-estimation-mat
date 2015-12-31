@@ -1,4 +1,4 @@
-package thu.instcloud.app.se.storm.measure;
+package thu.instcloud.app.se.storm.common;
 
 import backtype.storm.tuple.Values;
 
@@ -8,8 +8,8 @@ import java.util.Random;
  * Created by hjh on 15-12-28.
  */
 public class MeasureDataRaw extends MeasureData {
-    private double msigma;
     private static Random random;
+    private double msigma;
 
     public MeasureDataRaw(){
         random=new Random();

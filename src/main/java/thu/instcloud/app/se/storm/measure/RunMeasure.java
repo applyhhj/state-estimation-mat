@@ -10,15 +10,15 @@ import thu.instcloud.app.se.storm.common.StormUtils;
 /**
  * Created by hjh on 15-12-28.
  */
-public class Main {
+public class RunMeasure {
 
     public static void main(String[] args) throws Exception {
         String redisIp= StormUtils.REDIS.REDIS_SERVER_IP;
         String pass= StormUtils.REDIS.PASS;
         TopologyBuilder builder = new TopologyBuilder();
 
-        builder.setSpout("measureSource", new MeasurementRSpout(redisIp, pass), 3);
-        builder.setBolt("measure", new MeasureRBolt(redisIp,pass), 3).shuffleGrouping("measureSource");
+        builder.setSpout("measureSource", new MeasureRSpout(redisIp, pass), 3);
+        builder.setBolt("measure", new StoreMeasureRBolt(redisIp, pass), 3).shuffleGrouping("measureSource");
 
         Config conf = new Config();
 

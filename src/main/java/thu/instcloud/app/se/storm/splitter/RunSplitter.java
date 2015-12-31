@@ -12,7 +12,7 @@ import thu.instcloud.app.se.storm.initializer.PrepareRBolt;
 /**
  * Created by hjh on 15-12-26.
  */
-public class Main {
+public class RunSplitter {
 
     public static void main(String[] args) throws Exception {
         String redisIp= StormUtils.REDIS.REDIS_SERVER_IP;
@@ -21,6 +21,7 @@ public class Main {
 
         builder.setSpout("caseSource", new CaseDataSpout(true), 1);
         builder.setBolt("splitter", new SplitSystemRBolt(redisIp,pass), 3).shuffleGrouping("caseSource");
+
         builder.setBolt("distributer",new DistributeZoneRBolt(redisIp,pass),1).shuffleGrouping("splitter");
         builder.setBolt("prepare",new PrepareRBolt(redisIp,pass),2).shuffleGrouping("distributer");
 //        builder.setBolt("showCase", new ShowCaseRBolt(redisIp), 3).shuffleGrouping("splitter");

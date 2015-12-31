@@ -97,6 +97,8 @@ public class StormUtils {
             public static final String SBASE="sbase";
             public static final String ZONES="zones";
             public static final String NUM_OF_ZONES ="NStr";
+            public static final String VA_REF = "vaRefStr";
+            public static final String VM_REF = "vmRefStr";
 
             public static final String MEASURE="measure";
 

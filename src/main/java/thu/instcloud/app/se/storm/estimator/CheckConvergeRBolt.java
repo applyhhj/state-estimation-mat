@@ -71,7 +71,7 @@ public class CheckConvergeRBolt extends JedisRichBolt {
                 String converKey = mkKey(caseid, StormUtils.REDIS.KEYS.STATE_CONVERGED);
                 Response<Long> nConver = p.bitcount(converKey);
                 Response<String> maxItResp = p.hget(mkKey(caseid, StormUtils.REDIS.KEYS.OPTIONS_EST), StormUtils.OPTIONS.KEYS.OPT_MAX_EST_IT);
-                Response<String> currItResp = p.get(mkKey(caseid, "1", StormUtils.REDIS.KEYS.STATE_IT));
+                Response<String> currItResp = p.get(mkKey(caseid, "1", StormUtils.REDIS.KEYS.STATE, StormUtils.REDIS.KEYS.STATE_IT));
                 p.sync();
 
 //                all converged or reach max iteration number prepare for bad data recognition

@@ -9,6 +9,7 @@ import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 import com.mathworks.toolbox.javabuilder.MWException;
 import com.mathworks.toolbox.javabuilder.MWNumericArray;
+import com.mathworks.toolbox.javabuilder.MWStructArray;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
@@ -70,21 +71,21 @@ public class ReduceMatrixRBolt extends JedisRichBolt {
 
             p.sync();
 
-            MWNumericArray zoneDataMat = (MWNumericArray) MWNumericArray.deserialize(zoneDataByte.get());
+            MWStructArray zoneDataMat = (MWStructArray) MWStructArray.deserialize(zoneDataByte.get());
             MWNumericArray vvMat = (MWNumericArray) MWNumericArray.deserialize(vv.get());
             MWNumericArray delzMat = (MWNumericArray) MWNumericArray.deserialize(delz.get());
-            MWNumericArray[] reducedMat = null;
+            Object[] reducedMat = null;
             try {
-                reducedMat = (MWNumericArray[]) estimator.Api_V2_GetReducedMatrix(1, zoneDataMat, delzMat, vvMat);
+                reducedMat = estimator.Api_V2_GetReducedMatrix(4, zoneDataMat, delzMat, vvMat);
             } catch (MWException e) {
                 e.printStackTrace();
             }
 
             if (reducedMat != null) {
-                MWNumericArray HH = reducedMat[0];
-                MWNumericArray WW = reducedMat[1];
-                MWNumericArray WWInv = reducedMat[2];
-                MWNumericArray ddelz = reducedMat[3];
+                MWNumericArray HH = (MWNumericArray) reducedMat[0];
+                MWNumericArray WW = (MWNumericArray) reducedMat[1];
+                MWNumericArray WWInv = (MWNumericArray) reducedMat[2];
+                MWNumericArray ddelz = (MWNumericArray) reducedMat[3];
 
                 byte[] HHkey = mkByteKey(caseid, zoneid, StormUtils.REDIS.KEYS.STATE_HH);
                 byte[] WWKey = mkByteKey(caseid, zoneid, StormUtils.REDIS.KEYS.STATE_WW);

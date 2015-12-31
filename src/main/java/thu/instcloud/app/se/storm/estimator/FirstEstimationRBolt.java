@@ -18,6 +18,7 @@ import thu.instcloud.app.se.storm.common.JedisRichBolt;
 import thu.instcloud.app.se.storm.common.StormUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -87,20 +88,20 @@ public class FirstEstimationRBolt extends JedisRichBolt {
             List<String> bridsLst = brids.get();
 
 //            get estimated voltage and external bus voltage
-            Response<List<String>> VaEst = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.VA_EST_HASH), (String[]) busIdsLst.toArray());
-            Response<List<String>> VmEst = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.VM_EST_HASH), (String[]) busIdsLst.toArray());
-            Response<List<String>> VaExt = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.VA_EST_HASH), (String[]) outBusIdsLst.toArray());
-            Response<List<String>> VmExt = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.VM_EST_HASH), (String[]) outBusIdsLst.toArray());
+            Response<List<String>> VaEst = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.VA_EST_HASH), busIdsLst.toArray(new String[busIdsLst.size()]));
+            Response<List<String>> VmEst = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.VM_EST_HASH), busIdsLst.toArray(new String[busIdsLst.size()]));
+            Response<List<String>> VaExt = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.VA_EST_HASH), outBusIdsLst.toArray(new String[outBusIdsLst.size()]));
+            Response<List<String>> VmExt = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.VM_EST_HASH), outBusIdsLst.toArray(new String[outBusIdsLst.size()]));
 
 //            get measurement
-            Response<List<String>> zpf = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.PF), (String[]) bridsLst.toArray());
-            Response<List<String>> zpt = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.PT), (String[]) bridsLst.toArray());
-            Response<List<String>> zqf = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.QF), (String[]) bridsLst.toArray());
-            Response<List<String>> zqt = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.QT), (String[]) bridsLst.toArray());
-            Response<List<String>> pbus = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.PBUS), (String[]) busIdsLst.toArray());
-            Response<List<String>> qbus = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.QBUS), (String[]) busIdsLst.toArray());
-            Response<List<String>> Vam = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.VA), (String[]) busIdsLst.toArray());
-            Response<List<String>> Vmm = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.VM), (String[]) busIdsLst.toArray());
+            Response<List<String>> zpf = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.PF), bridsLst.toArray(new String[bridsLst.size()]));
+            Response<List<String>> zpt = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.PT), bridsLst.toArray(new String[bridsLst.size()]));
+            Response<List<String>> zqf = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.QF), bridsLst.toArray(new String[bridsLst.size()]));
+            Response<List<String>> zqt = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.QT), bridsLst.toArray(new String[bridsLst.size()]));
+            Response<List<String>> pbus = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.PBUS), busIdsLst.toArray(new String[busIdsLst.size()]));
+            Response<List<String>> qbus = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.QBUS), busIdsLst.toArray(new String[busIdsLst.size()]));
+            Response<List<String>> Vam = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.VA), busIdsLst.toArray(new String[busIdsLst.size()]));
+            Response<List<String>> Vmm = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.VM), busIdsLst.toArray(new String[busIdsLst.size()]));
 
             p.sync();
 
@@ -128,7 +129,7 @@ public class FirstEstimationRBolt extends JedisRichBolt {
 
 //            first estimation
             try {
-                Object[] res = estimator.Api_V2_FirstEstimation(1, vaEstMatSArrRow, vmEstMatSArrRow,
+                Object[] res = estimator.Api_V2_FirstEstimation(3, vaEstMatSArrRow, vmEstMatSArrRow,
                         vaExtMatSArrRow, vmExtMatSArrRow, zMatSArrRow, zoneDataMatSArr);
                 delz = (MWNumericArray) res[0];
                 normF = (MWNumericArray) res[1];
@@ -149,11 +150,23 @@ public class FirstEstimationRBolt extends JedisRichBolt {
             Response<String> estimatedZones = p.get(estimatedKey);
             Response<String> nz = p.get(mkKey(caseid, StormUtils.REDIS.KEYS.ZONES, StormUtils.REDIS.KEYS.NUM_OF_ZONES));
 
+//            check convergence
             double toldbl = Double.parseDouble(tol.get());
             String converKey = mkKey(caseid, StormUtils.REDIS.KEYS.STATE_CONVERGED);
             if (normFDbl < toldbl) {
 //                converged
                 p.setbit(converKey, Long.parseLong(zoneid), true);
+            }
+
+//             update states for this zone
+            if (vvByte != null) {
+                byte[] vvKey = mkByteKey(caseid, zoneid, StormUtils.REDIS.KEYS.STATE, StormUtils.REDIS.KEYS.STATE_VV);
+                p.set(vvKey, vvByte);
+            }
+
+            if (delzByte != null) {
+                byte[] delzKey = mkByteKey(caseid, zoneid, StormUtils.REDIS.KEYS.STATE, StormUtils.REDIS.KEYS.STATE_DELZ);
+                p.set(delzKey, delzByte);
             }
             p.sync();
 
@@ -174,16 +187,6 @@ public class FirstEstimationRBolt extends JedisRichBolt {
                     collector.emit(StormUtils.STORM.STREAM.STREAM_OUTPUT, new Values(caseid, true));
                     return;
                 } else {
-//              otherwise update states
-                    if (vvByte != null) {
-                        byte[] vvKey = mkByteKey(caseid, zoneid, StormUtils.REDIS.KEYS.STATE, StormUtils.REDIS.KEYS.STATE_VV);
-                        p.set(vvKey, vvByte);
-                    }
-
-                    if (delzByte != null) {
-                        byte[] delzKey = mkByteKey(caseid, zoneid, StormUtils.REDIS.KEYS.STATE, StormUtils.REDIS.KEYS.STATE_DELZ);
-                        p.set(delzKey, delzByte);
-                    }
 
 //                    reset converge states for further estimation, whenever their is an unconverged estimation we
 //                    estimate the whole system again.
@@ -205,5 +208,6 @@ public class FirstEstimationRBolt extends JedisRichBolt {
         }
 
     }
+
 
 }

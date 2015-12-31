@@ -7,7 +7,7 @@ import backtype.storm.tuple.Tuple;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 import thu.instcloud.app.se.storm.common.JedisRichBolt;
-import thu.instcloud.app.se.storm.common.StormUtils;
+import thu.instcloud.app.se.storm.common.MeasureData;
 
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by hjh on 15-12-28.
  */
-public class MeasureRBolt extends JedisRichBolt {
+public class StoreMeasureRBolt extends JedisRichBolt {
 
     private CopyOnWriteArrayList<MeasureData> measures;
     private int cacheNum = 50;
@@ -27,11 +27,11 @@ public class MeasureRBolt extends JedisRichBolt {
 //    private Jedis jedis;
 //    private Pipeline p;
 
-    public MeasureRBolt(String reidsIp,String pass) {
+    public StoreMeasureRBolt(String reidsIp, String pass) {
         super(reidsIp,pass);
     }
 
-    public MeasureRBolt(String reidsIp,String pass, int cacheNum, long cacheDurationMil) {
+    public StoreMeasureRBolt(String reidsIp, String pass, int cacheNum, long cacheDurationMil) {
         super(reidsIp,pass);
         this.cacheNum = cacheNum;
         this.cacheDurationMil = cacheDurationMil;

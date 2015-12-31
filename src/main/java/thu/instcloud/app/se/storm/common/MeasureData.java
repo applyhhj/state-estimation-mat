@@ -1,4 +1,4 @@
-package thu.instcloud.app.se.storm.measure;
+package thu.instcloud.app.se.storm.common;
 
 import backtype.storm.tuple.Tuple;
 import thu.instcloud.app.se.storm.common.StormUtils;
