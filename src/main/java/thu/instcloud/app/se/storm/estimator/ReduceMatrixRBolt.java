@@ -68,15 +68,17 @@ public class ReduceMatrixRBolt extends JedisRichBolt {
             Response<byte[]> zoneDataByte = p.get(mkByteKey(caseid, StormUtils.REDIS.KEYS.ZONES, zoneid));
             Response<byte[]> vv = p.get(mkByteKey(caseid, zoneid, StormUtils.REDIS.KEYS.STATE, StormUtils.REDIS.KEYS.STATE_VV));
             Response<byte[]> delz = p.get(mkByteKey(caseid, zoneid, StormUtils.REDIS.KEYS.STATE, StormUtils.REDIS.KEYS.STATE_DELZ));
+            Response<byte[]> H = p.get(mkByteKey(caseid, zoneid, StormUtils.REDIS.KEYS.STATE_H));
 
             p.sync();
 
             MWStructArray zoneDataMat = (MWStructArray) MWStructArray.deserialize(zoneDataByte.get());
             MWNumericArray vvMat = (MWNumericArray) MWNumericArray.deserialize(vv.get());
             MWNumericArray delzMat = (MWNumericArray) MWNumericArray.deserialize(delz.get());
+            MWNumericArray HMat = (MWNumericArray) MWNumericArray.deserialize(H.get());
             Object[] reducedMat = null;
             try {
-                reducedMat = estimator.Api_V2_GetReducedMatrix(4, zoneDataMat, delzMat, vvMat);
+                reducedMat = estimator.api_reducedMatrix(4, zoneDataMat, HMat, delzMat, vvMat);
             } catch (MWException e) {
                 e.printStackTrace();
             }
@@ -103,7 +105,7 @@ public class ReduceMatrixRBolt extends JedisRichBolt {
 
             }
 
-            disposeMatArrays(zoneDataMat, vvMat, delzMat);
+            disposeMatArrays(zoneDataMat, vvMat, delzMat, HMat);
         }
     }
 }

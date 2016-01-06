@@ -21,10 +21,10 @@ public class RunSplitter {
 
         builder.setSpout("caseSource", new CaseDataSpout(true), 1);
         builder.setBolt("splitter", new SplitSystemRBolt(redisIp,pass), 3).shuffleGrouping("caseSource");
+        builder.setBolt("showCase", new ShowCaseRBolt(redisIp, pass), 1).shuffleGrouping("splitter");
 
         builder.setBolt("distributer",new DistributeZoneRBolt(redisIp,pass),1).shuffleGrouping("splitter");
         builder.setBolt("prepare",new PrepareRBolt(redisIp,pass),2).shuffleGrouping("distributer");
-//        builder.setBolt("showCase", new ShowCaseRBolt(redisIp), 3).shuffleGrouping("splitter");
 
         Config conf = new Config();
 

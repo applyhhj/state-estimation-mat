@@ -109,6 +109,7 @@ public class DispatcherRSpout extends JedisRichSpout {
                 String delzKey = mkKey(caseid, i + "", StormUtils.REDIS.KEYS.STATE, StormUtils.REDIS.KEYS.STATE_DELZ);
 
                 //            keys for some state generated later
+                String HKey = mkKey(caseid, i + "", StormUtils.REDIS.KEYS.STATE_H);
                 String HHkey = mkKey(caseid, i + "", StormUtils.REDIS.KEYS.STATE_HH);
                 String WWKey = mkKey(caseid, i + "", StormUtils.REDIS.KEYS.STATE_WW);
                 String WWInvKey = mkKey(caseid, i + "", StormUtils.REDIS.KEYS.STATE_WWINV);
@@ -121,6 +122,7 @@ public class DispatcherRSpout extends JedisRichSpout {
                         zoneIbadtKey,
                         vvKey,
                         delzKey,
+                        HKey,
                         HHkey,
                         WWKey,
                         WWInvKey,

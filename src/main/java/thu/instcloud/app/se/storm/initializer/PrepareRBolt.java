@@ -58,7 +58,7 @@ public class PrepareRBolt extends JedisRichBolt {
         try {
             zone=(MWStructArray)MWStructArray.deserialize(tuple.getBinaryByField(StormUtils.STORM.FIELDS.ZONE_DATA));
             if (zone!=null) {
-                zoneNew = (MWStructArray) estimator.Api_PrepareEstimation(1, zone)[0];
+                zoneNew = (MWStructArray) estimator.api_prepareEstimation(1, zone)[0];
             }
         } catch (MWException e) {
             e.printStackTrace();

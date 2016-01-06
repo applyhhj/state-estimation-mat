@@ -1,7 +1,10 @@
 package thu.instcloud.app.se.storm.common;
 
 import com.mathworks.toolbox.javabuilder.*;
+import redis.clients.jedis.Pipeline;
+import redis.clients.jedis.Response;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +31,79 @@ public class StormUtils {
 
     public static String getCaseFromFileName(String caseFile){
         return caseFile.replace(CONSTANTS.CASE_FILE_EXT,"");
+    }
+
+    public static MWNumericArray getMatZ(Pipeline p, String caseid, String zoneid) {
+        Response<List<String>> busIds = p.lrange(mkKey(caseid, StormUtils.REDIS.KEYS.ZONES, zoneid, StormUtils.REDIS.KEYS.BUS_NUM_OUT), 0, -1);
+        Response<List<String>> brids = p.lrange(mkKey(caseid, StormUtils.REDIS.KEYS.ZONES, zoneid, StormUtils.REDIS.KEYS.BRANCH_IDS), 0, -1);
+
+        p.sync();
+
+        //            get related ids
+        List<String> busIdsLst = busIds.get();
+        List<String> bridsLst = brids.get();
+
+        //            get measurement
+        Response<List<String>> zpf = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.PF), bridsLst.toArray(new String[bridsLst.size()]));
+        Response<List<String>> zpt = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.PT), bridsLst.toArray(new String[bridsLst.size()]));
+        Response<List<String>> zqf = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.QF), bridsLst.toArray(new String[bridsLst.size()]));
+        Response<List<String>> zqt = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.QT), bridsLst.toArray(new String[bridsLst.size()]));
+        Response<List<String>> pbus = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.PBUS), busIdsLst.toArray(new String[busIdsLst.size()]));
+        Response<List<String>> qbus = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.QBUS), busIdsLst.toArray(new String[busIdsLst.size()]));
+        Response<List<String>> Vam = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.VA), busIdsLst.toArray(new String[busIdsLst.size()]));
+        Response<List<String>> Vmm = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.VM), busIdsLst.toArray(new String[busIdsLst.size()]));
+
+        p.sync();
+
+        List<String> z = new ArrayList<>();
+        z.addAll(zpf.get());
+        z.addAll(zpt.get());
+        z.addAll(pbus.get());
+        z.addAll(Vam.get());
+        z.addAll(zqf.get());
+        z.addAll(zqt.get());
+        z.addAll(qbus.get());
+        z.addAll(Vmm.get());
+
+        return new MWNumericArray(z.toArray(), MWClassID.DOUBLE);
+
+    }
+
+    public static List<MWNumericArray> getMatVamEstExt(Pipeline p, String caseid, String zoneid) {
+        List<MWNumericArray> res = new ArrayList<>();
+
+        Response<List<String>> busIds = p.lrange(mkKey(caseid, StormUtils.REDIS.KEYS.ZONES, zoneid, StormUtils.REDIS.KEYS.BUS_NUM_OUT), 0, -1);
+        Response<List<String>> outBusIds = p.lrange(mkKey(caseid, StormUtils.REDIS.KEYS.ZONES, zoneid, StormUtils.REDIS.KEYS.OUT_BUS_NUM_OUT), 0, -1);
+
+        p.sync();
+
+        List<String> busIdsLst = busIds.get();
+        List<String> outBusIdsLst = outBusIds.get();
+
+        Response<List<String>> VaEst = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.VA_EST_HASH), busIdsLst.toArray(new String[busIdsLst.size()]));
+        Response<List<String>> VmEst = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.VM_EST_HASH), busIdsLst.toArray(new String[busIdsLst.size()]));
+        Response<List<String>> VaExt = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.VA_EST_HASH), outBusIdsLst.toArray(new String[outBusIdsLst.size()]));
+        Response<List<String>> VmExt = p.hmget(mkKey(caseid, StormUtils.REDIS.KEYS.VM_EST_HASH), outBusIdsLst.toArray(new String[outBusIdsLst.size()]));
+
+        p.sync();
+
+        MWNumericArray vaEstMatSArrRow = new MWNumericArray(VaEst.get().toArray(), MWClassID.DOUBLE);
+        MWNumericArray vmEstMatSArrRow = new MWNumericArray(VmEst.get().toArray(), MWClassID.DOUBLE);
+        MWNumericArray vaExtMatSArrRow = new MWNumericArray(VaExt.get().toArray(), MWClassID.DOUBLE);
+        MWNumericArray vmExtMatSArrRow = new MWNumericArray(VmExt.get().toArray(), MWClassID.DOUBLE);
+
+        res.add(vaEstMatSArrRow);
+        res.add(vmEstMatSArrRow);
+        res.add(vaExtMatSArrRow);
+        res.add(vmExtMatSArrRow);
+
+        return res;
+    }
+
+    public static MWStructArray getMatZoneData(Pipeline p, String caseid, String zoneid) {
+        Response<byte[]> zoneDataByte = p.get(mkByteKey(caseid, StormUtils.REDIS.KEYS.ZONES, zoneid));
+        p.sync();
+        return (MWStructArray) MWStructArray.deserialize(zoneDataByte.get());
     }
 
     public static class MW {
@@ -84,6 +160,7 @@ public class StormUtils {
     }
 
     public abstract class REDIS{
+
         public static final String REDIS_SERVER_IP = "10.0.0.1";
         public static final String PASS = "redis";
 
@@ -121,6 +198,7 @@ public class StormUtils {
             public static final String STATE_DELZ = "delz";
             public static final String STATE_ESTIMATED_ZONES = "estimatedNStr";
             public static final String STATE_BADRECOG_ZONES = "badRecogNStr";
+            public static final String STATE_H = "H";
             public static final String STATE_HH = "HH";
             public static final String STATE_WW = "WW";
             public static final String STATE_WWINV = "WWInv";

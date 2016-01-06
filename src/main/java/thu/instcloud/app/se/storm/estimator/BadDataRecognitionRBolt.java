@@ -98,7 +98,7 @@ public class BadDataRecognitionRBolt extends JedisRichBolt {
             MWNumericArray vvNewMat = null, convergedMat = null;
             Object[] res = null;
             try {
-                res = estimator.Api_V2_BadDataRecognition(2, HHMat, WWMat, WWInvMat,
+                res = estimator.api_badDataRecognition(2, HHMat, WWMat, WWInvMat,
                         vvMat, ddelzMat, badthrshldMat);
             } catch (MWException e) {
                 e.printStackTrace();

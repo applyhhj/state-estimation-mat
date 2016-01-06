@@ -30,8 +30,8 @@ public class ShowCaseRBolt extends JedisRichBolt {
     @Override
     public void execute(Tuple tuple) {
         String caseID=tuple.getStringByField(StormUtils.STORM.FIELDS.CASE_ID);
-        printDataStrs(caseID);
         collector.ack(tuple);
+        printDataStrs(caseID);
     }
 
 
@@ -44,7 +44,7 @@ public class ShowCaseRBolt extends JedisRichBolt {
         byte[] zones=null;
 
         try (Jedis jedis = jedisPool.getResource()){
-            jedis.auth(StormUtils.REDIS.PASS);
+            auth(jedis);
             byte[] zonesKey=mkByteKey(
                     caseid,
                     StormUtils.REDIS.KEYS.RAW_DATA,

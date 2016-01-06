@@ -137,7 +137,7 @@ public class EstimateOnceRBolt extends JedisRichBolt {
             MWNumericArray delz = null, normF = null, ddelz = null, VVa = null, VVm = null, step = null, success = null;
 
             try {
-                res = estimator.Api_V2_EstimateOnce(7, HHMat, WWInvMat, ddelzMat, vvMat,
+                res = estimator.api_estimateOnce(7, HHMat, WWInvMat, ddelzMat, vvMat,
                         vaEstMatSArrRow, vmEstMatSArrRow, vaExtMatSArrRow, vmExtMatSArrRow, zMatSArrRow, zoneDataMatSArr);
             } catch (MWException e) {
                 e.printStackTrace();

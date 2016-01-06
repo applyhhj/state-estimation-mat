@@ -1,6 +1,6 @@
 package thu.instcloud.app.se.splitter;
 
-import Splitter.Splitter;
+import Estimator.Estimator;
 import com.mathworks.toolbox.javabuilder.*;
 import thu.instcloud.app.se.mpdata.MPData;
 
@@ -10,7 +10,7 @@ import thu.instcloud.app.se.mpdata.MPData;
 public class SplitMPData {
 
 //    not sure if matlab java built method is thread safe or not
-    private Splitter splitter;
+private Estimator estimator;
     private MWNumericArray bus;
     private MWNumericArray gen;
     private MWNumericArray branch;
@@ -24,8 +24,8 @@ public class SplitMPData {
 
     public SplitMPData(String caseid,MPData mpData, int N) {
         try {
-            if (splitter == null) {
-                splitter = new Splitter();
+            if (estimator == null) {
+                estimator = new Estimator();
             }
             this.mpData = mpData;
             this.Nint = N;
@@ -47,11 +47,11 @@ public class SplitMPData {
         baseMVA=mpData.getSbaseMat();
         N = initN();
 
-        MWNumericArray newbus = (MWNumericArray) splitter.reassignZone(1, bus, gen, branch, N)[0];
+        MWNumericArray newbus = (MWNumericArray) estimator.api_split(1, bus, gen, branch, N)[0];
         bus.dispose();
         bus=newbus;
 
-        zones=(MWStructArray)splitter.piecewise(1,baseMVA,bus,gen,branch)[0];
+        zones = (MWStructArray) estimator.api_piecewise(1, baseMVA, bus, gen, branch)[0];
     }
 
     private MWNumericArray initN() {
