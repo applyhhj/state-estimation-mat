@@ -81,7 +81,7 @@ public class SplitSystemRBolt extends JedisRichBolt {
                 p.set(mkByteKey(rawdatakey, StormUtils.REDIS.KEYS.SBASE), data.getBaseMVA().serialize());
 
 //              TODO: later, try to pass this data to the next bolt instead of store to redis then fetch it, that means discard data
-//                store piecewise zone struct array
+//                store piecewised zone struct array
                 p.set(mkByteKey(rawdatakey, StormUtils.REDIS.KEYS.ZONES), data.getZones().serialize());
 //                store number of zones
                 p.set(mkKey(caseid, StormUtils.REDIS.KEYS.ZONES, StormUtils.REDIS.KEYS.NUM_OF_ZONES),
