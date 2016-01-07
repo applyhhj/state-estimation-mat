@@ -124,8 +124,8 @@ public class FirstEstimationRBolt extends JedisRichBolt {
             MWNumericArray vaExtMatSArrRow = matVamEstExt.get(2);
             MWNumericArray vmExtMatSArrRow = matVamEstExt.get(3);
 
-            MWNumericArray delz = null, normF = null, vv = null, H = null;
-            byte[] delzByte = null, vvByte = null, HByte = null;
+            MWNumericArray delz = null, normF = null, vv = null;
+            byte[] delzByte = null, vvByte = null;
             double normFDbl = Double.MAX_VALUE;
 
 //            first estimation
@@ -140,14 +140,11 @@ public class FirstEstimationRBolt extends JedisRichBolt {
                 vvByte = vv.serialize();
                 normFDbl = normF.getDouble();
 
-                H = (MWNumericArray) estimator.api_computeH(1, zoneDataMatSArr, vaEstMatSArrRow, vmEstMatSArrRow,
-                        vaExtMatSArrRow, vmExtMatSArrRow)[0];
-                HByte = H.serialize();
             } catch (MWException e) {
                 e.printStackTrace();
             } finally {
                 disposeMatArrays(vaEstMatSArrRow, vmEstMatSArrRow,
-                        vaExtMatSArrRow, vmExtMatSArrRow, zMatSArrRow, zoneDataMatSArr, delz, vv, normF, H);
+                        vaExtMatSArrRow, vmExtMatSArrRow, zMatSArrRow, zoneDataMatSArr, delz, vv, normF);
             }
 
             String estimatedKey = mkKey(caseid, StormUtils.REDIS.KEYS.STATE_ESTIMATED_ZONES);
@@ -174,10 +171,6 @@ public class FirstEstimationRBolt extends JedisRichBolt {
                 p.set(delzKey, delzByte);
             }
 
-            if (HByte != null) {
-                byte[] HKey = mkByteKey(caseid, zoneid, StormUtils.REDIS.KEYS.STATE_H);
-                p.set(HKey, HByte);
-            }
             p.sync();
 
             long nzInt = Long.parseLong(nz.get());

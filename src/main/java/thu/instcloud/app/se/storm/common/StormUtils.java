@@ -198,7 +198,6 @@ public class StormUtils {
             public static final String STATE_DELZ = "delz";
             public static final String STATE_ESTIMATED_ZONES = "estimatedNStr";
             public static final String STATE_BADRECOG_ZONES = "badRecogNStr";
-            public static final String STATE_H = "H";
             public static final String STATE_HH = "HH";
             public static final String STATE_WW = "WW";
             public static final String STATE_WWINV = "WWInv";

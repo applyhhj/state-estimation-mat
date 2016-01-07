@@ -51,9 +51,13 @@ public class OutputDiffBolt extends JedisRichBolt {
             Pipeline p = jedis.pipelined();
             String estVaKey = mkKey(caseid, StormUtils.REDIS.KEYS.VA_EST_HASH);
             String estVmKey = mkKey(caseid, StormUtils.REDIS.KEYS.VM_EST_HASH);
+            String valfKey = mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.VA);
+            String vmlfKey = mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.VM);
 
             Response<Map<String, String>> vaMapResp = p.hgetAll(estVaKey);
             Response<Map<String, String>> vmMapResp = p.hgetAll(estVmKey);
+            Response<Map<String, String>> valfMapResp = p.hgetAll(valfKey);
+            Response<Map<String, String>> vmlfMapResp = p.hgetAll(vmlfKey);
 
             p.sync();
             System.out.printf("\n\nTotal number of buses: %8d", vaMapResp.get().size());

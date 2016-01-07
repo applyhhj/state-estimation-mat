@@ -152,6 +152,9 @@ public class EstimateOnceRBolt extends JedisRichBolt {
                 step = (MWNumericArray) res[5];
                 success = (MWNumericArray) res[6];
 
+//                debug
+                System.out.println("zone: " + zoneid + ";  step:" + step);
+
 //                update state
                 updateEstimatedVoltagesToBuffer(caseid, p, busIdsLst, VVa, VVm);
                 p.set(ddelzKey, ddelz.serialize());

@@ -107,16 +107,15 @@ public class BadDataRecognitionRBolt extends JedisRichBolt {
 //            update state
             if (res != null) {
                 vvNewMat = (MWNumericArray) res[0];
-                p.set(vvKey, vvNewMat.serialize());
-
+                if (vvMat.getDimensions()[0] != vvNewMat.getDimensions()[0]) {
+                    p.set(vvKey, vvNewMat.serialize());
+                }
                 convergedMat = (MWNumericArray) res[1];
                 boolean converbool;
-                if (convergedMat.getDouble() > 0) {
-                    converbool = true;
-                } else {
+                if (!(convergedMat.getDouble() < 0)) {
                     converbool = false;
+                    p.setbit(mkKey(caseid, StormUtils.REDIS.KEYS.STATE_CONVERGED), Long.parseLong(zoneid), converbool);
                 }
-                p.setbit(mkKey(caseid, StormUtils.REDIS.KEYS.STATE_CONVERGED), Long.parseLong(zoneid), converbool);
                 p.incr(mkKey(caseid, StormUtils.REDIS.KEYS.STATE_BADRECOG_ZONES));
 //                TODO: record only one iteration number
                 p.incr(mkKey(caseid, zoneid, StormUtils.REDIS.KEYS.STATE, StormUtils.REDIS.KEYS.STATE_IBADREG));
@@ -137,6 +136,9 @@ public class BadDataRecognitionRBolt extends JedisRichBolt {
         Response<Long> nConver = p.bitcount(mkKey(caseid, StormUtils.REDIS.KEYS.STATE_CONVERGED));
         p.sync();
 
+//        debug
+        System.out.println("currIbad: " + currBadItResp.get());
+
         long nzLong = Long.parseLong(nz.get());
 //        all zones have checked bad data
         if (nzLong == Long.parseLong(nbadRecog.get())) {
@@ -154,8 +156,10 @@ public class BadDataRecognitionRBolt extends JedisRichBolt {
                 collector.emit(StormUtils.STORM.STREAM.STREAM_OUTPUT, new Values(caseid, false));
                 return;
             } else {
+//                further estimation
                 p.del(mkKey(caseid, StormUtils.REDIS.KEYS.STATE_CONVERGED));
                 p.setbit(mkKey(caseid, StormUtils.REDIS.KEYS.STATE_CONVERGED), 0, true);
+                p.set(mkKey(caseid, "1", StormUtils.REDIS.KEYS.STATE, StormUtils.REDIS.KEYS.STATE_IT), "0");
                 p.sync();
 
 //                    redispatch zone for further estimation
