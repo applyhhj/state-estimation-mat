@@ -145,7 +145,7 @@ public class StormUtils {
             res.put(KEYS.OPT_NBUS_ZONE, "300");
             res.put(KEYS.OPT_EST_TOL, "1e-8");
             res.put(KEYS.OPT_MAX_BAD_REG_IT, "50");
-            res.put(KEYS.OPT_MAX_EST_IT, "10");
+            res.put(KEYS.OPT_MAX_EST_IT, "20");
             res.put(KEYS.OPT_OVERWRITE_CASEDATA, "true");
             return res;
         }

@@ -10,6 +10,8 @@ import redis.clients.jedis.Response;
 import thu.instcloud.app.se.storm.common.JedisRichBolt;
 import thu.instcloud.app.se.storm.common.StormUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import static thu.instcloud.app.se.storm.common.StormUtils.mkKey;
@@ -61,10 +63,47 @@ public class OutputDiffBolt extends JedisRichBolt {
 
             p.sync();
             System.out.printf("\n\nTotal number of buses: %8d", vaMapResp.get().size());
-            System.out.print("\nBus\tVa\tVm\t");
-            for (Map.Entry<String, String> e : vaMapResp.get().entrySet()) {
-                System.out.printf("\n%8s\t%15s\t%15s", e.getKey(), e.getValue(), vmMapResp.get().get(e.getKey()));
+            System.out.print("\nMaxdiff with power flow:\nVaMaxDiff(degree)\t\tVmMaxDiff(pu)\t");
+
+            List<Double> maxdiff = findMaxDiff(vaMapResp.get(), vmMapResp.get(), valfMapResp.get(), vmlfMapResp.get());
+            System.out.printf("\n%10.5f\t%10.5f\n", maxdiff.get(0), maxdiff.get(1));
+        }
+    }
+
+    private List<Double> findMaxDiff(Map<String, String> vaEst, Map<String, String> vmEst, Map<String, String> valf, Map<String, String> vmlf) {
+
+        int n = vaEst.size();
+        double vaMaxDiff = Double.MIN_VALUE;
+        double vmMaxDiff = Double.MIN_VALUE;
+        List<Double> vadiff = new ArrayList<>();
+        List<Double> vmdiff = new ArrayList<>();
+        List<Double> res = new ArrayList<>();
+
+        for (Map.Entry<String, String> e : vaEst.entrySet()) {
+            String busNum = e.getKey();
+            Double vaEsti = Double.parseDouble(vaEst.get(busNum));
+            Double vmEsti = Double.parseDouble(vmEst.get(busNum));
+            Double valfi = Double.parseDouble(valf.get(busNum));
+            Double vmlfi = Double.parseDouble(vmlf.get(busNum));
+
+            vadiff.add(vaEsti - valfi);
+            vmdiff.add(vmEsti - vmlfi);
+        }
+
+        for (int i = 0; i < n; i++) {
+            if (vaMaxDiff < vadiff.get(i)) {
+                vaMaxDiff = vadiff.get(i);
+            }
+            if (vmMaxDiff < vmdiff.get(i)) {
+                vmMaxDiff = vmdiff.get(i);
             }
         }
+
+//        to degree
+        res.add(vaMaxDiff * 180 / Math.PI);
+        res.add(vmMaxDiff);
+
+        return res;
+
     }
 }
