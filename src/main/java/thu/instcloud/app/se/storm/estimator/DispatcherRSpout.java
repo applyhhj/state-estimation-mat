@@ -18,18 +18,25 @@ import java.util.List;
 import java.util.Map;
 
 import static thu.instcloud.app.se.storm.common.StormUtils.mkKey;
+import static thu.instcloud.app.se.storm.common.StormUtils.setRefBusEstState;
 
 /**
  * Created by hjh on 15-12-29.
  */
 public class DispatcherRSpout extends JedisRichSpout {
-    private String caseid;
+    private String caseid = "case2869pegase";
     private boolean resetVEst;
     private boolean debug;
 
     public DispatcherRSpout(String redisIp, String pass, boolean debug) {
         super(redisIp, pass);
         this.debug = debug;
+    }
+
+    public DispatcherRSpout(String redisIp, String pass, boolean debug, String caseid) {
+        super(redisIp, pass);
+        this.debug = debug;
+        this.caseid = caseid;
     }
 
     @Override
@@ -47,8 +54,8 @@ public class DispatcherRSpout extends JedisRichSpout {
 
     @Override
     public void nextTuple() {
+//        TODO: check if case exists
         if (debug) {
-            caseid = "case2869pegase";
             resetVEst = true;
         }
         emitZones(caseid, resetVEst);
@@ -80,6 +87,7 @@ public class DispatcherRSpout extends JedisRichSpout {
 
 //            converge state of each zone
             String convergedKey=mkKey(caseid, StormUtils.REDIS.KEYS.STATE_CONVERGED);
+            p.del(convergedKey);
 //            reference zone is always converged
             p.setbit(convergedKey,0,true);
 
@@ -156,16 +164,17 @@ public class DispatcherRSpout extends JedisRichSpout {
             }
 
 //        always reset reference bus state to the value from power flow
-            String vaRefKey = mkKey(caseid, StormUtils.REDIS.KEYS.VA_REF);
-            String vmRefKey = mkKey(caseid, StormUtils.REDIS.KEYS.VM_REF);
-            Response<String> vaRef = p.get(vaRefKey);
-            Response<String> vmRef = p.get(vmRefKey);
-            Response<List<String>> refNumResp = p.lrange(mkKey(caseid, StormUtils.REDIS.KEYS.ZONES, "0", StormUtils.REDIS.KEYS.BUS_NUM_OUT), 0, -1);
-            p.sync();
-
-            p.hset(vmEstKey, refNumResp.get().get(0), vmRef.get());
-            p.hset(vaEstKey, refNumResp.get().get(0), vaRef.get());
-            p.sync();
+            setRefBusEstState(p, caseid);
+//            String vaRefKey = mkKey(caseid, StormUtils.REDIS.KEYS.VA_REF);
+//            String vmRefKey = mkKey(caseid, StormUtils.REDIS.KEYS.VM_REF);
+//            Response<String> vaRef = p.get(vaRefKey);
+//            Response<String> vmRef = p.get(vmRefKey);
+//            Response<List<String>> refNumResp = p.lrange(mkKey(caseid, StormUtils.REDIS.KEYS.ZONES, "0", StormUtils.REDIS.KEYS.BUS_NUM_OUT), 0, -1);
+//            p.sync();
+//
+//            p.hset(vmEstKey, refNumResp.get().get(0), vmRef.get());
+//            p.hset(vaEstKey, refNumResp.get().get(0), vaRef.get());
+//            p.sync();
 
         }
 

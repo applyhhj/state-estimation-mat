@@ -33,6 +33,40 @@ public class StormUtils {
         return caseFile.replace(CONSTANTS.CASE_FILE_EXT,"");
     }
 
+    public static void updateEstimatedVoltagesToBuffer(String caseid, Pipeline p, List<String> busids, MWNumericArray va, MWNumericArray vm) {
+        double[][] vaArr = (double[][]) va.toArray();
+        double[][] vmArr = (double[][]) vm.toArray();
+        Map<String, String> vaMap = new HashMap<>();
+        Map<String, String> vmMap = new HashMap<>();
+
+        for (int i = 0; i < busids.size(); i++) {
+            vaMap.put(busids.get(i), String.valueOf(vaArr[i][0]));
+            vmMap.put(busids.get(i), String.valueOf(vmArr[i][0]));
+        }
+
+//        only when all zones have finished one round estimation can we update the voltages of the system, before
+//        that all estimated values are stored in buffer.
+        p.hmset(mkKey(caseid, StormUtils.REDIS.KEYS.VA_EST_BUFFER_HASH), vaMap);
+        p.hmset(mkKey(caseid, StormUtils.REDIS.KEYS.VM_EST_BUFFER_HASH), vmMap);
+        p.sync();
+    }
+
+    public static void setRefBusEstState(Pipeline p, String caseid) {
+        String vaEstKey = mkKey(caseid, StormUtils.REDIS.KEYS.VA_EST_HASH);
+        String vmEstKey = mkKey(caseid, StormUtils.REDIS.KEYS.VM_EST_HASH);
+        //        always reset reference bus state to the value from power flow
+        String vaRefKey = mkKey(caseid, StormUtils.REDIS.KEYS.VA_REF);
+        String vmRefKey = mkKey(caseid, StormUtils.REDIS.KEYS.VM_REF);
+        Response<String> vaRef = p.get(vaRefKey);
+        Response<String> vmRef = p.get(vmRefKey);
+        Response<List<String>> refNumResp = p.lrange(mkKey(caseid, StormUtils.REDIS.KEYS.ZONES, "0", StormUtils.REDIS.KEYS.BUS_NUM_OUT), 0, -1);
+        p.sync();
+
+        p.hset(vmEstKey, refNumResp.get().get(0), vmRef.get());
+        p.hset(vaEstKey, refNumResp.get().get(0), vaRef.get());
+        p.sync();
+    }
+
     public static MWNumericArray getMatZ(Pipeline p, String caseid, String zoneid) {
         Response<List<String>> busIds = p.lrange(mkKey(caseid, StormUtils.REDIS.KEYS.ZONES, zoneid, StormUtils.REDIS.KEYS.BUS_NUM_OUT), 0, -1);
         Response<List<String>> brids = p.lrange(mkKey(caseid, StormUtils.REDIS.KEYS.ZONES, zoneid, StormUtils.REDIS.KEYS.BRANCH_IDS), 0, -1);
@@ -135,6 +169,11 @@ public class StormUtils {
             public static final String VA_REF = "VaRef";
             public static final String VM_REF = "VmRef";
             public static final String BAD_THRESHOLD = "bad_threshold";
+        }
+
+        public abstract class TASK {
+            public static final String ESTIMATE_TASK = "estimate";
+            public static final String BADRECOG_TASK = "badRecog";
         }
 
     }
@@ -244,6 +283,7 @@ public class StormUtils {
             public static final String COMP_EST_CHECKCONV = "checkConv";
             public static final String COMP_EST_BADRECOG = "badRecog";
             public static final String COMP_EST_OUTPUTDIFF = "outputDiff";
+            public static final String COMP_EST_CHECKAFTERBADRECOG = "checkingAfterBad";
         }
     }
 

@@ -177,27 +177,20 @@ public class FirstEstimationRBolt extends JedisRichBolt {
 //                all zones are estimated, check if all estimations are converged
             if (Long.parseLong(estimatedZones.get()) == nzInt) {
                 Long nConver = jedis.bitcount(converKey);
+//                    reset converge states, whenever their is an unconverged estimation we
+//                    estimate the whole system again.
+                p.del(converKey);
+                p.setbit(converKey, 0, true);
+                p.set(estimatedKey, "1");
+                p.sync();
                 if (nConver == nzInt) {
-//                    all converged
-//                    reset converge states
-                    p.del(converKey);
-                    p.setbit(converKey, 0, true);
-                    p.set(estimatedKey, "1");
-//                    finished estimation
+//                    all converged,finished estimation
                     p.setbit(mkKey(caseid, StormUtils.REDIS.KEYS.ESTIMATING_BIT), 0, false);
+                    p.sync();
 
 //                    output
                     collector.emit(StormUtils.STORM.STREAM.STREAM_OUTPUT, new Values(caseid, true));
-                    return;
                 } else {
-
-//                    reset converge states for further estimation, whenever their is an unconverged estimation we
-//                    estimate the whole system again.
-                    p.del(converKey);
-                    p.setbit(converKey, 0, true);
-                    p.set(estimatedKey, "1");
-                    p.sync();
-
 //                    redispatch zone for further estimation
                     for (int i = 1; i < nzInt; i++) {
                         collector.emit(StormUtils.STORM.STREAM.STREAM_ESTIMATE,

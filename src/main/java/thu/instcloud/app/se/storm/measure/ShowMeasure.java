@@ -1,5 +1,6 @@
 package thu.instcloud.app.se.storm.measure;
 
+import com.mathworks.toolbox.javabuilder.MWNumericArray;
 import com.mathworks.toolbox.javabuilder.MWStructArray;
 import redis.clients.jedis.*;
 import thu.instcloud.app.se.storm.common.MeasureDataRaw;
@@ -22,21 +23,31 @@ public class ShowMeasure {
 
     public static void main(String[] args) {
         jedisPool=new JedisPool(new JedisPoolConfig(),redisIp);
-        String caseid="case2869pegase";
+        String caseid = "case9241pegase";
 
         String mPbusKey=mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.VA);
         Map<String,String> ret;
 
         try (Jedis jedis = jedisPool.getResource()) {
             jedis.auth(pass);
-            ret=jedis.hgetAll(mPbusKey);
+            for (int i = 1; i < 32; i++) {
+                byte[] vvKey = mkByteKey(caseid, i + "", StormUtils.REDIS.KEYS.STATE, StormUtils.REDIS.KEYS.STATE_VV);
+                byte[] vvByte = jedis.get(vvKey);
+                MWNumericArray vvMat = (MWNumericArray) MWNumericArray.deserialize(vvByte);
+
+                byte[] WWInvKey = mkByteKey(caseid, i + "", StormUtils.REDIS.KEYS.STATE_WWINV);
+                byte[] WWInvByte = jedis.get(WWInvKey);
+                MWNumericArray WWInvMat = (MWNumericArray) MWNumericArray.deserialize(WWInvByte);
+                System.out.printf("r %d c %d\n", vvMat.getDimensions()[0], vvMat.getDimensions()[1]);
+            }
+
         }
 
 //        for (Map.Entry<String,String> e:ret.entrySet()){
 //            System.out.printf("%10s %30.6f\n",e.getKey(),Double.parseDouble(e.getValue())*180/Math.PI);
 //        }
 
-        System.out.println(ret.size());
+//        System.out.println(ret.size());
     }
 
     public static void printMeasures(String caseid){

@@ -32,6 +32,11 @@ public class MeasureRSpout extends JedisRichSpout {
         super(redisIp, pass);
     }
 
+    public MeasureRSpout(String redisIp, String pass, String caseid) {
+        super(redisIp, pass);
+        this.caseid = caseid;
+    }
+
     @Override
     public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {
         outputFieldsDeclarer.declare(new Fields(

@@ -31,10 +31,16 @@ public class CaseDataSpout extends BaseRichSpout {
     int caseidx;
 
     private boolean debug;
+    private String debugcase = "case2869pegase";
     private long delay;
 
     public CaseDataSpout(boolean debug){
         this.debug=debug;
+    }
+
+    public CaseDataSpout(boolean debug, String caseid) {
+        this.debug = debug;
+        this.debugcase = caseid;
     }
 
     @Override
@@ -65,7 +71,7 @@ public class CaseDataSpout extends BaseRichSpout {
         }
         String currentCaseFile= caseFiles.get(caseidx++);
         if (debug) {
-            currentCaseFile = "case2869pegase.txt";
+            currentCaseFile = debugcase + ".txt";
             delay=delay*10000;
         }
         List<String> caseDataStrs=readStringFromFile(casedir+currentCaseFile);

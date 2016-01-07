@@ -17,9 +17,11 @@ import java.util.List;
 import java.util.Map;
 
 import static thu.instcloud.app.se.storm.common.StormUtils.mkKey;
+import static thu.instcloud.app.se.storm.common.StormUtils.setRefBusEstState;
 
 /**
  * Created by hjh on 15-12-30.
+ * should be unique
  */
 public class CheckConvergeRBolt extends JedisRichBolt {
     public CheckConvergeRBolt(String redisIp, String pass) {
@@ -74,7 +76,7 @@ public class CheckConvergeRBolt extends JedisRichBolt {
                 Response<String> currItResp = p.get(mkKey(caseid, "1", StormUtils.REDIS.KEYS.STATE, StormUtils.REDIS.KEYS.STATE_IT));
                 p.sync();
 
-//                all converged or reach max iteration number prepare for bad data recognition
+//                all converged or reach max iteration number, prepare for bad data recognition
                 if (nConver.get() == nzLong || Long.parseLong(currItResp.get()) >= Long.parseLong(maxItResp.get())) {
                     for (int i = 1; i < nzLong; i++) {
                         collector.emit(StormUtils.STORM.STREAM.STREAM_BAD_RECOG, new Values(caseid, i + ""));
@@ -93,18 +95,18 @@ public class CheckConvergeRBolt extends JedisRichBolt {
         }
     }
 
-    //    can we do it just on the redis server side??
     private void updateEstimation(String caseid, Pipeline p) {
-        Response<Map<String, String>> vmbuff = p.hgetAll(mkKey(caseid, StormUtils.REDIS.KEYS.VM_EST_BUFFER_HASH));
-        Response<Map<String, String>> vabuff = p.hgetAll(mkKey(caseid, StormUtils.REDIS.KEYS.VA_EST_BUFFER_HASH));
-//        clear buffer
-        p.del(mkKey(caseid, StormUtils.REDIS.KEYS.VM_EST_BUFFER_HASH));
-        p.del(mkKey(caseid, StormUtils.REDIS.KEYS.VA_EST_BUFFER_HASH));
+//        Response<Map<String, String>> vmbuff = p.hgetAll(mkKey(caseid, StormUtils.REDIS.KEYS.VM_EST_BUFFER_HASH));
+//        Response<Map<String, String>> vabuff = p.hgetAll(mkKey(caseid, StormUtils.REDIS.KEYS.VA_EST_BUFFER_HASH));
+//        change buffers to estimated state
+        p.rename(mkKey(caseid, StormUtils.REDIS.KEYS.VM_EST_BUFFER_HASH), mkKey(caseid, StormUtils.REDIS.KEYS.VM_EST_HASH));
+        p.rename(mkKey(caseid, StormUtils.REDIS.KEYS.VA_EST_BUFFER_HASH), mkKey(caseid, StormUtils.REDIS.KEYS.VA_EST_HASH));
         p.sync();
-
-        p.hmset(mkKey(caseid, StormUtils.REDIS.KEYS.VM_EST_HASH), vmbuff.get());
-        p.hmset(mkKey(caseid, StormUtils.REDIS.KEYS.VA_EST_HASH), vabuff.get());
-        p.sync();
+//      remember to set estimated state of reference bus
+        setRefBusEstState(p, caseid);
+//        p.hmset(mkKey(caseid, StormUtils.REDIS.KEYS.VM_EST_HASH), vmbuff.get());
+//        p.hmset(mkKey(caseid, StormUtils.REDIS.KEYS.VA_EST_HASH), vabuff.get());
+//        p.sync();
     }
 
 }

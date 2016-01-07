@@ -15,9 +15,10 @@ public class RunMeasure {
     public static void main(String[] args) throws Exception {
         String redisIp= StormUtils.REDIS.REDIS_SERVER_IP;
         String pass= StormUtils.REDIS.PASS;
+        String caseid = "case9241pegase";
         TopologyBuilder builder = new TopologyBuilder();
 
-        builder.setSpout("measureSource", new MeasureRSpout(redisIp, pass), 3);
+        builder.setSpout("measureSource", new MeasureRSpout(redisIp, pass, caseid), 1);
         builder.setBolt("measure", new StoreMeasureRBolt(redisIp, pass), 3).shuffleGrouping("measureSource");
 
         Config conf = new Config();

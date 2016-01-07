@@ -86,8 +86,8 @@ public class OutputDiffBolt extends JedisRichBolt {
             Double valfi = Double.parseDouble(valf.get(busNum));
             Double vmlfi = Double.parseDouble(vmlf.get(busNum));
 
-            vadiff.add(vaEsti - valfi);
-            vmdiff.add(vmEsti - vmlfi);
+            vadiff.add(Math.abs(vaEsti - valfi));
+            vmdiff.add(Math.abs(vmEsti - vmlfi));
         }
 
         for (int i = 0; i < n; i++) {
