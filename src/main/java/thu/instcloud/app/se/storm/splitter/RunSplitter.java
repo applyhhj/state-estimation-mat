@@ -5,6 +5,9 @@ import backtype.storm.LocalCluster;
 import backtype.storm.StormSubmitter;
 import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.utils.Utils;
+import com.esotericsoftware.kryo.Kryo;
+import com.mathworks.toolbox.javabuilder.MWNumericArray;
+import com.mathworks.toolbox.javabuilder.MWStructArray;
 import thu.instcloud.app.se.storm.common.StormUtils;
 import thu.instcloud.app.se.storm.initializer.DistributeZoneRBolt;
 import thu.instcloud.app.se.storm.initializer.PrepareRBolt;
@@ -18,16 +21,17 @@ public class RunSplitter {
         String redisIp= StormUtils.REDIS.REDIS_SERVER_IP;
         String pass= StormUtils.REDIS.PASS;
         String debugcase = "case9241pegase";
+
+        Config conf = new Config();
+
         TopologyBuilder builder = new TopologyBuilder();
 
         builder.setSpout("caseSource", new CaseDataSpout(true, debugcase), 1);
-        builder.setBolt("splitter", new SplitSystemRBolt(redisIp,pass), 3).shuffleGrouping("caseSource");
+        builder.setBolt("splitter", new SplitSystemRBolt(redisIp, pass), 1).shuffleGrouping("caseSource");
         builder.setBolt("showCase", new ShowCaseRBolt(redisIp, pass), 1).shuffleGrouping("splitter");
 
         builder.setBolt("distributer",new DistributeZoneRBolt(redisIp,pass),1).shuffleGrouping("splitter");
         builder.setBolt("prepare",new PrepareRBolt(redisIp,pass),2).shuffleGrouping("distributer");
-
-        Config conf = new Config();
 
         if (args != null && args.length > 0) {
             conf.setNumWorkers(3);

@@ -1,5 +1,6 @@
 package thu.instcloud.app.se.storm.measure;
 
+import com.esotericsoftware.kryo.Kryo;
 import com.mathworks.toolbox.javabuilder.MWNumericArray;
 import com.mathworks.toolbox.javabuilder.MWStructArray;
 import redis.clients.jedis.*;
@@ -10,8 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static thu.instcloud.app.se.storm.common.StormUtils.mkByteKey;
-import static thu.instcloud.app.se.storm.common.StormUtils.mkKey;
+import static thu.instcloud.app.se.storm.common.StormUtils.*;
 
 /**
  * Created by hjh on 15-12-28.
@@ -83,7 +83,7 @@ public class ShowMeasure {
         }
 
         for (int i = 0; i < nz; i++) {
-            MWStructArray zone=(MWStructArray) MWStructArray.deserialize(zonesRes.get(i).get());
+            MWStructArray zone = (MWStructArray) MWNumericArray.deserialize(zonesRes.get(i).get());
             List<String> ii2eList=ii2eListRes.get(i).get();
             List<String> bridsList=bridsListRes.get(i).get();
             res.addAll(retrieveData(caseid,zone,ii2eList,bridsList));

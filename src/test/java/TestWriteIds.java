@@ -1,3 +1,5 @@
+import com.mathworks.toolbox.javabuilder.MWNumericArray;
+import com.mathworks.toolbox.javabuilder.MWStructArray;
 import redis.clients.jedis.*;
 import thu.instcloud.app.se.storm.common.StormUtils;
 
@@ -15,42 +17,34 @@ public class TestWriteIds {
 
     public static void main(String[] args) {
         JedisPool jedisPool = new JedisPool(new JedisPoolConfig(), StormUtils.REDIS.REDIS_SERVER_IP);
-        String caseid = "case2869pegase";
+        String caseid = "case9241pegase";
         Response<List<String>> res;
         Response<List<String>> res1;
         List<Response<byte[]>> itsList = new ArrayList<>();
         try (Jedis jedis = jedisPool.getResource()) {
             jedis.auth(StormUtils.REDIS.PASS);
             Pipeline p=jedis.pipelined();
-//            Response<String> nz = p.get(mkKey(caseid, StormUtils.REDIS.KEYS.ZONES, StormUtils.REDIS.KEYS.NUM_OF_ZONES));
-//            p.sync();
-//            long nzLong = Long.parseLong(nz.get());
-//            for (int i = 1; i < nzLong; i++) {
-//                itsList.add(p.get(mkByteKey(caseid, StormUtils.REDIS.KEYS.ZONES, i + "")));
-//            }
-//            p.sync();
 
-//            String converKey = mkKey(caseid, "1", StormUtils.REDIS.KEYS.STATE, StormUtils.REDIS.KEYS.STATE_IT);
-//            Response<Map<String,String>> VaEst = p.hgetAll(mkKey(caseid, StormUtils.REDIS.KEYS.VA_EST_HASH));
-//            Response<Map<String,String>> VmEst = p.hgetAll(mkKey(caseid, StormUtils.REDIS.KEYS.VM_EST_HASH));
-////            p.del(testKey);
-////            p.setbit(testKey,3,true);
-////            p.setbit(testKey,1,true);
-//            p.sync();
-//            for (Map.Entry<String,String> e:VaEst.get().entrySet()) {
-//                System.out.printf("\n%8s\t%15s\t%15s",e.getKey(),e.getValue(),VmEst.get().get(e.getKey()));
-//            }
-            boolean hasit = jedis.exists(mkKey(caseid, "1", StormUtils.REDIS.KEYS.STATE_IBADREG));
-            Response<String> currBadItResp = p.get(mkKey(caseid, "1", StormUtils.REDIS.KEYS.STATE_IBADREG));
+            List<Response<byte[]>> vvMatBytes = new ArrayList<>();
+            for (int i = 1; i < 30; i++) {
+                String zoneid = i + "";
+                byte[] zoneDataKey = mkByteKey(caseid, StormUtils.REDIS.KEYS.ZONES, zoneid);
+                vvMatBytes.add(p.get(zoneDataKey));
+            }
             p.sync();
-            System.out.print(currBadItResp.get());
+
+            String[] fields = {"value"};
+            MWStructArray vvs = new MWStructArray(29, 1, fields);
+            for (int i = 1; i < 30; i++) {
+//                MWStructArray e=(MWStructArray)MWStructArray.deserialize(vvMatBytes.get(i-1).get());
+                vvs.set("value", i, (MWStructArray) MWStructArray.deserialize(vvMatBytes.get(i - 1).get()));
+            }
+            for (int i = 1; i < 30; i++) {
+                MWStructArray e = (MWStructArray) vvs.getField("value", i);
+                System.out.println(e);
+            }
 
         }
-
-//        for (Response<byte[]> resp :
-//                itsList) {
-//            System.out.println(resp.get().length);
-//        }
 
         jedisPool.destroy();
     }

@@ -42,7 +42,7 @@ public class Executor {
         List<String> fnames = getValidFileNameList(fpath);
 
         String fname = fnames.get(random.nextInt(fnames.size()) - 1);
-//        for test
+//        for tutorial
         fname = "case300.txt";
 
         PowerSystem powerSystem = new PowerSystem(fpath + fname, option);

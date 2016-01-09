@@ -85,7 +85,7 @@ public class Test {
 
     }
 
-    //    test
+    //    tutorial
     public static String resultToString(PowerSystem powerSystem){
 
         MPData mpData=powerSystem.getMpData();

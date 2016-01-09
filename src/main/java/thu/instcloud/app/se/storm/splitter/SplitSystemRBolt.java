@@ -6,6 +6,8 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
+import com.esotericsoftware.kryo.Kryo;
+import com.mathworks.toolbox.javabuilder.MWStructArray;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 import thu.instcloud.app.se.mpdata.MPData;
@@ -17,14 +19,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static thu.instcloud.app.se.storm.common.StormUtils.mkByteKey;
-import static thu.instcloud.app.se.storm.common.StormUtils.mkKey;
+import static thu.instcloud.app.se.storm.common.StormUtils.*;
 
 /**
  * Created by hjh on 15-12-26.
  */
 public class SplitSystemRBolt extends JedisRichBolt {
-    OutputCollector collector;
     boolean changed;
 
     public SplitSystemRBolt(String reidsIp,String pass) {
@@ -33,7 +33,7 @@ public class SplitSystemRBolt extends JedisRichBolt {
 
     @Override
     public void prepare(Map map, TopologyContext topologyContext, OutputCollector outputCollector) {
-        collector = outputCollector;
+        super.prepare(map, topologyContext, outputCollector);
     }
 
     @Override
@@ -73,8 +73,6 @@ public class SplitSystemRBolt extends JedisRichBolt {
                 List<String> caseDataStrs = (List<String>) tuple.getValueByField(StormUtils.STORM.FIELDS.CASE_DATA);
                 SplitMPData data = splitSystem(caseid, caseDataStrs, zbn);
 
-//                TODO: use kryo to serialize
-//                store raw data
                 p.set(mkByteKey(rawdatakey, StormUtils.REDIS.KEYS.BUS), data.getBus().serialize());
                 p.set(mkByteKey(rawdatakey, StormUtils.REDIS.KEYS.BRANCH), data.getBranch().serialize());
                 p.set(mkByteKey(rawdatakey, StormUtils.REDIS.KEYS.GEN), data.getGen().serialize());
@@ -83,6 +81,7 @@ public class SplitSystemRBolt extends JedisRichBolt {
 //              TODO: later, try to pass this data to the next bolt instead of store to redis then fetch it, that means discard data
 //                store piecewised zone struct array
                 p.set(mkByteKey(rawdatakey, StormUtils.REDIS.KEYS.ZONES), data.getZones().serialize());
+
 //                store number of zones
                 p.set(mkKey(caseid, StormUtils.REDIS.KEYS.ZONES, StormUtils.REDIS.KEYS.NUM_OF_ZONES),
                         data.getZones().getDimensions()[1]+"");

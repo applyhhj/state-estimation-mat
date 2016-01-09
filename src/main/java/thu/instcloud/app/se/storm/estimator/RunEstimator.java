@@ -19,18 +19,20 @@ public class RunEstimator {
         boolean debug = true;
         TopologyBuilder builder = new TopologyBuilder();
 
+        int paraEst = 4;
+        int paraBad = 4;
         builder.setSpout(StormUtils.STORM.COMPONENT.COMP_EST_DISPATCHER_SPOUT, new DispatcherRSpout(redisIp, pass, debug, caseid), 1);
         builder.setBolt(StormUtils.STORM.COMPONENT.COMP_EST_FIRSTEST, new FirstEstimationRBolt(redisIp, pass), 1)
                 .shuffleGrouping(StormUtils.STORM.COMPONENT.COMP_EST_DISPATCHER_SPOUT);
         builder.setBolt(StormUtils.STORM.COMPONENT.COMP_EST_REDUCEMAT, new ReduceMatrixRBolt(redisIp, pass), 1)
                 .shuffleGrouping(StormUtils.STORM.COMPONENT.COMP_EST_FIRSTEST, StormUtils.STORM.STREAM.STREAM_ESTIMATE)
                 .shuffleGrouping(StormUtils.STORM.COMPONENT.COMP_EST_CHECKAFTERBADRECOG, StormUtils.STORM.STREAM.STREAM_ESTIMATE);
-        builder.setBolt(StormUtils.STORM.COMPONENT.COMP_EST_ESTONCE, new EstimateOnceRBolt(redisIp, pass), 3)
+        builder.setBolt(StormUtils.STORM.COMPONENT.COMP_EST_ESTONCE, new EstimateOnceRBolt(redisIp, pass), paraEst)
                 .shuffleGrouping(StormUtils.STORM.COMPONENT.COMP_EST_REDUCEMAT)
                 .shuffleGrouping(StormUtils.STORM.COMPONENT.COMP_EST_CHECKCONV, StormUtils.STORM.STREAM.STREAM_ESTIMATE);
         builder.setBolt(StormUtils.STORM.COMPONENT.COMP_EST_CHECKCONV, new CheckConvergeRBolt(redisIp, pass), 1)
                 .shuffleGrouping(StormUtils.STORM.COMPONENT.COMP_EST_ESTONCE);
-        builder.setBolt(StormUtils.STORM.COMPONENT.COMP_EST_BADRECOG, new BadDataRecognitionRBolt(redisIp, pass), 3)
+        builder.setBolt(StormUtils.STORM.COMPONENT.COMP_EST_BADRECOG, new BadDataRecognitionRBolt(redisIp, pass), paraBad)
                 .shuffleGrouping(StormUtils.STORM.COMPONENT.COMP_EST_CHECKCONV, StormUtils.STORM.STREAM.STREAM_BAD_RECOG);
         builder.setBolt(StormUtils.STORM.COMPONENT.COMP_EST_CHECKAFTERBADRECOG, new CheckAfterBadRecogRBolt(redisIp, pass), 1)
                 .shuffleGrouping(StormUtils.STORM.COMPONENT.COMP_EST_BADRECOG);

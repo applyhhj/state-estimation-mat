@@ -4,6 +4,8 @@ import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Tuple;
+import com.esotericsoftware.kryo.Kryo;
+import com.mathworks.toolbox.javabuilder.MWNumericArray;
 import com.mathworks.toolbox.javabuilder.MWStructArray;
 import redis.clients.jedis.Jedis;
 import thu.instcloud.app.se.storm.common.JedisRichBolt;
@@ -17,7 +19,6 @@ import static thu.instcloud.app.se.storm.common.StormUtils.mkByteKey;
  * Created by hjh on 15-12-26.
  */
 public class ShowCaseRBolt extends JedisRichBolt {
-
     public ShowCaseRBolt(String reidsIp,String pass) {
         super(reidsIp,pass);
     }

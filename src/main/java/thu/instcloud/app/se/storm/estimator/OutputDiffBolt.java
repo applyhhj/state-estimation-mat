@@ -51,6 +51,11 @@ public class OutputDiffBolt extends JedisRichBolt {
         try (Jedis jedis = jedisPool.getResource()) {
             auth(jedis);
             Pipeline p = jedis.pipelined();
+
+            String estTimeKey = mkKey(caseid, StormUtils.REDIS.KEYS.ESTIMATE_TIME);
+            long esttime = System.currentTimeMillis() - Long.parseLong(jedis.get(estTimeKey));
+            jedis.set(estTimeKey, esttime + "");
+
             String estVaKey = mkKey(caseid, StormUtils.REDIS.KEYS.VA_EST_HASH);
             String estVmKey = mkKey(caseid, StormUtils.REDIS.KEYS.VM_EST_HASH);
             String valfKey = mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.VA);
@@ -62,7 +67,7 @@ public class OutputDiffBolt extends JedisRichBolt {
             Response<Map<String, String>> vmlfMapResp = p.hgetAll(vmlfKey);
 
             p.sync();
-            System.out.printf("\n\nTotal number of buses: %8d", vaMapResp.get().size());
+            System.out.printf("\n\nTotal number of buses: %8d with estimation time %10.4fs", vaMapResp.get().size(), esttime / 1000.0);
             System.out.print("\nMaxdiff with power flow:\nVaMaxDiff(degree)\t\tVmMaxDiff(pu)\t");
 
             List<Double> maxdiff = findMaxDiff(vaMapResp.get(), vmMapResp.get(), valfMapResp.get(), vmlfMapResp.get());

@@ -7,7 +7,6 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
-import com.mathworks.toolbox.javabuilder.MWClassID;
 import com.mathworks.toolbox.javabuilder.MWException;
 import com.mathworks.toolbox.javabuilder.MWNumericArray;
 import com.mathworks.toolbox.javabuilder.MWStructArray;
@@ -18,7 +17,6 @@ import thu.instcloud.app.se.storm.common.JedisRichBolt;
 import thu.instcloud.app.se.storm.common.StormUtils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,6 +28,7 @@ import static thu.instcloud.app.se.storm.common.StormUtils.MW.disposeMatArrays;
  */
 public class FirstEstimationRBolt extends JedisRichBolt {
     Estimator estimator;
+    int paraEst;
 
     public FirstEstimationRBolt(String redisIp, String pass) {
         super(redisIp, pass);
@@ -45,13 +44,14 @@ public class FirstEstimationRBolt extends JedisRichBolt {
         outputFieldsDeclarer.declareStream(StormUtils.STORM.STREAM.STREAM_ESTIMATE,
                 new Fields(
                         StormUtils.STORM.FIELDS.CASE_ID,
-                        StormUtils.STORM.FIELDS.ZONE_ID
+                        StormUtils.STORM.FIELDS.ZONE_ID_LIST
                 ));
     }
 
     @Override
     public void prepare(Map map, TopologyContext topologyContext, OutputCollector outputCollector) {
         super.prepare(map, topologyContext, outputCollector);
+        paraEst = topologyContext.getComponentTasks(StormUtils.STORM.COMPONENT.COMP_EST_ESTONCE).size();
         try {
             estimator = new Estimator();
         } catch (MWException e) {
@@ -192,9 +192,15 @@ public class FirstEstimationRBolt extends JedisRichBolt {
                     collector.emit(StormUtils.STORM.STREAM.STREAM_OUTPUT, new Values(caseid, true));
                 } else {
 //                    redispatch zone for further estimation
+                    int nzForEachEst = (int) Math.ceil((double) nzInt / paraEst);
+                    List<String> zoneids = new ArrayList<>();
                     for (int i = 1; i < nzInt; i++) {
-                        collector.emit(StormUtils.STORM.STREAM.STREAM_ESTIMATE,
-                                new Values(caseid, i + ""));
+                        zoneids.add(i + "");
+                        if ((i % nzForEachEst) == 0) {
+                            collector.emit(StormUtils.STORM.STREAM.STREAM_ESTIMATE,
+                                    new Values(caseid, zoneids));
+                            zoneids.clear();
+                        }
                     }
 
 

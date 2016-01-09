@@ -67,6 +67,11 @@ public class DispatcherRSpout extends JedisRichSpout {
         try (Jedis jedis=jedisPool.getResource()){
             auth(jedis);
 
+//            evaluate estimation time
+            String estTimeKey = mkKey(caseid, StormUtils.REDIS.KEYS.ESTIMATE_TIME);
+            long start = System.currentTimeMillis();
+            jedis.set(estTimeKey, start + "");
+
 //            initialize state variables for estimation
 
 //            whether the case is being estimated
@@ -105,7 +110,8 @@ public class DispatcherRSpout extends JedisRichSpout {
             p.sadd(keysRec,
                     convergedKey,
                     estimatingKey,
-                    estimatedKey
+                    estimatedKey,
+                    estTimeKey
             );
 //            ignore reference zone
             for (int i = 1; i < nz; i++) {

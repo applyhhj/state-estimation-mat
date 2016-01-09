@@ -1,9 +1,14 @@
 package thu.instcloud.app.se.storm.common;
 
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
 import com.mathworks.toolbox.javabuilder.*;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +38,11 @@ public class StormUtils {
         return caseFile.replace(CONSTANTS.CASE_FILE_EXT,"");
     }
 
-    public static void updateEstimatedVoltagesToBuffer(String caseid, Pipeline p, List<String> busids, MWNumericArray va, MWNumericArray vm) {
+    public static void updateEstimatedVoltagesToBuffer(String caseid, String zoneid, Pipeline p, MWNumericArray va, MWNumericArray vm) {
+        //            get related ids
+        Response<List<String>> busIds = p.lrange(mkKey(caseid, StormUtils.REDIS.KEYS.ZONES, zoneid, StormUtils.REDIS.KEYS.BUS_NUM_OUT), 0, -1);
+        p.sync();
+        List<String> busids = busIds.get();
         double[][] vaArr = (double[][]) va.toArray();
         double[][] vmArr = (double[][]) vm.toArray();
         Map<String, String> vaMap = new HashMap<>();
@@ -171,7 +180,11 @@ public class StormUtils {
             public static final String BAD_THRESHOLD = "bad_threshold";
         }
 
-        public abstract class TASK {
+        public abstract class WORKER {
+            public static final String HOST_ARG_NAME = "rh";
+            public static final String AUTH_ARG_NAME = "ra";
+            public static final String WORKER_PORT_ARG_NAME = "p";
+
             public static final String ESTIMATE_TASK = "estimate";
             public static final String BADRECOG_TASK = "badRecog";
         }
@@ -243,6 +256,7 @@ public class StormUtils {
             public static final String STATE_DDELZ = "ddelz";
 
             public static final String ESTIMATING_BIT ="estimatingBit";
+            public static final String ESTIMATE_TIME = "estTime";
 
 //            use this one to remember all data related to a case
             public static final String KEYS="keySet";
@@ -256,6 +270,7 @@ public class StormUtils {
             public static final String OPTIONS_EST = "zoneBusNum";
             public static final String ZONE_DATA = "zoneData";
             public static final String ZONE_ID ="zoneId";
+            public static final String ZONE_ID_LIST = "zoneList";
 
             public static final String DATA_CHANGED = "changed";
 

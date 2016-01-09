@@ -24,6 +24,7 @@ import static thu.instcloud.app.se.storm.common.StormUtils.setRefBusEstState;
  * should be unique
  */
 public class CheckConvergeRBolt extends JedisRichBolt {
+
     public CheckConvergeRBolt(String redisIp, String pass) {
         super(redisIp, pass);
     }
