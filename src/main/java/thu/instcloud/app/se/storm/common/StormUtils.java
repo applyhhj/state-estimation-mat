@@ -150,8 +150,11 @@ public class StormUtils {
     public static class MW {
         public static MWStructArray getArrayElement(MWStructArray array, int idx) {
             MWStructArray res = new MWStructArray(1, 1, array.fieldNames());
+            MWArray e;
             for (String key : array.fieldNames()) {
-                res.set(key, 1, array.get(key, idx));
+                e = array.getField(key, idx);
+                res.set(key, 1, e);
+                e.dispose();
             }
             return res;
         }

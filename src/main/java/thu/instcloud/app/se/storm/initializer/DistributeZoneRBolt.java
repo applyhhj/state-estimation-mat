@@ -6,7 +6,6 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
-import com.esotericsoftware.kryo.Kryo;
 import com.mathworks.toolbox.javabuilder.MWStructArray;
 import redis.clients.jedis.Jedis;
 import thu.instcloud.app.se.storm.common.JedisRichBolt;
@@ -14,8 +13,8 @@ import thu.instcloud.app.se.storm.common.StormUtils;
 
 import java.util.Map;
 
-import static thu.instcloud.app.se.storm.common.StormUtils.*;
 import static thu.instcloud.app.se.storm.common.StormUtils.MW.getArrayElement;
+import static thu.instcloud.app.se.storm.common.StormUtils.mkByteKey;
 
 /**
  * Created by hjh on 15-12-27.
@@ -51,7 +50,7 @@ public class DistributeZoneRBolt extends JedisRichBolt {
 
     private void getZones(){
         try (Jedis jedis=jedisPool.getResource()){
-            jedis.auth(StormUtils.REDIS.PASS);
+            auth(jedis);
             byte[] zonesKey=mkByteKey(
                     caseid,
                     StormUtils.REDIS.KEYS.RAW_DATA,
