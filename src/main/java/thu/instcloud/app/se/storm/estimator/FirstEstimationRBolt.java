@@ -7,6 +7,7 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
+import backtype.storm.utils.Utils;
 import com.mathworks.toolbox.javabuilder.MWException;
 import com.mathworks.toolbox.javabuilder.MWNumericArray;
 import com.mathworks.toolbox.javabuilder.MWStructArray;
@@ -20,8 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static thu.instcloud.app.se.storm.common.StormUtils.*;
 import static thu.instcloud.app.se.storm.common.StormUtils.MW.disposeMatArrays;
+import static thu.instcloud.app.se.storm.common.StormUtils.*;
 
 /**
  * Created by hjh on 15-12-29.
@@ -140,11 +141,11 @@ public class FirstEstimationRBolt extends JedisRichBolt {
                 vvByte = vv.serialize();
                 normFDbl = normF.getDouble();
 
-            } catch (MWException e) {
-                e.printStackTrace();
-            } finally {
                 disposeMatArrays(vaEstMatSArrRow, vmEstMatSArrRow,
                         vaExtMatSArrRow, vmExtMatSArrRow, zMatSArrRow, zoneDataMatSArr, delz, vv, normF);
+
+            } catch (MWException e) {
+                e.printStackTrace();
             }
 
             String estimatedKey = mkKey(caseid, StormUtils.REDIS.KEYS.STATE_ESTIMATED_ZONES);
@@ -198,11 +199,14 @@ public class FirstEstimationRBolt extends JedisRichBolt {
                         zoneids.add(i + "");
                         if ((i % nzForEachEst) == 0) {
                             collector.emit(StormUtils.STORM.STREAM.STREAM_ESTIMATE,
-                                    new Values(caseid, zoneids));
+                                    new Values(caseid, Utils.serialize(zoneids)));
                             zoneids.clear();
                         }
                     }
-
+                    if (zoneids.size() > 0) {
+                        collector.emit(StormUtils.STORM.STREAM.STREAM_ESTIMATE,
+                                new Values(caseid, Utils.serialize(zoneids)));
+                    }
 
                 }
             }

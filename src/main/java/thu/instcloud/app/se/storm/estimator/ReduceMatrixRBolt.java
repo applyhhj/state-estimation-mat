@@ -7,6 +7,7 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
+import backtype.storm.utils.Utils;
 import com.esotericsoftware.kryo.Kryo;
 import com.mathworks.toolbox.javabuilder.MWException;
 import com.mathworks.toolbox.javabuilder.MWNumericArray;
@@ -54,10 +55,10 @@ public class ReduceMatrixRBolt extends JedisRichBolt {
     @Override
     public void execute(Tuple tuple) {
         String caseid = tuple.getStringByField(StormUtils.STORM.FIELDS.CASE_ID);
-        List<String> zoneids = (List<String>) tuple.getValueByField(StormUtils.STORM.FIELDS.ZONE_ID_LIST);
+        List<String> zoneids = (List<String>) Utils.deserialize(tuple.getBinaryByField(StormUtils.STORM.FIELDS.ZONE_ID_LIST));
 
         reduceMatrix(caseid, zoneids);
-        collector.emit(new Values(caseid, zoneids));
+        collector.emit(new Values(caseid, Utils.serialize(zoneids)));
         collector.ack(tuple);
     }
 
@@ -87,6 +88,7 @@ public class ReduceMatrixRBolt extends JedisRichBolt {
                 try {
                     reducedMat = estimator.api_reducedMatrix(4, zoneDataMat, vaEstMatSArrRow, vmEstMatSArrRow,
                             vaExtMatSArrRow, vmExtMatSArrRow, delzMat, vvMat);
+                    disposeMatArrays(zoneDataMat, vvMat, delzMat, vaEstMatSArrRow, vmEstMatSArrRow, vaExtMatSArrRow, vmExtMatSArrRow);
                 } catch (MWException e) {
                     e.printStackTrace();
                 }
@@ -110,9 +112,7 @@ public class ReduceMatrixRBolt extends JedisRichBolt {
                     p.sync();
 
                     disposeMatArrays(HH, WW, WWInv, ddelz);
-
                 }
-                disposeMatArrays(zoneDataMat, vvMat, delzMat, vaEstMatSArrRow, vmEstMatSArrRow, vaExtMatSArrRow, vmExtMatSArrRow);
             }
 
         }

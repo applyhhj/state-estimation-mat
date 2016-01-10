@@ -15,13 +15,17 @@ public class TestMatWorker {
                 StormUtils.REDIS.REDIS_SERVER_IP,
                 StormUtils.REDIS.PASS,
                 "localhost",
-                9091
+                9098
         );
         String caseid = "case9241pegase";
         List<String> zoneid = new ArrayList<>();
         String task = "test";
         zoneid.add("1");
-        System.out.println(matWorker.perform(caseid, zoneid, task));
+        int i = 0;
+        while (i++ < 100) {
+            System.out.println(matWorker.perform(caseid, zoneid, task));
+            Thread.sleep(2000);
+        }
 
         matWorker.stop();
     }

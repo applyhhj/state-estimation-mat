@@ -1,8 +1,6 @@
 package thu.instcloud.app.se.storm.matworker;
 
 import Estimator.Estimator;
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.serializers.DefaultArraySerializers;
 import com.mathworks.toolbox.javabuilder.MWClassID;
 import com.mathworks.toolbox.javabuilder.MWException;
 import com.mathworks.toolbox.javabuilder.MWNumericArray;
@@ -16,7 +14,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static thu.instcloud.app.se.storm.common.StormUtils.*;
 import static thu.instcloud.app.se.storm.common.StormUtils.MW.disposeMatArrays;
 import static thu.instcloud.app.se.storm.common.StormUtils.mkByteKey;
 import static thu.instcloud.app.se.storm.common.StormUtils.mkKey;
@@ -30,10 +27,12 @@ public class MatWorkerHandler implements MatWorkerService.Iface {
     private JedisPool jedisPool;
     private String pass;
     private Estimator estimator;
+    private Long lastHeartBeat;
 
     public MatWorkerHandler(String redisIp, String pass) {
         this.jedisPool = new JedisPool(new JedisPoolConfig(), redisIp);
         this.pass = pass;
+        this.lastHeartBeat = System.currentTimeMillis();
         try {
             this.estimator = new Estimator();
         } catch (MWException e) {
@@ -41,6 +40,9 @@ public class MatWorkerHandler implements MatWorkerService.Iface {
         }
     }
 
+    public Long getLastHeartBeat() {
+        return lastHeartBeat;
+    }
 
     @Override
     public int runTask(String caseid, List<String> zoneids, String taskName) throws TException {
@@ -56,9 +58,8 @@ public class MatWorkerHandler implements MatWorkerService.Iface {
             Response<String> tol = p.hget(mkKey(caseid, StormUtils.REDIS.KEYS.OPTIONS_EST), StormUtils.OPTIONS.KEYS.OPT_EST_TOL);
             p.sync();
             double toldbl = Double.parseDouble(tol.get());
-
+            int nz = zoneids.size();
             if (taskName.equals(StormUtils.MW.WORKER.ESTIMATE_TASK)) {
-                int nz = zoneids.size();
                 List<Response<byte[]>> zoneDataByteList = new ArrayList<>();
                 List<Response<byte[]>> HHByteList = new ArrayList<>();
                 List<Response<byte[]>> WWInvByteList = new ArrayList<>();
@@ -173,8 +174,10 @@ public class MatWorkerHandler implements MatWorkerService.Iface {
                 MWStructArray delz = null, normF = null, ddelz = null, VVa = null, VVm = null, step = null, success = null;
 
                 try {
-                    res = estimator.api_estimateOnce(7, HHsData, WWInvsData, ddelzsData, vvsData,
+                    res = estimator.api_estimateOnce_batch(7, HHsData, WWInvsData, ddelzsData, vvsData,
                             vasEstData, vmsEstData, vasExtData, vmsExtData, zsData, zonesData);
+                    disposeMatArrays(zonesData, zsData, vasEstData, vmsEstData, vasExtData, vmsExtData,
+                            HHsData, WWInvsData, ddelzsData, vvsData);
                 } catch (MWException e) {
                     e.printStackTrace();
                 }
@@ -214,86 +217,129 @@ public class MatWorkerHandler implements MatWorkerService.Iface {
 //                estimate times
 //                TODO: record only one iteration number
                         p.incr(mkKey(caseid, zoneid, StormUtils.REDIS.KEYS.STATE, StormUtils.REDIS.KEYS.STATE_IT));
-                        double stepi = (Double) step.getField(field, i + 1).get(1);
+                        MWNumericArray stepimat = (MWNumericArray) step.getField(field, i + 1);
+                        double stepi = stepimat.getDouble();
                         if (stepi < toldbl) {
                             p.setbit(mkKey(caseid, StormUtils.REDIS.KEYS.STATE_CONVERGED), Long.parseLong(zoneid), true);
                         }
 
+                        disposeMatArrays(va, vm, ddelzi, delzi, stepimat);
 //                debug
-                        System.out.println("zone: " + zoneid + ";  step:" + stepi);
+//                        System.out.println("zone: " + zoneid + ";  step:" + stepi);
                     }
                     p.sync();
+                    disposeMatArrays(VVa, VVm, delz, ddelz, normF, success, step);
                 }
-                disposeMatArrays(VVa, VVm, delz, ddelz, normF, success, step);
-                disposeMatArrays(zonesData, zsData, vasEstData, vmsEstData, vasExtData, vmsExtData,
-                        HHsData, WWInvsData, ddelzsData, vvsData);
 
                 return 0;
             } else if (taskName.equals(StormUtils.MW.WORKER.BADRECOG_TASK)) {
-                byte[] HHkey = mkByteKey(caseid, zoneid, StormUtils.REDIS.KEYS.STATE_HH);
-                byte[] WWKey = mkByteKey(caseid, zoneid, StormUtils.REDIS.KEYS.STATE_WW);
-                byte[] WWInvKey = mkByteKey(caseid, zoneid, StormUtils.REDIS.KEYS.STATE_WWINV);
-                byte[] ddelzKey = mkByteKey(caseid, zoneid, StormUtils.REDIS.KEYS.STATE_DDELZ);
-                byte[] vvKey = mkByteKey(caseid, zoneid, StormUtils.REDIS.KEYS.STATE, StormUtils.REDIS.KEYS.STATE_VV);
+                List<Response<byte[]>> WWByteList = new ArrayList<>();
+                List<Response<byte[]>> HHByteList = new ArrayList<>();
+                List<Response<byte[]>> WWInvByteList = new ArrayList<>();
+                List<Response<byte[]>> ddelzByteList = new ArrayList<>();
+                List<Response<byte[]>> vvByteList = new ArrayList<>();
 
-                Response<byte[]> HHByte = p.get(HHkey);
-                Response<byte[]> WWByte = p.get(WWKey);
-                Response<byte[]> WWInvByte = p.get(WWInvKey);
-                Response<byte[]> ddelzByte = p.get(ddelzKey);
-                Response<byte[]> vvByte = p.get(vvKey);
+                List<Response<String>> badthdList = new ArrayList<>();
 
-                String thrshldKey = mkKey(caseid,
-                        StormUtils.REDIS.KEYS.ZONES,
-                        zoneid,
-                        StormUtils.REDIS.KEYS.BAD_RECOG_THRESHOLD);
-                Response<String> badthrshld = p.get(thrshldKey);
+                for (int i = 0; i < nz; i++) {
+                    String zoneid = zoneids.get(i);
+
+                    byte[] HHkey = mkByteKey(caseid, zoneid, StormUtils.REDIS.KEYS.STATE_HH);
+                    byte[] WWInvKey = mkByteKey(caseid, zoneid, StormUtils.REDIS.KEYS.STATE_WWINV);
+                    byte[] ddelzKey = mkByteKey(caseid, zoneid, StormUtils.REDIS.KEYS.STATE_DDELZ);
+                    byte[] vvKey = mkByteKey(caseid, zoneid, StormUtils.REDIS.KEYS.STATE, StormUtils.REDIS.KEYS.STATE_VV);
+                    byte[] WWKey = mkByteKey(caseid, zoneid, StormUtils.REDIS.KEYS.STATE_WW);
+
+                    WWByteList.add(p.get(WWKey));
+                    HHByteList.add(p.get(HHkey));
+                    WWInvByteList.add(p.get(WWInvKey));
+                    ddelzByteList.add(p.get(ddelzKey));
+                    vvByteList.add(p.get(vvKey));
+
+                    String thdKey = mkKey(caseid,
+                            StormUtils.REDIS.KEYS.ZONES,
+                            zoneid,
+                            StormUtils.REDIS.KEYS.BAD_RECOG_THRESHOLD);
+                    badthdList.add(p.get(thdKey));
+
+                }
+
                 p.sync();
 
-                MWNumericArray badthrshldMat = new MWNumericArray(badthrshld.get(), MWClassID.DOUBLE);
-                MWNumericArray HHMat = (MWNumericArray) MWNumericArray.deserialize(HHByte.get());
-                MWNumericArray WWMat = (MWNumericArray) MWNumericArray.deserialize(WWByte.get());
-                MWNumericArray WWInvMat = (MWNumericArray) MWNumericArray.deserialize(WWInvByte.get());
-                MWNumericArray ddelzMat = (MWNumericArray) MWNumericArray.deserialize(ddelzByte.get());
-                MWNumericArray vvMat = (MWNumericArray) MWNumericArray.deserialize(vvByte.get());
+                String field = "value";
+                String[] fields = {field};
+                MWStructArray WWsData = new MWStructArray(nz, 1, fields);
+                MWStructArray HHsData = new MWStructArray(nz, 1, fields);
+                MWStructArray WWInvsData = new MWStructArray(nz, 1, fields);
+                MWStructArray ddelzsData = new MWStructArray(nz, 1, fields);
+                MWStructArray vvsData = new MWStructArray(nz, 1, fields);
+                MWStructArray badthdsData = new MWStructArray(nz, 1, fields);
 
-                MWNumericArray vvNewMat = null, convergedMat = null;
+                for (int i = 0; i < nz; i++) {
+                    WWsData.set(field, i + 1, MWNumericArray.deserialize(WWByteList.get(i).get()));
+                    HHsData.set(field, i + 1, MWNumericArray.deserialize(HHByteList.get(i).get()));
+                    WWInvsData.set(field, i + 1, MWNumericArray.deserialize(WWInvByteList.get(i).get()));
+                    ddelzsData.set(field, i + 1, MWNumericArray.deserialize(ddelzByteList.get(i).get()));
+                    vvsData.set(field, i + 1, MWNumericArray.deserialize(vvByteList.get(i).get()));
+                    badthdsData.set(field, i + 1, new MWNumericArray(badthdList.get(i).get(), MWClassID.DOUBLE));
+                }
+
+                MWStructArray vvNewMat = null, convergedMat = null;
                 Object[] res = null;
                 try {
-                    res = estimator.api_badDataRecognition(2, HHMat, WWMat, WWInvMat,
-                            vvMat, ddelzMat, badthrshldMat);
+                    res = estimator.api_badDataRecognition_batch(2, HHsData, WWsData, WWInvsData,
+                            vvsData, ddelzsData, badthdsData);
+                    disposeMatArrays(badthdsData, HHsData, WWInvsData, WWsData, ddelzsData);
                 } catch (MWException e) {
                     e.printStackTrace();
                 }
 
 //            update state
                 if (res != null) {
-                    vvNewMat = (MWNumericArray) res[0];
-                    if (vvMat.getDimensions()[0] != vvNewMat.getDimensions()[0]) {
-                        p.set(vvKey, vvNewMat.serialize());
-                    }
-                    convergedMat = (MWNumericArray) res[1];
-                    boolean converbool;
-                    if (!(convergedMat.getDouble() < 0)) {
-                        converbool = false;
-                        p.setbit(mkKey(caseid, StormUtils.REDIS.KEYS.STATE_CONVERGED), Long.parseLong(zoneid), converbool);
-                    }
-                    p.incr(mkKey(caseid, StormUtils.REDIS.KEYS.STATE_BADRECOG_ZONES));
-//                TODO: record only one iteration number
-                    p.incr(mkKey(caseid, zoneid, StormUtils.REDIS.KEYS.STATE, StormUtils.REDIS.KEYS.STATE_IBADREG));
-                    p.sync();
-                }
+                    vvNewMat = (MWStructArray) res[0];
+                    convergedMat = (MWStructArray) res[1];
 
-                disposeMatArrays(badthrshldMat, HHMat, WWInvMat, WWMat, ddelzMat, vvMat, vvNewMat, convergedMat);
+                    for (int i = 0; i < nz; i++) {
+                        byte[] vvKey = mkByteKey(caseid, zoneids.get(i), StormUtils.REDIS.KEYS.STATE, StormUtils.REDIS.KEYS.STATE_VV);
+                        String convKey = mkKey(caseid, StormUtils.REDIS.KEYS.STATE_CONVERGED);
+                        MWNumericArray vviMat = (MWNumericArray) vvsData.getField(field, i + 1);
+                        MWNumericArray vvNewiMat = (MWNumericArray) vvNewMat.getField(field, i + 1);
+                        int nvvi = vviMat.getDimensions()[0];
+                        int nvvNewi = vvNewiMat.getDimensions()[0];
+
+                        if (nvvi != nvvNewi) {
+                            p.set(vvKey, vvNewiMat.serialize());
+                        }
+
+                        MWNumericArray convergediMat = (MWNumericArray) convergedMat.getField(field, i + 1);
+                        double converged = convergediMat.getDouble();
+                        if (!(converged < 0)) {
+                            p.setbit(convKey, Long.parseLong(zoneids.get(i)), false);
+                        }
+                        p.incr(mkKey(caseid, StormUtils.REDIS.KEYS.STATE_BADRECOG_ZONES));
+                        p.incr(mkKey(caseid, zoneids.get(i), StormUtils.REDIS.KEYS.STATE, StormUtils.REDIS.KEYS.STATE_IBADREG));
+
+                        disposeMatArrays(vviMat, vvNewiMat, convergediMat);
+                    }
+
+                    p.sync();
+                    disposeMatArrays(vvsData, vvNewMat, convergedMat);
+                }
 
                 return 0;
             } else if (taskName.equals(testTask)) {
-                p.set(testTask, "test");
+                p.set(testTask, System.currentTimeMillis() + "");
                 p.sync();
                 return 10;
             }
         }
 
         return -3;
+    }
+
+    @Override
+    public void heartbeat() throws TException {
+        lastHeartBeat = System.currentTimeMillis();
     }
 
 

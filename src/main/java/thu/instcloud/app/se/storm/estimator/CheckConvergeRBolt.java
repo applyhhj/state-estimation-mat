@@ -6,6 +6,7 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
+import backtype.storm.utils.Utils;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
@@ -24,6 +25,7 @@ import static thu.instcloud.app.se.storm.common.StormUtils.setRefBusEstState;
  * should be unique
  */
 public class CheckConvergeRBolt extends JedisRichBolt {
+    int paraEst;
 
     public CheckConvergeRBolt(String redisIp, String pass) {
         super(redisIp, pass);
@@ -33,18 +35,19 @@ public class CheckConvergeRBolt extends JedisRichBolt {
     public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {
         outputFieldsDeclarer.declareStream(StormUtils.STORM.STREAM.STREAM_BAD_RECOG, new Fields(
                 StormUtils.STORM.FIELDS.CASE_ID,
-                StormUtils.STORM.FIELDS.ZONE_ID
+                StormUtils.STORM.FIELDS.ZONE_ID_LIST
         ));
 
         outputFieldsDeclarer.declareStream(StormUtils.STORM.STREAM.STREAM_ESTIMATE, new Fields(
                 StormUtils.STORM.FIELDS.CASE_ID,
-                StormUtils.STORM.FIELDS.ZONE_ID
+                StormUtils.STORM.FIELDS.ZONE_ID_LIST
         ));
     }
 
     @Override
     public void prepare(Map map, TopologyContext topologyContext, OutputCollector outputCollector) {
         super.prepare(map, topologyContext, outputCollector);
+        paraEst = topologyContext.getComponentTasks(StormUtils.STORM.COMPONENT.COMP_EST_ESTONCE).size();
     }
 
     @Override
@@ -77,18 +80,36 @@ public class CheckConvergeRBolt extends JedisRichBolt {
                 Response<String> currItResp = p.get(mkKey(caseid, "1", StormUtils.REDIS.KEYS.STATE, StormUtils.REDIS.KEYS.STATE_IT));
                 p.sync();
 
+                int nzForEachEst = (int) Math.ceil((double) nzLong / paraEst);
+                List<String> zoneids = new ArrayList<>();
 //                all converged or reach max iteration number, prepare for bad data recognition
                 if (nConver.get() == nzLong || Long.parseLong(currItResp.get()) >= Long.parseLong(maxItResp.get())) {
                     for (int i = 1; i < nzLong; i++) {
-                        collector.emit(StormUtils.STORM.STREAM.STREAM_BAD_RECOG, new Values(caseid, i + ""));
+                        zoneids.add(i + "");
+                        if ((i % nzForEachEst) == 0) {
+                            collector.emit(StormUtils.STORM.STREAM.STREAM_BAD_RECOG,
+                                    new Values(caseid, Utils.serialize(zoneids)));
+                            zoneids.clear();
+                        }
                     }
-                    return;
+                    if (zoneids.size() > 0) {
+                        collector.emit(StormUtils.STORM.STREAM.STREAM_BAD_RECOG,
+                                new Values(caseid, Utils.serialize(zoneids)));
+                    }
                 } else {
 //                    next iteration
                     for (int i = 1; i < nzLong; i++) {
-                        collector.emit(StormUtils.STORM.STREAM.STREAM_ESTIMATE, new Values(caseid, i + ""));
+                        zoneids.add(i + "");
+                        if ((i % nzForEachEst) == 0) {
+                            collector.emit(StormUtils.STORM.STREAM.STREAM_ESTIMATE,
+                                    new Values(caseid, Utils.serialize(zoneids)));
+                            zoneids.clear();
+                        }
                     }
-                    return;
+                    if (zoneids.size() > 0) {
+                        collector.emit(StormUtils.STORM.STREAM.STREAM_ESTIMATE,
+                                new Values(caseid, Utils.serialize(zoneids)));
+                    }
                 }
 
             }

@@ -7,6 +7,7 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
+import backtype.storm.utils.Utils;
 import thu.instcloud.app.se.storm.common.StormUtils;
 import thu.instcloud.app.se.storm.matworker.MatWorker;
 
@@ -55,7 +56,7 @@ public class EstimateOnceRBolt extends BaseRichBolt {
     @Override
     public void execute(Tuple tuple) {
         String caseid = tuple.getStringByField(StormUtils.STORM.FIELDS.CASE_ID);
-        List<String> zoneids = (List<String>) tuple.getValueByField(StormUtils.STORM.FIELDS.ZONE_ID_LIST);
+        List<String> zoneids = (List<String>) Utils.deserialize(tuple.getBinaryByField(StormUtils.STORM.FIELDS.ZONE_ID_LIST));
 
         estimate(caseid, zoneids);
         collector.emit(new Values(caseid));
