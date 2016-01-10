@@ -45,6 +45,7 @@ public class OutputDiffBolt extends JedisRichBolt {
         } else {
             System.out.println(caseid + " not converged!-------");
         }
+        collector.ack(tuple);
     }
 
     private void showEstimatedVoltages(String caseid) {

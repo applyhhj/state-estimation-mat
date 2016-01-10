@@ -25,7 +25,7 @@ import static thu.instcloud.app.se.storm.common.StormUtils.setRefBusEstState;
  * should be unique
  */
 public class CheckConvergeRBolt extends JedisRichBolt {
-    int paraEst;
+    double paraEst;
 
     public CheckConvergeRBolt(String redisIp, String pass) {
         super(redisIp, pass);
@@ -47,7 +47,7 @@ public class CheckConvergeRBolt extends JedisRichBolt {
     @Override
     public void prepare(Map map, TopologyContext topologyContext, OutputCollector outputCollector) {
         super.prepare(map, topologyContext, outputCollector);
-        paraEst = topologyContext.getComponentTasks(StormUtils.STORM.COMPONENT.COMP_EST_ESTONCE).size();
+        paraEst = topologyContext.getComponentTasks(StormUtils.STORM.COMPONENT.COMP_EST_BADRECOG).size() * StormUtils.STORM.factor;
     }
 
     @Override

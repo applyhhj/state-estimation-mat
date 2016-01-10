@@ -1,14 +1,12 @@
 package thu.instcloud.app.se.storm.common;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
-import com.mathworks.toolbox.javabuilder.*;
+import com.mathworks.toolbox.javabuilder.MWArray;
+import com.mathworks.toolbox.javabuilder.MWClassID;
+import com.mathworks.toolbox.javabuilder.MWNumericArray;
+import com.mathworks.toolbox.javabuilder.MWStructArray;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -187,6 +185,8 @@ public class StormUtils {
 
             public static final String ESTIMATE_TASK = "estimate";
             public static final String BADRECOG_TASK = "badRecog";
+
+            public static final String STRUCT_ARRAY_VALUE_FIELD = "value";
         }
 
     }
@@ -264,6 +264,8 @@ public class StormUtils {
     }
 
     public abstract class STORM {
+        public static final double factor = 2;
+
         public abstract class FIELDS {
             public static final String CASE_ID = "caseID";
             public static final String CASE_DATA = "caseData";

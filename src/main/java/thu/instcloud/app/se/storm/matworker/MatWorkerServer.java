@@ -1,7 +1,7 @@
 package thu.instcloud.app.se.storm.matworker;
 
 import org.apache.commons.cli.*;
-import org.apache.thrift.TException;
+import org.apache.log4j.Logger;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TSimpleServer;
 import org.apache.thrift.transport.TServerSocket;
@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
  * Created by hjh on 16-1-9.
  */
 public class MatWorkerServer {
-
+    public static Logger logger = Logger.getLogger(MatWorkerServer.class);
     public static MatWorkerHandler handler;
     public static MatWorkerService.Processor processor;
     private static String redisIp;
@@ -56,7 +56,7 @@ public class MatWorkerServer {
             TServerTransport serverTransport = new TServerSocket(Integer.parseInt(workerport));
             server = new TSimpleServer(new TServer.Args(serverTransport).processor(processor));
             pid = getPid();
-            System.out.println("Starting the matWorker server at pid:" + pid);
+            logger.info("Starting the matWorker server at pid:" + pid);
             server.serve();
         } catch (Exception e) {
             e.printStackTrace();
@@ -71,7 +71,7 @@ public class MatWorkerServer {
             public void run() {
                 // task to run goes here
                 if ((handler.getLastHeartBeat() + 1000 * checkHbInterval) < System.currentTimeMillis()) {
-                    System.out.println("MatWorker server at pid:" + pid + " receives no heartbeat, will shutdown!");
+                    logger.warn("MatWorker server at pid:" + pid + " receives no heartbeat, will shutdown!");
                     server.stop();
                 }
             }
@@ -118,7 +118,7 @@ public class MatWorkerServer {
             BufferedReader outReader = new BufferedReader(new InputStreamReader(pr.getInputStream()));
             return outReader.readLine().trim();
         } else {
-            System.out.println("Error while getting PID");
+            logger.warn("Error while getting PID!");
             return "";
         }
     }

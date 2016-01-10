@@ -29,7 +29,7 @@ import static thu.instcloud.app.se.storm.common.StormUtils.*;
  */
 public class FirstEstimationRBolt extends JedisRichBolt {
     Estimator estimator;
-    int paraEst;
+    double paraEst;
 
     public FirstEstimationRBolt(String redisIp, String pass) {
         super(redisIp, pass);
@@ -52,7 +52,7 @@ public class FirstEstimationRBolt extends JedisRichBolt {
     @Override
     public void prepare(Map map, TopologyContext topologyContext, OutputCollector outputCollector) {
         super.prepare(map, topologyContext, outputCollector);
-        paraEst = topologyContext.getComponentTasks(StormUtils.STORM.COMPONENT.COMP_EST_ESTONCE).size();
+        paraEst = topologyContext.getComponentTasks(StormUtils.STORM.COMPONENT.COMP_EST_ESTONCE).size() * StormUtils.STORM.factor;
         try {
             estimator = new Estimator();
         } catch (MWException e) {

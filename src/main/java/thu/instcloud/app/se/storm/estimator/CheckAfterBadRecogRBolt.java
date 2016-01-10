@@ -24,7 +24,7 @@ import static thu.instcloud.app.se.storm.common.StormUtils.mkKey;
  * should be unique
  */
 public class CheckAfterBadRecogRBolt extends JedisRichBolt {
-    int paraEst;
+    double paraEst;
 
     public CheckAfterBadRecogRBolt(String redisIp, String pass) {
         super(redisIp, pass);
@@ -45,7 +45,7 @@ public class CheckAfterBadRecogRBolt extends JedisRichBolt {
     @Override
     public void prepare(Map map, TopologyContext topologyContext, OutputCollector outputCollector) {
         super.prepare(map, topologyContext, outputCollector);
-        paraEst = topologyContext.getComponentTasks(StormUtils.STORM.COMPONENT.COMP_EST_ESTONCE).size();
+        paraEst = topologyContext.getComponentTasks(StormUtils.STORM.COMPONENT.COMP_EST_ESTONCE).size() * StormUtils.STORM.factor;
     }
 
     @Override
