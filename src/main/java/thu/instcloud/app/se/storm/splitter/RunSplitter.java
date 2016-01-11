@@ -5,11 +5,8 @@ import backtype.storm.LocalCluster;
 import backtype.storm.StormSubmitter;
 import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.utils.Utils;
-import com.esotericsoftware.kryo.Kryo;
-import com.mathworks.toolbox.javabuilder.MWNumericArray;
-import com.mathworks.toolbox.javabuilder.MWStructArray;
 import thu.instcloud.app.se.storm.common.StormUtils;
-import thu.instcloud.app.se.storm.initializer.DistributeZoneRBolt;
+import thu.instcloud.app.se.storm.initializer.InitializerRBolt;
 import thu.instcloud.app.se.storm.initializer.PrepareRBolt;
 
 /**
@@ -30,7 +27,7 @@ public class RunSplitter {
         builder.setBolt("splitter", new SplitSystemRBolt(redisIp, pass), 1).shuffleGrouping("caseSource");
         builder.setBolt("showCase", new ShowCaseRBolt(redisIp, pass), 1).shuffleGrouping("splitter");
 
-        builder.setBolt("distributer",new DistributeZoneRBolt(redisIp,pass),1).shuffleGrouping("splitter");
+        builder.setBolt("distributer", new InitializerRBolt(redisIp, pass), 1).shuffleGrouping("splitter");
         builder.setBolt("prepare",new PrepareRBolt(redisIp,pass),2).shuffleGrouping("distributer");
 
         if (args != null && args.length > 0) {

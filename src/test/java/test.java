@@ -11,26 +11,30 @@ import java.util.List;
 public class test {
     public static Estimator estimator;
     public static void main(String[] args) throws InterruptedException {
-        String caseid = "case9241pegase";
-        long sleeptime = 3;
-        MWNumericArray mat = getMatArr();
-        Thread.sleep(sleeptime);
-        mat.dispose();
-        System.out.println("mat disposed!");
-        Thread.sleep(sleeptime);
+        boolean a = true;
+        String aboo = a + "";
+        System.out.println(a);
 
-        List<MWNumericArray> mats = getMatArrList();
-        Thread.sleep(sleeptime);
-        MWNumericArray matele = mats.get(0);
-        matele.dispose();
-        System.out.println("mat from mats disposed");
-        Thread.sleep(sleeptime);
-
-        List<MWNumericArray> mats1 = getMatArrList();
-        Thread.sleep(sleeptime);
-        mats1.get(0).dispose();
-        System.out.println("dispose from list get!");
-        Thread.sleep(sleeptime);
+//        String caseid = "case9241pegase";
+//        long sleeptime = 3;
+//        MWNumericArray mat = getMatArr();
+//        Thread.sleep(sleeptime);
+//        mat.dispose();
+//        System.out.println("mat disposed!");
+//        Thread.sleep(sleeptime);
+//
+//        List<MWNumericArray> mats = getMatArrList();
+//        Thread.sleep(sleeptime);
+//        MWNumericArray matele = mats.get(0);
+//        matele.dispose();
+//        System.out.println("mat from mats disposed");
+//        Thread.sleep(sleeptime);
+//
+//        List<MWNumericArray> mats1 = getMatArrList();
+//        Thread.sleep(sleeptime);
+//        mats1.get(0).dispose();
+//        System.out.println("dispose from list get!");
+//        Thread.sleep(sleeptime);
 
 
     }

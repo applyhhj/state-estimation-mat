@@ -8,7 +8,7 @@ import java.util.Random;
  * Created by hjh on 15-12-28.
  */
 public class MeasureDataRaw extends MeasureData {
-    private static Random random;
+    public static Random random;
     private double msigma;
 
     public MeasureDataRaw(){

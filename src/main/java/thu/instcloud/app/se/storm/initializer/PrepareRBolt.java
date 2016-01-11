@@ -5,7 +5,6 @@ import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Tuple;
-import com.esotericsoftware.kryo.Kryo;
 import com.mathworks.toolbox.javabuilder.MWException;
 import com.mathworks.toolbox.javabuilder.MWStructArray;
 import redis.clients.jedis.Jedis;
@@ -16,13 +15,14 @@ import thu.instcloud.app.se.storm.common.StormUtils;
 import java.util.HashMap;
 import java.util.Map;
 
-import static thu.instcloud.app.se.storm.common.StormUtils.*;
+import static thu.instcloud.app.se.storm.common.StormUtils.mkByteKey;
+import static thu.instcloud.app.se.storm.common.StormUtils.mkKey;
 
 /**
  * Created by hjh on 15-12-27.
  */
 public class PrepareRBolt extends JedisRichBolt {
-    private String caseid;
+    //    private String caseid;
     private MWStructArray zone;
     private MWStructArray zoneNew;
     private Estimator estimator;
@@ -48,9 +48,9 @@ public class PrepareRBolt extends JedisRichBolt {
 
     @Override
     public void execute(Tuple tuple) {
-        caseid=tuple.getStringByField(StormUtils.STORM.FIELDS.CASE_ID);
+        String caseid = tuple.getStringByField(StormUtils.STORM.FIELDS.CASE_ID);
         initializeZoneNew(tuple);
-        storeNewZoneData();
+        storeNewZoneData(caseid);
         collector.ack(tuple);
     }
 
@@ -70,19 +70,20 @@ public class PrepareRBolt extends JedisRichBolt {
 
     }
 
-    private void storeNewZoneData(){
+    private void storeNewZoneData(String caseid) {
         if (zoneNew==null){
             return;
         }
-
+//            keys for flush all data related to this case
+        String keysRec = mkKey(caseid, StormUtils.REDIS.KEYS.KEYS);
         try (Jedis jedis=jedisPool.getResource()){
             auth(jedis);
             Pipeline p=jedis.pipelined();
 
 //            store data of each zone
             int zoneNum=(int)((double[][]) zoneNew.get(StormUtils.MW.FIELDS.ZONE_NUM,1))[0][0];
-            byte[] key=mkByteKey(caseid, StormUtils.REDIS.KEYS.ZONES,String.valueOf(zoneNum));
-            p.set(key,zoneNew.serialize());
+            byte[] zoneKey = mkByteKey(caseid, StormUtils.REDIS.KEYS.ZONES, String.valueOf(zoneNum));
+            p.set(zoneKey, zoneNew.serialize());
 
 //            store bad data recognition threshold separately
             double thrshld = ((double[][]) zoneNew.get(StormUtils.MW.FIELDS.BAD_THRESHOLD, 1))[0][0];
@@ -91,17 +92,15 @@ public class PrepareRBolt extends JedisRichBolt {
                     zoneNum + "",
                     StormUtils.REDIS.KEYS.BAD_RECOG_THRESHOLD);
             p.set(thrshldKey, thrshld + "");
-            p.sadd(thrshldKey);
+            p.sadd(keysRec, thrshldKey);
 
-//            store ids for getting estimated state
-            Map<String,String[]> idsKeyVals=getIdsMap(zoneNew,new String(key));
+//            store ids for getting estimated state for each zone
+            Map<String, String[]> idsKeyVals = getIdsMap(zoneNew, new String(zoneKey));
             for (Map.Entry<String,String[]> e:idsKeyVals.entrySet()){
                 p.del( e.getKey());
                 p.lpush(e.getKey(),e.getValue());
+                p.sadd(keysRec, e.getKey());
             }
-
-//            keys for flush all data related to this case
-            String keysRec = mkKey(caseid, StormUtils.REDIS.KEYS.KEYS);
 
 //          store reference bus voltage
             if (zoneNum==0){
@@ -116,10 +115,11 @@ public class PrepareRBolt extends JedisRichBolt {
                         vmRefKey);
             }
 
+//            case data is ready
+            String caseReadyKey = mkKey(caseid, StormUtils.REDIS.KEYS.READY);
+            p.setbit(caseReadyKey, 0, true);
+
 //            add measure keys to keys that need to flush when exit estimation
-            for (Map.Entry<String,String[]> e:idsKeyVals.entrySet()){
-                p.sadd(keysRec,e.getKey());
-            }
             p.sadd(keysRec,
                     mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.PF),
                     mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.PBUS),
@@ -129,7 +129,7 @@ public class PrepareRBolt extends JedisRichBolt {
                     mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.QF),
                     mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.VA),
                     mkKey(caseid, StormUtils.REDIS.KEYS.MEASURE, StormUtils.MEASURE.TYPE.VM),
-                    new String(key)
+                    new String(zoneKey)
                     );
 
             p.sync();
@@ -145,10 +145,10 @@ public class PrepareRBolt extends JedisRichBolt {
         double[][] brids=(double[][]) zoneNew.get(StormUtils.MW.FIELDS.BRANCH_IDS,1);
         double[][] ii2e=(double[][]) zoneNew.get(StormUtils.MW.FIELDS.BUS_NUM_OUT,1);
 
-//        if any of this list is empty then no entry will be add in redis.
-//        When adding element to a list reids uses push method which makes the
-//        first element the last one in redis so we need to inverse the sequence
-//        of the input list
+/*        if any of this list is empty then no entry will be added into redis.
+        When adding element to a list reids uses push method which makes the
+        first element the last one in redis so we need to inverse the sequence
+        of the input list*/
         String[] ii2eoutArr=toStringArrayInv(ii2eout);
         String[] bridsArr=toStringArrayInv(brids);
         String[] ii2eArr=toStringArrayInv(ii2e);

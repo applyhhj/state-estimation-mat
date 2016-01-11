@@ -1,7 +1,6 @@
 package thu.instcloud.app.se.storm.common;
 
 import backtype.storm.tuple.Tuple;
-import thu.instcloud.app.se.storm.common.StormUtils;
 
 import static thu.instcloud.app.se.storm.common.StormUtils.mkKey;
 
@@ -18,10 +17,10 @@ public class MeasureData {
 
     }
 
-    //        TODO: check data validation???
+    // use factory to create
     public MeasureData(Tuple tuple) {
-        caseid = tuple.getStringByField(StormUtils.STORM.FIELDS.CASE_ID);
         mtype = tuple.getStringByField(StormUtils.STORM.FIELDS.MEASURE_TYPE);
+        caseid = tuple.getStringByField(StormUtils.STORM.FIELDS.CASE_ID);
         mid = tuple.getIntegerByField(StormUtils.STORM.FIELDS.MEASURE_ID);
         mvalue = tuple.getDoubleByField(StormUtils.STORM.FIELDS.MEASURE_VALUE);
     }

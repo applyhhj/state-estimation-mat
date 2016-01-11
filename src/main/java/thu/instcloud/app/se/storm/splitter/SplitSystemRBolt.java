@@ -6,20 +6,20 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
-import com.esotericsoftware.kryo.Kryo;
-import com.mathworks.toolbox.javabuilder.MWStructArray;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
+import redis.clients.jedis.Response;
 import thu.instcloud.app.se.mpdata.MPData;
 import thu.instcloud.app.se.splitter.SplitMPData;
 import thu.instcloud.app.se.storm.common.JedisRichBolt;
 import thu.instcloud.app.se.storm.common.StormUtils;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import static thu.instcloud.app.se.storm.common.StormUtils.*;
+import static thu.instcloud.app.se.storm.common.StormUtils.mkByteKey;
+import static thu.instcloud.app.se.storm.common.StormUtils.mkKey;
 
 /**
  * Created by hjh on 15-12-26.
@@ -67,9 +67,19 @@ public class SplitSystemRBolt extends JedisRichBolt {
         try (Jedis jedis = jedisPool.getResource()) {
             jedis.auth(StormUtils.REDIS.PASS);
             Pipeline p = jedis.pipelined();
+
+//          need to store all keys for cleaning manually, well this is clumsy but we have no choice
+            String keysRec = mkKey(caseid, StormUtils.REDIS.KEYS.KEYS);
             String rawdatakey = mkKey(caseid, StormUtils.REDIS.KEYS.RAW_DATA);
 
             if (!(!overwrite && jedis.exists(mkKey(rawdatakey, StormUtils.REDIS.KEYS.ZONES)))) {
+//                we clear all data first
+                clearAllData(p, keysRec);
+
+//              if case data is ready
+                String caseReadyKey = mkKey(caseid, StormUtils.REDIS.KEYS.READY);
+                p.setbit(caseReadyKey, 0, false);
+
                 List<String> caseDataStrs = (List<String>) tuple.getValueByField(StormUtils.STORM.FIELDS.CASE_DATA);
                 SplitMPData data = splitSystem(caseid, caseDataStrs, zbn);
 
@@ -77,6 +87,12 @@ public class SplitSystemRBolt extends JedisRichBolt {
                 p.set(mkByteKey(rawdatakey, StormUtils.REDIS.KEYS.BRANCH), data.getBranch().serialize());
                 p.set(mkByteKey(rawdatakey, StormUtils.REDIS.KEYS.GEN), data.getGen().serialize());
                 p.set(mkByteKey(rawdatakey, StormUtils.REDIS.KEYS.SBASE), data.getBaseMVA().serialize());
+
+//                used to check if measurement is ready
+                String nbKey = mkKey(caseid, StormUtils.REDIS.KEYS.N_BUS);
+                String nbrKey = mkKey(caseid, StormUtils.REDIS.KEYS.N_BRANCH);
+                p.set(nbKey, data.getNb() + "");
+                p.set(nbrKey, data.getNbr() + "");
 
 //              TODO: later, try to pass this data to the next bolt instead of store to redis then fetch it, that means discard data
 //                store piecewised zone struct array
@@ -91,15 +107,10 @@ public class SplitSystemRBolt extends JedisRichBolt {
                 p.del(optKey);
                 p.hmset(optKey,options);
 
-//                add initial values of estimated state
-//                int[] busNumsOut=data.getMpData().getBusData().getNumberOut();
+//                keys of estimated state
                 String vaEstKey=mkKey(caseid, StormUtils.REDIS.KEYS.VA_EST_HASH);
                 String vmEstKey=mkKey(caseid, StormUtils.REDIS.KEYS.VM_EST_HASH);
-//                p.hmset(vaEstKey,getVEstInit(busNumsOut,true));
-//                p.hmset(vmEstKey,getVEstInit(busNumsOut,false));
 
-//                need to store all keys for cleaning manually, well this is clumsy but we have no choice
-                String keysRec = mkKey(caseid, StormUtils.REDIS.KEYS.KEYS);
 //                clean original recorded keys, this should perform before any other recordings
                 p.del(keysRec);
                 p.sadd(keysRec,
@@ -112,7 +123,10 @@ public class SplitSystemRBolt extends JedisRichBolt {
                         mkKey(caseid, StormUtils.REDIS.KEYS.ZONES, StormUtils.REDIS.KEYS.NUM_OF_ZONES),
                         optKey,
                         vaEstKey,
-                        vmEstKey
+                        vmEstKey,
+                        caseReadyKey,
+                        nbKey,
+                        nbrKey
                 );
 
                 p.sync();
@@ -125,6 +139,16 @@ public class SplitSystemRBolt extends JedisRichBolt {
                 System.out.printf("\nIgnore case %s", caseid);
             }
         }
+    }
+
+    private void clearAllData(Pipeline p, String keysRec) {
+        Response<Set<String>> keys = p.smembers(keysRec);
+        p.sync();
+
+        for (String key : keys.get()) {
+            p.del(key);
+        }
+        p.sync();
     }
 
     private SplitMPData splitSystem(String caseid, List<String> data, int zoneBn) {

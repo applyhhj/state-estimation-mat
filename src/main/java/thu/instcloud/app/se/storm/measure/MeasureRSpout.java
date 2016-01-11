@@ -5,7 +5,6 @@ import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Fields;
 import backtype.storm.utils.Utils;
-import com.esotericsoftware.kryo.Kryo;
 import com.mathworks.toolbox.javabuilder.MWStructArray;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
@@ -17,24 +16,26 @@ import thu.instcloud.app.se.storm.common.StormUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
-import static thu.instcloud.app.se.storm.common.StormUtils.*;
+import static thu.instcloud.app.se.storm.common.StormUtils.mkByteKey;
+import static thu.instcloud.app.se.storm.common.StormUtils.mkKey;
 
 /**
  * Created by hjh on 15-12-28.
  */
 public class MeasureRSpout extends JedisRichSpout {
-    private String caseid ="case2869pegase";
+    private String caseid;
     private List<MeasureDataRaw> rawMeasures;
     private int midx;
-
-    public MeasureRSpout(String redisIp, String pass) {
-        super(redisIp, pass);
-    }
+    private boolean ready;
+    private int maxtry;
+    private Random random;
 
     public MeasureRSpout(String redisIp, String pass, String caseid) {
         super(redisIp, pass);
         this.caseid = caseid;
+        this.maxtry = 50;
     }
 
     @Override
@@ -52,18 +53,29 @@ public class MeasureRSpout extends JedisRichSpout {
         super.open(map, topologyContext, spoutOutputCollector);
         rawMeasures=importTrueMeasurement(caseid);
         midx=0;
+        ready = false;
+        random = new Random();
     }
 
     @Override
     public void nextTuple() {
-        if (rawMeasures.size()>0){
-            if (midx == rawMeasures.size()) {
-                midx = 0;
+//        try to get data again
+        if (rawMeasures == null) {
+            rawMeasures = importTrueMeasurement(caseid);
+        } else {
+            if (!ready) {
+                collector.emit(rawMeasures.get(midx).toTrueMeasureValues());
+                midx++;
+                if (midx == rawMeasures.size()) {
+                    midx = 0;
+                    ready = true;
+                }
+            } else {
+                collector.emit(rawMeasures.get(random.nextInt(rawMeasures.size())).toTrueMeasureValues());
+                Utils.sleep(500);
             }
-            collector.emit(rawMeasures.get(midx++).toTrueMeasureValues());
+
         }
-//        run at full capacity
-//        Utils.sleep(1);
     }
 
     public List<MeasureDataRaw> importTrueMeasurement(String caseid){
@@ -76,9 +88,19 @@ public class MeasureRSpout extends JedisRichSpout {
 
         try (Jedis jedis=jedisPool.getResource()){
             auth(jedis);
+//            waiting for case data to be prepared
+            int cnt = 0;
+            while (!jedis.getbit(mkKey(caseid, StormUtils.REDIS.KEYS.READY), 0) && cnt++ < maxtry) {
+                Utils.sleep(1000);
+            }
+            if (cnt == maxtry) {
+                System.out.println("Get measurement data timeout!");
+                return null;
+            }
 
             nz=Integer.parseInt(jedis.get(mkKey(caseid, StormUtils.REDIS.KEYS.ZONES, StormUtils.REDIS.KEYS.NUM_OF_ZONES)));
             Pipeline p=jedis.pipelined();
+//            including refrence zone
             for (int i = 0; i < nz; i++) {
                 zonesRes.add(p.get(mkByteKey(caseid, StormUtils.REDIS.KEYS.ZONES,i+"")));
                 ii2eListRes.add(p.lrange(mkKey(caseid, StormUtils.REDIS.KEYS.ZONES,i+"", StormUtils.REDIS.KEYS.BUS_NUM_OUT),0,-1));

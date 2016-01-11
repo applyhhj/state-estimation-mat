@@ -19,6 +19,8 @@ private Estimator estimator;
     private String caseID;
     private int Nint;
     private MPData mpData;
+    private int nb;
+    private int nbr;
 
     private MWStructArray zones;
 
@@ -29,6 +31,8 @@ private Estimator estimator;
             }
             this.mpData = mpData;
             this.Nint = N;
+            this.nb = mpData.getnBus();
+            this.nbr = mpData.getnBranch();
             split();
         }catch (MWException e){
             e.printStackTrace();
@@ -112,5 +116,13 @@ private Estimator estimator;
 
     public MPData getMpData() {
         return mpData;
+    }
+
+    public int getNbr() {
+        return nbr;
+    }
+
+    public int getNb() {
+        return nb;
     }
 }

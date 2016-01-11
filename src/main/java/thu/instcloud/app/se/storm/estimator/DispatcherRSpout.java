@@ -68,7 +68,7 @@ public class DispatcherRSpout extends JedisRichSpout {
             auth(jedis);
 
 //            evaluate estimation time
-            String estTimeKey = mkKey(caseid, StormUtils.REDIS.KEYS.ESTIMATE_TIME);
+            String estTimeKey = mkKey(caseid, StormUtils.REDIS.KEYS.LAST_EST_TIME);
             long start = System.currentTimeMillis();
             jedis.set(estTimeKey, start + "");
 
@@ -106,8 +106,10 @@ public class DispatcherRSpout extends JedisRichSpout {
 //            always remember to exclude reference zone
             p.set(badrecogZnsKey, "1");
 
+//            record keys for flushing
             String keysRec = mkKey(caseid, StormUtils.REDIS.KEYS.KEYS);
             p.sadd(keysRec,
+                    badrecogZnsKey,
                     convergedKey,
                     estimatingKey,
                     estimatedKey,
@@ -143,7 +145,7 @@ public class DispatcherRSpout extends JedisRichSpout {
 
             p.sync();
 
-//          we set estimated voltage of reference bus to the value of the computed power flow and in the estimation
+//          we set estimated voltage of reference bus to the value of the computed power flow and during the estimation
 //          process we do not change this value, means we do not estimate zone 0
 
 //        reset initial values of estimated state of non reference buses
@@ -155,11 +157,14 @@ public class DispatcherRSpout extends JedisRichSpout {
                 p.sync();
 
                 List<String> busNumsOutStrs = new ArrayList<>();
+                List<Response<List<String>>> busNumsRespList = new ArrayList<>();
 //                ignore reference bus
                 for (int i = 1; i < nz; i++) {
-                    Response<List<String>> busNumsResp = p.lrange(mkKey(caseid, StormUtils.REDIS.KEYS.ZONES, i + "", StormUtils.REDIS.KEYS.BUS_NUM_OUT), 0, -1);
-                    p.sync();
-                    busNumsOutStrs.addAll(busNumsResp.get());
+                    busNumsRespList.add(p.lrange(mkKey(caseid, StormUtils.REDIS.KEYS.ZONES, i + "", StormUtils.REDIS.KEYS.BUS_NUM_OUT), 0, -1));
+                }
+                p.sync();
+                for (int i = 0; i < busNumsRespList.size(); i++) {
+                    busNumsOutStrs.addAll(busNumsRespList.get(i).get());
                 }
 
                 Map<String, String> vaEstInit = getVEstInit(busNumsOutStrs, true);
@@ -171,20 +176,10 @@ public class DispatcherRSpout extends JedisRichSpout {
 
 //        always reset reference bus state to the value from power flow
             setRefBusEstState(p, caseid);
-//            String vaRefKey = mkKey(caseid, StormUtils.REDIS.KEYS.VA_REF);
-//            String vmRefKey = mkKey(caseid, StormUtils.REDIS.KEYS.VM_REF);
-//            Response<String> vaRef = p.get(vaRefKey);
-//            Response<String> vmRef = p.get(vmRefKey);
-//            Response<List<String>> refNumResp = p.lrange(mkKey(caseid, StormUtils.REDIS.KEYS.ZONES, "0", StormUtils.REDIS.KEYS.BUS_NUM_OUT), 0, -1);
-//            p.sync();
-//
-//            p.hset(vmEstKey, refNumResp.get().get(0), vmRef.get());
-//            p.hset(vaEstKey, refNumResp.get().get(0), vaRef.get());
-//            p.sync();
 
         }
 
-//        we ignore the zone with only reference bus
+//        start estimation for each zone, we ignore the zone with only reference bus
         for (int i = 1; i < nz; i++) {
             collector.emit(new Values(caseid, i + ""));
         }
